@@ -32,6 +32,8 @@ dist
 
 # Environment files (comprehensive coverage)
 
+.env
+.env.local
 *token.json*
 *credentials.json*
 
@@ -77,4 +79,8 @@ agenthub/agents/youtube/db
 .cache/
 
 # Mobile development
-android-sdk/ 
+android-sdk/
+*.local.env
+
+# Generated web build (also copied into the native apps by `cap sync`)
+frontend/build/

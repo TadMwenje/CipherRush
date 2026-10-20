@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex" />
+  <title>CipherRush device lab</title>
+  <style>
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font: 14px/1.4 -apple-system, BlinkMacSystemFont, "Inter", sans-serif; background: #05070d; color: #c9d6e3; }
+    header { position: sticky; top: 0; z-index: 2; display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+      padding: 10px 16px; background: #0a0e1a; border-bottom: 1px solid #1b2a4a; }
+    header h1 { font-size: 15px; margin: 0 12px 0 0; color: #fff; }
+    select, button { font: inherit; padding: 6px 10px; border-radius: 8px; border: 1px solid #2a3b5c; background: #111a2e; color: #e2f6ff; }
+    button { cursor: pointer; }
+    main { display: flex; flex-wrap: wrap; gap: 24px; padding: 16px; align-items: flex-start; }
+    figure { margin: 0; }
+    figcaption { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; margin-bottom: 6px; color: #9fb3c8; }
+    .frame { position: relative; overflow: hidden; border-radius: 22px; border: 3px solid #1f2b45; background: #000; }
+    .frame iframe { border: 0; transform-origin: 0 0; position: absolute; top: 0; left: 0; }
+    .audit { font-size: 11px; margin-top: 6px; max-width: 100%; white-space: pre-wrap; color: #9fb3c8; }
+    .audit.bad { color: #fca5a5; }
+    .audit.good { color: #86efac; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Device lab</h1>
+    <label>Screen
+      <select id="route">
+        <option value="/">Welcome</option>
+        <option value="/dashboard">Dashboard</option>
+        <option value="/game/cipher">Cipher Puzzles</option>
+        <option value="/game/daily">Daily Cipher</option>
+        <option value="/game/rush">Speed Rush</option>
+        <option value="/game/binhex">Binary / Hex</option>
+        <option value="/game/quiz">Security Quiz</option>
+        <option value="/game/truefalse">True or False</option>
+        <option value="/game/match3">Match-3</option>
+        <option value="/game/memory">Memory Lock</option>
+        <option value="/leaderboard">Ranks</option>
+        <option value="/profile">Profile</option>
+        <option value="/battle">Versus</option>
+      </select>
+    </label>
+    <label>Scale <select id="scale"><option>0.5</option><option selected>0.6</option><option>0.75</option><option>1</option></select></label>
+    <button id="reload">Reload all</button>
+    <button id="audit">Run touch audit</button>
+  </header>
+  <main id="lab"></main>
+  <script>
+    // Logical (CSS px) viewports of common phones. Landscape frames are what the
+    // phone shows after rotating - short and wide.
+    const DEVICES = [
+      ["iPhone SE", 375, 667],
+      ["iPhone 15", 393, 852],
+      ["Pixel 7", 412, 915],
+      ["Galaxy S8", 360, 740],
+      ["iPhone 15 landscape", 852, 393],
+      ["Galaxy S8 landscape", 740, 360],
+    ];
+    const lab = document.getElementById("lab");
+    const route = document.getElementById("route");
+    const scaleSel = document.getElementById("scale");
+
+    function render() {
+      lab.innerHTML = "";
+      const scale = Number(scaleSel.value);
+      for (const [name, w, h] of DEVICES) {
+        const fig = document.createElement("figure");
+        fig.innerHTML = `<figcaption><span>${name}</span><span>${w}x${h}</span></figcaption>
+          <div class="frame" style="width:${w * scale}px;height:${h * scale}px">
+            <iframe src="${route.value}" width="${w}" height="${h}" style="transform:scale(${scale})" title="${name}"></iframe>
+          </div><div class="audit"></div>`;
+        lab.appendChild(fig);
+      }
+    }
+
+    function audit() {
+      document.querySelectorAll("figure").forEach((fig) => {
+        const out = fig.querySelector(".audit");
+        const win = fig.querySelector("iframe").contentWindow;
+        if (!win.__touchAudit) { out.textContent = "Audit only runs on the dev server."; return; }
+        const r = win.__touchAudit();
+        const ok = !r.horizontalOverflow && r.smallTargets.length === 0 && r.coveredTargets.length === 0;
+        out.className = "audit " + (ok ? "good" : "bad");
+        out.textContent = ok
+          ? `OK - no sideways scroll, every target >= 48dp and tappable`
+          : `${r.horizontalOverflow ? "Sideways overflow! " : ""}${r.smallTargets.length} small, ${r.coveredTargets.length} covered:\n` +
+            r.smallTargets.map((t) => `  small: ${t.label} ${t.width}x${t.height}`).concat(
+              r.coveredTargets.map((t) => `  covered: ${t.label} (under ${t.coveredBy})`)).join("\n");
+      });
+    }
+
+    route.onchange = render;
+    scaleSel.onchange = render;
+    document.getElementById("reload").onclick = render;
+    document.getElementById("audit").onclick = audit;
+    render();
+  </script>
+</body>
+</html>

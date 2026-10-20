@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">CipherRush</string>
+    <string name="title_activity_main">CipherRush</string>
+    <string name="package_name">com.cipherrush.app</string>
+    <string name="custom_url_scheme">com.cipherrush.app</string>
+</resources>

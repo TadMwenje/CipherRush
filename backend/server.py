@@ -1,464 +1,349 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Depends
-from dotenv import load_dotenv
-from starlette.middleware.cors import CORSMiddleware
-from motor.motor_asyncio import AsyncIOMotorClient
-import os
 import logging
+import os
 from pathlib import Path
-from pydantic import BaseModel, Field
-from typing import List, Optional, Dict, Any
-import uuid
-from datetime import datetime
-import hashlib
-import random
-import string
-import secrets
+
+import asyncpg
+from dotenv import load_dotenv
 
 ROOT_DIR = Path(__file__).parent
-load_dotenv(ROOT_DIR / '.env')
+load_dotenv(ROOT_DIR / ".env")
 
-# MongoDB connection
-mongo_url = os.environ['MONGO_URL']
-client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
+from fastapi import APIRouter, Depends, FastAPI, HTTPException, Request, Response  # noqa: E402
+from fastapi.exceptions import RequestValidationError  # noqa: E402
+from fastapi.responses import JSONResponse  # noqa: E402
+from pydantic import BaseModel, EmailStr, Field, field_validator  # noqa: E402
+from slowapi import _rate_limit_exceeded_handler  # noqa: E402
+from slowapi.errors import RateLimitExceeded  # noqa: E402
+from slowapi.middleware import SlowAPIMiddleware  # noqa: E402
+from starlette.middleware.cors import CORSMiddleware  # noqa: E402
 
-# Create the main app without a prefix
+from auth import (  # noqa: E402
+    CSRF_HEADER,
+    CSRFHeaderMiddleware,
+    clear_session,
+    get_current_user,
+    issue_session,
+    refresh_session,
+)
+from daily_routes import router as daily_router  # noqa: E402
+from db import close_pool, get_pool, run_migrations  # noqa: E402
+from game_routes import router as game_router  # noqa: E402
+from leveling import xp_progress  # noqa: E402
+from moderation import (  # noqa: E402
+    ValidationError,
+    normalize_email,
+    normalize_username,
+    validate_password,
+    validate_username,
+)
+from ratelimit import limiter  # noqa: E402
+from rounds import GAME_TYPES, REQUEST_ID_HEADER, game_progress_for  # noqa: E402
+from security import SecurityHeadersMiddleware, hash_password, verify_password  # noqa: E402
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+logger = logging.getLogger(__name__)
+
 app = FastAPI()
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-# Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
+
+# A precomputed hash so failed logins for unknown usernames cost the same bcrypt
+# work as wrong passwords - no username enumeration via response timing.
+_DUMMY_HASH = hash_password("timing-equaliser-not-a-real-password")
+
 
 # --- MODELS ---
 
-class User(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    username: str
-    password_hash: str
-    email: str
-    level: int = 1
-    total_score: int = 0
-    puzzles_completed: int = 0
-    badges: List[str] = []
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    last_active: datetime = Field(default_factory=datetime.utcnow)
-
 class UserCreate(BaseModel):
-    username: str
-    password: str
-    email: str
+    username: str = Field(max_length=50)
+    password: str = Field(max_length=128)
+    email: EmailStr
+
+    @field_validator("username")
+    @classmethod
+    def _validate_username(cls, v: str) -> str:
+        try:
+            return validate_username(v)
+        except ValidationError as exc:
+            raise ValueError(str(exc))
+
+    @field_validator("email")
+    @classmethod
+    def _normalize_email(cls, v: EmailStr) -> str:
+        return normalize_email(str(v))
+
+    @field_validator("password")
+    @classmethod
+    def _validate_password(cls, v: str) -> str:
+        try:
+            validate_password(v)
+        except ValidationError as exc:
+            raise ValueError(str(exc))
+        return v
+
 
 class UserLogin(BaseModel):
-    username: str
-    password: str
+    username: str = Field(max_length=50)
+    password: str = Field(max_length=128)
 
-class GameSession(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    user_id: str
-    game_type: str  # "cipher", "quiz", "match3"
-    level: int
-    score: int = 0
-    completed: bool = False
-    started_at: datetime = Field(default_factory=datetime.utcnow)
-    completed_at: Optional[datetime] = None
 
-class CipherPuzzle(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    level: int
-    cipher_type: str = "caesar"
-    encrypted_text: str
-    shift_amount: int
-    original_text: str
-    hint: str
-
-class QuizQuestion(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    category: str  # "phishing", "social_engineering", "password_security", "malware", "network_security"
-    question: str
-    options: List[str]
-    correct_answer: int
-    explanation: str
-    difficulty: int
-
-class Achievement(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    user_id: str
-    badge_name: str
-    description: str
-    earned_at: datetime = Field(default_factory=datetime.utcnow)
-
-# --- UTILITY FUNCTIONS ---
-
-def hash_password(password: str) -> str:
-    return hashlib.sha256(password.encode()).hexdigest()
-
-def generate_caesar_cipher(text: str, shift: int) -> str:
-    result = ""
-    for char in text:
-        if char.isalpha():
-            shift_base = ord('A') if char.isupper() else ord('a')
-            result += chr((ord(char) - shift_base + shift) % 26 + shift_base)
-        else:
-            result += char
-    return result
-
-def get_quiz_questions_by_category(category: str, level: int) -> List[Dict]:
-    """Generate quiz questions based on category and difficulty level"""
-    questions = {
-        "phishing": [
-            {
-                "question": "You receive an email claiming to be from your bank asking you to click a link to verify your account. What should you do?",
-                "options": ["Click the link immediately", "Call your bank directly using the official number", "Reply with your account details", "Forward to friends"],
-                "correct_answer": 1,
-                "explanation": "Always verify suspicious emails by contacting the organization directly through official channels.",
-                "difficulty": 1
-            },
-            {
-                "question": "Which of these email signs indicates a potential phishing attempt?",
-                "options": ["Generic greeting like 'Dear Customer'", "Urgent language demanding immediate action", "Suspicious sender email address", "All of the above"],
-                "correct_answer": 3,
-                "explanation": "Phishing emails often combine multiple red flags to pressure victims into quick action.",
-                "difficulty": 2
-            }
-        ],
-        "social_engineering": [
-            {
-                "question": "A stranger calls claiming to be IT support and asks for your password. What should you do?",
-                "options": ["Give them the password", "Hang up and verify through official channels", "Ask them to prove their identity", "Change password first then give"],
-                "correct_answer": 1,
-                "explanation": "Legitimate IT support will never ask for passwords over the phone.",
-                "difficulty": 1
-            }
-        ],
-        "password_security": [
-            {
-                "question": "Which password is most secure?",
-                "options": ["password123", "P@ssw0rd!", "MyDog2024!", "Tr0ub4dor&3"],
-                "correct_answer": 3,
-                "explanation": "Strong passwords use a mix of characters, numbers, symbols and are not based on dictionary words.",
-                "difficulty": 1
-            }
-        ],
-        "malware": [
-            {
-                "question": "You find a USB drive in the parking lot. What should you do?",
-                "options": ["Plug it in to see what's on it", "Turn it in to security without using it", "Take it home to check", "Throw it away"],
-                "correct_answer": 1,
-                "explanation": "Unknown USB drives can contain malware designed to compromise systems.",
-                "difficulty": 1
-            }
-        ],
-        "network_security": [
-            {
-                "question": "When using public WiFi, what's the safest practice?",
-                "options": ["Use any open network", "Only access secure websites", "Use a VPN", "Avoid all internet use"],
-                "correct_answer": 2,
-                "explanation": "VPNs encrypt your connection, protecting data even on unsecured networks.",
-                "difficulty": 1
-            }
-        ]
+def _public_user(user) -> dict:
+    return {
+        "id": str(user["id"]),
+        "username": user["username"],
+        "level": user["level"],
+        "total_score": user["total_score"],
+        "puzzles_completed": user["puzzles_completed"],
+        "badges": user["badges"],
     }
-    
-    category_questions = questions.get(category, [])
-    # Filter by difficulty level and return appropriate questions
-    filtered_questions = [q for q in category_questions if q["difficulty"] <= level]
-    return filtered_questions[:3]  # Return up to 3 questions
 
-# --- API ENDPOINTS ---
+
+# --- AUTH ---
 
 @api_router.post("/auth/register")
-async def register_user(user_data: UserCreate):
-    # Check if user exists
-    existing_user = await db.users.find_one({"username": user_data.username})
-    if existing_user:
-        raise HTTPException(status_code=400, detail="Username already exists")
-    
-    # Create user
-    user = User(
-        username=user_data.username,
-        password_hash=hash_password(user_data.password),
-        email=user_data.email
-    )
-    
-    await db.users.insert_one(user.dict())
-    
-    return {"message": "User created successfully", "user_id": user.id}
+@limiter.limit("5/minute")
+async def register_user(request: Request, response: Response, user_data: UserCreate):
+    pool = await get_pool()
+    async with pool.acquire() as conn:
+        try:
+            user = await conn.fetchrow(
+                "INSERT INTO users (username, password_hash, email) VALUES ($1, $2, $3) RETURNING *",
+                user_data.username, hash_password(user_data.password), user_data.email,
+            )
+        except asyncpg.UniqueViolationError as exc:
+            constraint = (getattr(exc, "constraint_name", "") or "").lower()
+            if "username" in constraint:
+                raise HTTPException(status_code=409, detail="That handle's taken. Try another.")
+            if "email" in constraint:
+                raise HTTPException(status_code=409, detail="That email already has an account. Log in instead.")
+            raise HTTPException(status_code=409, detail="An account with those details already exists.")
+        # Signing up logs you straight in.
+        await issue_session(conn, response, user["id"], user["session_version"])
+    return {"message": "Account created", "user": _public_user(user)}
+
 
 @api_router.post("/auth/login")
-async def login_user(login_data: UserLogin):
-    user = await db.users.find_one({
-        "username": login_data.username,
-        "password_hash": hash_password(login_data.password)
-    })
-    
-    if not user:
-        raise HTTPException(status_code=401, detail="Invalid credentials")
-    
-    # Update last active
-    await db.users.update_one(
-        {"id": user["id"]},
-        {"$set": {"last_active": datetime.utcnow()}}
-    )
-    
-    return {
-        "message": "Login successful",
-        "user": {
-            "id": user["id"],
-            "username": user["username"],
-            "level": user["level"],
-            "total_score": user["total_score"],
-            "puzzles_completed": user["puzzles_completed"],
-            "badges": user["badges"]
-        }
-    }
+@limiter.limit("10/minute")
+async def login_user(request: Request, response: Response, login_data: UserLogin):
+    pool = await get_pool()
+    async with pool.acquire() as conn:
+        user = await conn.fetchrow(
+            "SELECT * FROM users WHERE username = $1", normalize_username(login_data.username)
+        )
+        password_ok = verify_password(login_data.password, user["password_hash"] if user else _DUMMY_HASH)
+        if not user or not password_ok:
+            raise HTTPException(status_code=401, detail="Wrong handle or password.")
+        await conn.execute("UPDATE users SET last_active = now() WHERE id = $1", user["id"])
+        await issue_session(conn, response, user["id"], user["session_version"])
+    return {"message": "Login successful", "user": _public_user(user)}
 
-@api_router.get("/user/{user_id}/dashboard")
-async def get_user_dashboard(user_id: str):
-    user = await db.users.find_one({"id": user_id})
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    
-    # Calculate additional stats
-    total_sessions = await db.game_sessions.count_documents({"user_id": user_id})
-    achievements = await db.achievements.find({"user_id": user_id}).to_list(100)
-    
+
+@api_router.post("/auth/refresh")
+@limiter.limit("30/minute")
+async def refresh_tokens(request: Request, response: Response):
+    user = await refresh_session(request, response)
+    return {"user": _public_user(user)}
+
+
+@api_router.post("/auth/logout")
+async def logout_user(response: Response, user=Depends(get_current_user)):
+    # Bumping the version revokes every token minted for this account so far.
+    pool = await get_pool()
+    async with pool.acquire() as conn:
+        await conn.execute("UPDATE users SET session_version = session_version + 1 WHERE id = $1", user["id"])
+        await conn.execute("DELETE FROM refresh_tokens WHERE user_id = $1", user["id"])
+    clear_session(response)
+    return {"message": "Logged out"}
+
+
+@api_router.get("/auth/me")
+async def current_session(user=Depends(get_current_user)):
+    return {"user": _public_user(user)}
+
+
+# --- THE SIGNED-IN USER'S OWN DATA ---
+
+@api_router.get("/me/dashboard")
+async def my_dashboard(user=Depends(get_current_user)):
+    pool = await get_pool()
+    async with pool.acquire() as conn:
+        total_sessions = await conn.fetchval("SELECT count(*) FROM game_sessions WHERE user_id = $1", user["id"])
+        recent = await conn.fetch(
+            "SELECT badge_name, description, earned_at FROM achievements WHERE user_id = $1 "
+            "ORDER BY earned_at DESC LIMIT 3",
+            user["id"],
+        )
+    progress = xp_progress(user["total_score"])
     return {
         "level": user["level"],
         "total_score": user["total_score"],
         "puzzles_completed": user["puzzles_completed"],
         "badges_count": len(user["badges"]),
         "total_sessions": total_sessions,
-        "recent_achievements": achievements[-3:] if achievements else []
+        "recent_achievements": [dict(a) for a in recent],
+        "xp_into_level": progress["xp_into_level"],
+        "xp_for_next_level": progress["xp_for_next_level"],
+        "level_percent": progress["percent"],
     }
 
-@api_router.get("/game/cipher/generate/{level}")
-async def generate_cipher_puzzle(level: int):
-    """Generate a Caesar cipher puzzle based on level"""
-    
-    # Difficulty increases with level
-    base_texts = [
-        "HELLO WORLD",
-        "CYBERSECURITY IS IMPORTANT",
-        "PROTECT YOUR PASSWORDS ALWAYS",
-        "BEWARE OF PHISHING ATTACKS TODAY",
-        "ENCRYPTION KEEPS DATA SAFE FROM HACKERS"
-    ]
-    
-    text_index = min(level - 1, len(base_texts) - 1)
-    original_text = base_texts[text_index]
-    
-    # Shift amount varies by level
-    shift_amount = (level * 3) % 26 + 1
-    encrypted_text = generate_caesar_cipher(original_text, shift_amount)
-    
-    hints = [
-        "Try shifting each letter by a small number",
-        "Caesar used this cipher. Think about the Roman emperor!",
-        "Each letter is shifted by the same amount",
-        "The shift amount is between 1 and 25",
-        "Look for common words like THE, AND, IS"
-    ]
-    
-    puzzle = CipherPuzzle(
-        level=level,
-        encrypted_text=encrypted_text,
-        shift_amount=shift_amount,
-        original_text=original_text,
-        hint=hints[min(level - 1, len(hints) - 1)]
-    )
-    
-    return puzzle.dict()
 
-@api_router.post("/game/cipher/submit")
-async def submit_cipher_answer(data: dict):
-    user_id = data.get("user_id")
-    user_answer = data.get("answer", "").strip().upper()
-    original_text = data.get("original_text", "").strip().upper()
-    level = data.get("level", 1)
-    
-    is_correct = user_answer == original_text
-    base_score = level * 100
-    time_bonus = max(0, 300 - data.get("time_taken", 0))  # Bonus for speed
-    
-    total_score = base_score + time_bonus if is_correct else 0
-    
-    # Update user stats if correct
-    if is_correct and user_id:
-        await db.users.update_one(
-            {"id": user_id},
-            {
-                "$inc": {"total_score": total_score, "puzzles_completed": 1},
-                "$set": {"last_active": datetime.utcnow()}
-            }
+@api_router.get("/me/game-progress")
+async def my_game_progress(user=Depends(get_current_user)):
+    pool = await get_pool()
+    async with pool.acquire() as conn:
+        games = {g: await game_progress_for(conn, user["id"], g) for g in GAME_TYPES}
+    return {"games": games}
+
+
+@api_router.get("/me/profile")
+async def my_profile(user=Depends(get_current_user)):
+    pool = await get_pool()
+    async with pool.acquire() as conn:
+        history = await conn.fetch(
+            """
+            SELECT game_type, level, score, completed, started_at, completed_at
+            FROM game_sessions WHERE user_id = $1
+            ORDER BY completed_at DESC NULLS LAST, started_at DESC LIMIT 20
+            """,
+            user["id"],
         )
-        
-        # Check for level up (every 5 puzzles)
-        user = await db.users.find_one({"id": user_id})
-        if user and user["puzzles_completed"] % 5 == 0:
-            new_level = user["level"] + 1
-            await db.users.update_one(
-                {"id": user_id},
-                {"$set": {"level": new_level}}
-            )
-    
-    return {
-        "correct": is_correct,
-        "score": total_score,
-        "explanation": f"The correct answer was: {original_text}" if not is_correct else "Excellent work!"
-    }
-
-@api_router.get("/game/quiz/{category}/{level}")
-async def get_quiz_questions(category: str, level: int):
-    """Get quiz questions for specific category and level"""
-    questions = get_quiz_questions_by_category(category, level)
-    
-    if not questions:
-        raise HTTPException(status_code=404, detail="No questions found for this category/level")
-    
-    # Remove correct answers from response
-    safe_questions = []
-    for q in questions:
-        safe_q = q.copy()
-        safe_q.pop("correct_answer", None)
-        safe_questions.append(safe_q)
-    
-    return {"questions": safe_questions, "original_data": questions}
-
-@api_router.post("/game/quiz/submit")
-async def submit_quiz_answers(data: dict):
-    user_id = data.get("user_id")
-    answers = data.get("answers", [])  # List of user's answer indices
-    original_questions = data.get("original_questions", [])
-    
-    correct_count = 0
-    total_questions = len(original_questions)
-    
-    results = []
-    for i, (user_answer, question) in enumerate(zip(answers, original_questions)):
-        is_correct = user_answer == question.get("correct_answer")
-        if is_correct:
-            correct_count += 1
-        
-        results.append({
-            "question_index": i,
-            "correct": is_correct,
-            "explanation": question.get("explanation", "")
-        })
-    
-    # Calculate score
-    score = (correct_count / total_questions) * 100 if total_questions > 0 else 0
-    bonus_score = int(score * 2)  # Bonus points for quiz completion
-    
-    # Update user stats
-    if user_id:
-        await db.users.update_one(
-            {"id": user_id},
-            {
-                "$inc": {"total_score": bonus_score},
-                "$set": {"last_active": datetime.utcnow()}
-            }
+        achievements = await conn.fetch(
+            "SELECT badge_name, description, earned_at FROM achievements WHERE user_id = $1 ORDER BY earned_at DESC",
+            user["id"],
         )
-    
     return {
-        "score": score,
-        "correct_count": correct_count,
-        "total_questions": total_questions,
-        "bonus_points": bonus_score,
-        "results": results
-    }
-
-@api_router.get("/game/match3/board/{level}")
-async def generate_match3_board(level: int):
-    """Generate a Match-3 board with cybersecurity elements"""
-    
-    # Security symbols for the game
-    security_symbols = [
-        "🔒", "🛡️", "🔑", "🚨", "💻", "🔐", "⚠️", "🔍"
-    ]
-    
-    board_size = min(6 + (level // 3), 10)  # Board grows with level
-    num_symbols = min(4 + (level // 2), len(security_symbols))  # More symbol types as level increases
-    
-    # Generate random board
-    board = []
-    available_symbols = security_symbols[:num_symbols]
-    
-    for row in range(board_size):
-        board_row = []
-        for col in range(board_size):
-            symbol = random.choice(available_symbols)
-            board_row.append(symbol)
-        board.append(board_row)
-    
-    return {
-        "board": board,
-        "level": level,
-        "board_size": board_size,
-        "target_score": level * 500,
-        "moves_allowed": 20 + (level * 2)
-    }
-
-@api_router.post("/game/match3/submit")
-async def submit_match3_score(data: dict):
-    user_id = data.get("user_id")
-    score = data.get("score", 0)
-    level = data.get("level", 1)
-    moves_used = data.get("moves_used", 0)
-    
-    # Calculate bonus for efficiency
-    efficiency_bonus = max(0, (30 - moves_used) * 10) if moves_used < 30 else 0
-    total_score = score + efficiency_bonus
-    
-    # Update user stats
-    if user_id:
-        await db.users.update_one(
-            {"id": user_id},
+        "id": str(user["id"]),
+        "username": user["username"],
+        "email": user["email"],
+        "level": user["level"],
+        "total_score": user["total_score"],
+        "puzzles_completed": user["puzzles_completed"],
+        "badges": user["badges"],
+        "member_since": user["created_at"],
+        "game_history": [
             {
-                "$inc": {"total_score": total_score},
-                "$set": {"last_active": datetime.utcnow()}
+                "game_type": h["game_type"],
+                "level": h["level"],
+                "score": h["score"],
+                "completed": h["completed"],
+                "played_at": h["completed_at"] or h["started_at"],
             }
-        )
-    
-    return {
-        "final_score": total_score,
-        "efficiency_bonus": efficiency_bonus,
-        "message": "Great matching skills!" if score > level * 300 else "Keep practicing!"
+            for h in history
+        ],
+        "achievements": [dict(a) for a in achievements],
     }
+
+
+@api_router.get("/battle/queue")
+async def battle_queue(user=Depends(get_current_user)):
+    """Versus mode is a placeholder: surfaces real top players as a preview of future matchmaking."""
+    pool = await get_pool()
+    async with pool.acquire() as conn:
+        rows = await conn.fetch(
+            "SELECT username, level, total_score FROM users WHERE id != $1 ORDER BY total_score DESC LIMIT 5",
+            user["id"],
+        )
+    return {
+        "status": "matchmaking_coming_soon",
+        "queue": [{"username": r["username"], "level": r["level"], "score": r["total_score"]} for r in rows],
+    }
+
+
+# --- PUBLIC LEADERBOARDS (usernames and scores only) ---
 
 @api_router.get("/leaderboard")
 async def get_leaderboard():
-    """Get top players leaderboard"""
-    top_users = await db.users.find().sort("total_score", -1).limit(10).to_list(10)
-    
-    leaderboard = []
-    for i, user in enumerate(top_users):
-        leaderboard.append({
-            "rank": i + 1,
-            "username": user["username"],
-            "level": user["level"],
-            "score": user["total_score"],
-            "puzzles_completed": user["puzzles_completed"]
-        })
-    
-    return {"leaderboard": leaderboard}
+    pool = await get_pool()
+    async with pool.acquire() as conn:
+        rows = await conn.fetch(
+            """
+            SELECT u.username, u.level, u.total_score, u.puzzles_completed,
+                   COALESCE(gs.games_played, 0) AS games_played,
+                   COALESCE(ac.achievements_count, 0) AS achievements_count
+            FROM users u
+            LEFT JOIN (SELECT user_id, count(*) AS games_played FROM game_sessions GROUP BY user_id) gs
+                   ON gs.user_id = u.id
+            LEFT JOIN (SELECT user_id, count(*) AS achievements_count FROM achievements GROUP BY user_id) ac
+                   ON ac.user_id = u.id
+            ORDER BY u.total_score DESC
+            LIMIT 10
+            """
+        )
+    return {
+        "leaderboard": [
+            {
+                "rank": i + 1,
+                "username": r["username"],
+                "level": r["level"],
+                "score": r["total_score"],
+                "puzzles_completed": r["puzzles_completed"],
+                "games_played": r["games_played"],
+                "achievements_count": r["achievements_count"],
+            }
+            for i, r in enumerate(rows)
+        ]
+    }
 
-# Include the router in the main app
+
+@api_router.get("/leaderboard/rush")
+async def get_rush_leaderboard():
+    """Best single Speed Cipher Rush run per player."""
+    pool = await get_pool()
+    async with pool.acquire() as conn:
+        rows = await conn.fetch(
+            """
+            SELECT u.username, max(gs.score) AS best, count(*) AS runs
+            FROM game_sessions gs JOIN users u ON u.id = gs.user_id
+            WHERE gs.game_type = 'rush'
+            GROUP BY u.username
+            ORDER BY best DESC
+            LIMIT 10
+            """
+        )
+    return {
+        "leaderboard": [
+            {"rank": i + 1, "username": r["username"], "best_score": r["best"], "runs": r["runs"]}
+            for i, r in enumerate(rows)
+        ]
+    }
+
+
 app.include_router(api_router)
+app.include_router(game_router)
+app.include_router(daily_router)
 
+# --- MIDDLEWARE ---
+
+_cors_origins_env = os.environ.get("CORS_ORIGINS", "http://localhost:3001,http://localhost:3000")
+CORS_ORIGINS = [origin.strip() for origin in _cors_origins_env.split(",") if origin.strip()]
+
+app.add_middleware(CSRFHeaderMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=CORS_ORIGINS,
+    allow_methods=["GET", "POST"],
+    allow_headers=["Content-Type", CSRF_HEADER, REQUEST_ID_HEADER],
 )
+app.add_middleware(SecurityHeadersMiddleware)
+app.add_middleware(SlowAPIMiddleware)
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    """Surface pydantic validator messages (username/password rules) as a clean 400."""
+    first_error = exc.errors()[0] if exc.errors() else None
+    message = first_error["msg"].replace("Value error, ", "") if first_error else "Invalid input"
+    return JSONResponse(status_code=400, content={"detail": message})
+
+
+@app.on_event("startup")
+async def startup_db_client():
+    await run_migrations()
+
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
-    client.close()
+    await close_pool()

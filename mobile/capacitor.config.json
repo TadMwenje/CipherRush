@@ -1,0 +1,24 @@
+{
+  "appId": "com.cipherrush.app",
+  "appName": "CipherRush",
+  "webDir": "../frontend/build",
+  "backgroundColor": "#0A0E1A",
+  "server": {
+    "androidScheme": "https"
+  },
+  "ios": {
+    "contentInset": "never",
+    "backgroundColor": "#0A0E1A"
+  },
+  "android": {
+    "backgroundColor": "#0A0E1A"
+  },
+  "plugins": {
+    "CapacitorHttp": {
+      "enabled": true
+    },
+    "CapacitorCookies": {
+      "enabled": true
+    }
+  }
+}

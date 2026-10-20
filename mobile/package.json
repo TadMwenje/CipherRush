@@ -1,0 +1,23 @@
+{
+  "name": "cipherrush-mobile",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Native iOS and Android shells for CipherRush (Capacitor). Wraps the React app in ../frontend.",
+  "scripts": {
+    "build:web": "cd ../frontend && yarn build",
+    "sync": "npm run build:web && cap sync",
+    "ios": "npm run sync && cap open ios",
+    "android": "npm run sync && cap open android",
+    "run:ios": "npm run sync && cap run ios",
+    "run:android": "npm run sync && cap run android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.5.3",
+    "@capacitor/core": "^8.5.3",
+    "@capacitor/haptics": "^8.0.2",
+    "@capacitor/ios": "^8.5.3"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.5.3"
+  }
+}
