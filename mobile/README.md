@@ -52,6 +52,10 @@ For production, run the API on HTTPS and set `COOKIE_SECURE=true` in `backend/.e
 
 The app gets an ID token from Google or Apple and sends it to the backend (`POST /api/auth/google` / `/api/auth/apple`), which verifies the signature, issuer, expiry and **audience** before creating a session. No client secret is ever in the app. The buttons stay hidden until both the backend and the app build are configured.
 
+**Status (2026-10-21):** Google Cloud project `cipherrush-auth`. The **iOS** client (`548808788960-3jtmc07…`) is live: its ID is in `frontend/.env.production`, the backend's `GOOGLE_CLIENT_IDS`, and its reversed ID is registered as a URL scheme in `Info.plist`. The **Android** client (`548808788960-nq95sgd…`) exists, but Android also needs a **Web** client ID, which hasn't been created yet, so the Google button stays hidden on Android. The debug keystore SHA-1 on the main dev Mac is `64:D3:D4:68:41:95:DE:69:B2:92:50:F8:8C:08:57:D2:F7:15:93:8A`.
+
+The client IDs are public and committed in `frontend/.env.production`. The JSON/plist files Google lets you download are gitignored; don't commit them.
+
 **Google (Google Cloud Console, one project):**
 
 1. OAuth consent screen: app name *CipherRush*, publisher *AximoIX*, privacy policy `https://aximoix.com/privacy/`, terms `https://aximoix.com/terms/`, authorised domain `aximoix.com`.

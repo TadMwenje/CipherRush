@@ -88,3 +88,8 @@ frontend/build/
 # The AximoIX website is its own repo (github.com/TadMwenje/AximoIX-website-main) that
 # happens to live in this folder. Never commit it here.
 /AximoIX-website-main/
+
+# Google OAuth client files downloaded from Cloud Console
+/frontend/src/protect temp/
+client_secret_*.json
+*.apps.googleusercontent.com.plist

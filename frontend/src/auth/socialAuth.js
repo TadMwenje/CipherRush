@@ -6,10 +6,10 @@
  * sets the session cookies. No client secrets live here - only public client IDs.
  *
  *  - Native app (mobile/, Capacitor): @capgo/capacitor-social-login via the
- *    Capacitor bridge. Google is initialised with the shared Web client ID
- *    (webClientId / iOSServerClientId) so the ID token's audience is the one
- *    the backend accepts. Apple shows on iOS only (Apple's requirement; the
- *    Android flow needs a separate web redirect).
+ *    Capacitor bridge. iOS uses the iOS client ID; Android uses the Web client
+ *    ID (Credential Manager requires it). Each is the audience of the ID tokens
+ *    that platform returns, so the backend's GOOGLE_CLIENT_IDS lists both.
+ *    Apple shows on iOS only (the Android flow needs a separate web redirect).
  *  - Web: Google Identity Services (renders Google's own button) and Sign in
  *    with Apple JS (popup).
  *
@@ -68,8 +68,8 @@ export async function availableProviders() {
     return { google: false, apple: false };
   }
   const p = platform();
-  const googleReady =
-    Boolean(SOCIAL_CONFIG.googleWebClientId) && (p !== "ios" || Boolean(SOCIAL_CONFIG.googleIosClientId));
+  // iOS signs in with its own client ID; Android (Credential Manager) and the web need the Web client ID.
+  const googleReady = Boolean(p === "ios" ? SOCIAL_CONFIG.googleIosClientId : SOCIAL_CONFIG.googleWebClientId);
   const appleReady =
     p === "ios" || (p === "web" && Boolean(SOCIAL_CONFIG.appleServiceId && SOCIAL_CONFIG.appleRedirectUri));
   return {
@@ -83,14 +83,14 @@ function initNative() {
   const plugin = nativePlugin();
   if (!plugin) throw new Error("Sign-in isn't available in this build.");
   if (!nativeInit) {
-    const options = {
-      google: {
-        webClientId: SOCIAL_CONFIG.googleWebClientId,
-        iOSClientId: SOCIAL_CONFIG.googleIosClientId,
-        iOSServerClientId: SOCIAL_CONFIG.googleWebClientId,
-        mode: "online",
-      },
-    };
+    // Only pass IDs that are set: the plugin treats an empty string as a real client ID.
+    const google = { mode: "online" };
+    if (SOCIAL_CONFIG.googleWebClientId) {
+      google.webClientId = SOCIAL_CONFIG.googleWebClientId;
+      google.iOSServerClientId = SOCIAL_CONFIG.googleWebClientId;
+    }
+    if (SOCIAL_CONFIG.googleIosClientId) google.iOSClientId = SOCIAL_CONFIG.googleIosClientId;
+    const options = { google };
     if (platform() === "ios") options.apple = { useProperTokenExchange: true };
     nativeInit = plugin.initialize(options).catch((err) => {
       nativeInit = null;
