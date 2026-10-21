@@ -49,8 +49,11 @@ export function AuthProvider({ children }) {
     setUser(null);
   }, []);
 
+  // The server already ended the session (e.g. account deleted) - just forget it locally.
+  const clearSession = useCallback(() => setUser(null), []);
+
   return (
-    <AuthContext.Provider value={{ user, login, logout, updateUser, loading }}>
+    <AuthContext.Provider value={{ user, login, logout, updateUser, clearSession, loading }}>
       {children}
     </AuthContext.Provider>
   );

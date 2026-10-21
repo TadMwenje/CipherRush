@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Badge, Circuit } from "../glyphs";
 import api from "../api";
-import { useAuth } from "../AuthContext";
 import { getGameMode } from "../constants/gameModes";
+import AccountSettings from "../components/AccountSettings";
 
 function formatDate(isoString) {
   if (!isoString) return "";
@@ -11,7 +11,6 @@ function formatDate(isoString) {
 }
 
 function Profile() {
-  const { logout } = useAuth();
   const [profile, setProfile] = useState(null);
   const [error, setError] = useState("");
 
@@ -118,9 +117,7 @@ function Profile() {
             )}
           </section>
 
-          <button className="btn-secondary logout-btn" onClick={logout}>
-            Log out
-          </button>
+          <AccountSettings />
         </>
       )}
     </div>

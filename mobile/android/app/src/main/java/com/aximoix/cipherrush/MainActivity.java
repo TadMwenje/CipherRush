@@ -1,4 +1,4 @@
-package com.cipherrush.app;
+package com.aximoix.cipherrush;
 
 import com.getcapacitor.BridgeActivity;
 

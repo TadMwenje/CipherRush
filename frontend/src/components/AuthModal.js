@@ -1,6 +1,8 @@
 import React, { useState, useMemo } from "react";
 import { Check, Close, Eye, EyeOff, Key, Mail, Terminal, User } from "../glyphs";
 import api from "../api";
+import SocialButtons from "./SocialButtons";
+import { LegalConsent } from "./LegalLinks";
 
 const USERNAME_PATTERN = /^[a-zA-Z0-9_]{3,20}$/;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -80,12 +82,22 @@ function AuthModal({ isOpen, onClose, onLogin }) {
           </p>
         </div>
 
+        {error && (
+          <p className="auth-message auth-message-top" role="alert">
+            {error}
+          </p>
+        )}
+
+        <SocialButtons
+          disabled={loading}
+          onSignedIn={(data) => {
+            onLogin(data.user);
+            onClose();
+          }}
+          onError={setError}
+        />
+
         <form onSubmit={handleSubmit} noValidate>
-          {error && (
-            <p className="auth-message auth-message-top" role="alert">
-              {error}
-            </p>
-          )}
           <div className="auth-field">
             <label htmlFor="auth-username">Handle</label>
             <div className={`auth-input-wrap${touched.username && !isLogin && !usernameValid ? " invalid" : ""}`}>
@@ -188,6 +200,7 @@ function AuthModal({ isOpen, onClose, onLogin }) {
           </button>
         </form>
 
+        <LegalConsent />
 
         <p className="auth-switch">
           {isLogin ? "New here? " : "Got an account? "}

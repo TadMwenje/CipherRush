@@ -113,3 +113,19 @@ CREATE TABLE IF NOT EXISTS refresh_tokens (
 );
 
 CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user ON refresh_tokens (user_id);
+
+-- External sign-in identities (Google, Apple). (provider, subject) is the
+-- provider's stable user id - never the email, which can change.
+CREATE TABLE IF NOT EXISTS user_identities (
+    provider VARCHAR(20) NOT NULL,
+    subject VARCHAR(255) NOT NULL,
+    user_id UUID NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    email VARCHAR(255),
+    client_id VARCHAR(255),
+    apple_refresh_token TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    last_login_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    PRIMARY KEY (provider, subject)
+);
+
+CREATE INDEX IF NOT EXISTS idx_user_identities_user ON user_identities (user_id);

@@ -3,6 +3,7 @@ import { Navigate, useNavigate } from "react-router-dom";
 import AuthModal from "../components/AuthModal";
 import CipherMark from "../brand/CipherMark";
 import HowToPlayModal from "../components/HowToPlayModal";
+import { LegalLinks } from "../components/LegalLinks";
 import { useAuth } from "../AuthContext";
 
 function Welcome() {
@@ -46,6 +47,7 @@ function Welcome() {
         </div>
 
         <p className="welcome-footer">Built for people who read the whole URL.</p>
+        <LegalLinks className="welcome-legal" />
       </div>
 
       {showHowTo && <HowToPlayModal onClose={() => setShowHowTo(false)} />}

@@ -23,8 +23,10 @@ from auth import (  # noqa: E402
     clear_session,
     get_current_user,
     issue_session,
+    public_user,
     refresh_session,
 )
+from account_routes import router as account_router  # noqa: E402
 from daily_routes import router as daily_router  # noqa: E402
 from db import close_pool, get_pool, run_migrations  # noqa: E402
 from game_routes import router as game_router  # noqa: E402
@@ -89,15 +91,7 @@ class UserLogin(BaseModel):
     password: str = Field(max_length=128)
 
 
-def _public_user(user) -> dict:
-    return {
-        "id": str(user["id"]),
-        "username": user["username"],
-        "level": user["level"],
-        "total_score": user["total_score"],
-        "puzzles_completed": user["puzzles_completed"],
-        "badges": user["badges"],
-    }
+_public_user = public_user
 
 
 # --- AUTH ---
@@ -313,6 +307,7 @@ async def get_rush_leaderboard():
 app.include_router(api_router)
 app.include_router(game_router)
 app.include_router(daily_router)
+app.include_router(account_router)
 
 # --- MIDDLEWARE ---
 

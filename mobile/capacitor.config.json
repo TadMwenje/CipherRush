@@ -1,5 +1,5 @@
 {
-  "appId": "com.cipherrush.app",
+  "appId": "com.aximoix.cipherrush",
   "appName": "CipherRush",
   "webDir": "../frontend/build",
   "backgroundColor": "#0A0E1A",
@@ -19,6 +19,14 @@
     },
     "CapacitorCookies": {
       "enabled": true
+    },
+    "SocialLogin": {
+      "providers": {
+        "google": true,
+        "apple": true,
+        "facebook": false,
+        "twitter": false
+      }
     }
   }
 }

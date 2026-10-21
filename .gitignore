@@ -84,3 +84,7 @@ android-sdk/
 
 # Generated web build (also copied into the native apps by `cap sync`)
 frontend/build/
+
+# The AximoIX website is its own repo (github.com/TadMwenje/AximoIX-website-main) that
+# happens to live in this folder. Never commit it here.
+/AximoIX-website-main/

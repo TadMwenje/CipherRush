@@ -176,3 +176,15 @@ class CSRFHeaderMiddleware(BaseHTTPMiddleware):
         ):
             return JSONResponse(status_code=403, content={"detail": "Missing CSRF header"})
         return await call_next(request)
+
+
+def public_user(user) -> dict:
+    """The user fields safe to send to the signed-in player."""
+    return {
+        "id": str(user["id"]),
+        "username": user["username"],
+        "level": user["level"],
+        "total_score": user["total_score"],
+        "puzzles_completed": user["puzzles_completed"],
+        "badges": user["badges"],
+    }
