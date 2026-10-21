@@ -194,6 +194,12 @@ The VORA evaluation scored the original build **4.7 / 10**. Every score was calc
 - **Repos kept separate:** the AximoIX website lives in `AximoIX-website-main/` inside this folder but is its own git repo, and is ignored here.
 - **Tests:** 21 new backend tests mint test-signed tokens covering valid sign-in, wrong audience, wrong issuer, expiry, bad signature, nonce mismatch, unverified email, the pre-hijack defence, username changes and full deletion with Apple revocation.
 
+### 2.8 iOS release prep (2026-10-21, branch `ios-device-testing`)
+
+- **Done:** `DEVELOPMENT_TEAM = T6KB43BH88` (the only team in the keychain), `MARKETING_VERSION 1.0.0`, `ITSAppUsesNonExemptEncryption = false`, `PrivacyInfo.xcprivacy` in the App target (email, user ID and gameplay data, linked, app functionality; no tracking; `UserDefaults` reason `CA92.1`, because the social-login plugin uses it and ships no manifest), icon and splash generated from `icon-source.svg` into `mobile/assets/` and `Assets.xcassets`.
+- **Verified:** simulator build succeeds and launches; 87 backend tests, 40 frontend tests and the strict build pass.
+- **Blocked on the user:** Xcode has no Apple ID account signed in ("No Accounts"), so device builds fail at provisioning. The iPhone also showed as offline. The sign-in matrix (B), device QA (C), light/dark icon check, the Release archive and the production HTTPS URL are **not done**.
+
 ---
 
 ## 3. Known issues and bug registry
@@ -220,7 +226,7 @@ The VORA evaluation scored the original build **4.7 / 10**. Every score was calc
 | ID | Issue | Severity | Notes |
 | --- | --- | --- | --- |
 | O-01 | No real-device verification yet | High | Keyboard focus hand-off on iOS, swipe feel, haptics, 60 fps on mid-range Android. All were verified only in desktop Chrome, the device lab and unit tests |
-| O-02 | Native app icons and splash are Capacitor defaults | Medium | Generate from `frontend/src/brand/icon-source.svg` with `@capacitor/assets` |
+| O-02 | ~~Native app icons and splash~~ | Generated 2026-10-21; light/dark home-screen check pending | Generate from `frontend/src/brand/icon-source.svg` with `@capacitor/assets` |
 | O-03 | ~~`appId` placeholder~~ | Resolved | Now `com.aximoix.cipherrush` |
 | O-04 | Legacy leaderboard scores were earned under the old, inflated economy | Medium | Reset before launch (§4, Phase 5) |
 | O-05 | Content (~400 items) written and fact-checked by the agent only | Medium | Needs a human subject-matter review |
