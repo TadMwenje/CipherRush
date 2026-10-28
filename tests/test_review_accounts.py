@@ -69,6 +69,13 @@ def test_review_account_never_on_leaderboards(client, reviewer):
     assert username not in names
 
 
+def test_review_account_never_offered_as_a_versus_opponent(client, reviewer, player):
+    username, _ = reviewer
+    db_query("UPDATE users SET total_score = 10000000 WHERE username = $1", username)
+    names = {r["username"] for r in player.get("/api/battle/queue").json()["queue"]}
+    assert username not in names
+
+
 def test_review_account_is_unranked(client, reviewer):
     username, _ = reviewer
     db_query("UPDATE users SET total_score = 10000000 WHERE username = $1", username)

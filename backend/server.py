@@ -236,7 +236,9 @@ async def battle_queue(user=Depends(get_current_user)):
     pool = await get_pool()
     async with pool.acquire() as conn:
         rows = await conn.fetch(
-            "SELECT username, level, total_score FROM users WHERE id != $1 ORDER BY total_score DESC LIMIT 5",
+            """SELECT username, level, total_score FROM users
+               WHERE id != $1 AND NOT is_review_account
+               ORDER BY total_score DESC LIMIT 5""",
             user["id"],
         )
     return {
