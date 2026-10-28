@@ -43,9 +43,13 @@ services:
         value: "true"
       - key: COOKIE_SAMESITE
         value: none
-      # Native app origins (Capacitor iOS / Android). Add the web app's origin if it's ever hosted.
+      # Native app origins (Capacitor iOS / Android) plus the AximoIX web origins.
       - key: CORS_ORIGINS
-        value: capacitor://localhost,https://localhost
+        value: https://aximoix.com,https://cipherrush.aximoix.com,capacitor://localhost,https://localhost
+      # Every request reaches Render through Cloudflare, which sets the real
+      # visitor IP in CF-Connecting-IP (see backend/ratelimit.py).
+      - key: TRUST_CF_CONNECTING_IP
+        value: "true"
       - key: GOOGLE_CLIENT_IDS
         value: 548808788960-3jtmc07lqac6u2ff2khud4t3hhc8bpj0.apps.googleusercontent.com
       - key: APPLE_CLIENT_IDS
