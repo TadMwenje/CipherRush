@@ -1,0 +1,18 @@
+# Runtime dependencies only, pinned to the versions the test suite runs on.
+# requirements.txt also carries dev and tooling packages; production installs this.
+asyncpg==0.31.0
+bcrypt==5.0.0
+better-profanity==0.7.0
+cryptography==50.0.0
+email-validator==2.3.0
+fastapi==0.110.1
+google-auth==2.50.0
+httpx==0.28.1
+pydantic==2.13.4
+PyJWT==2.13.0
+python-dotenv==1.2.1
+requests==2.32.5
+slowapi==0.1.10
+starlette==0.37.2
+tzdata==2026.3
+uvicorn==0.25.0

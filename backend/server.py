@@ -334,8 +334,29 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     return JSONResponse(status_code=400, content={"detail": message})
 
 
+def production_config_problems(env=os.environ) -> list:
+    """Settings that must hold before a production server takes traffic."""
+    if env.get("ENVIRONMENT", "").lower() != "production":
+        return []
+    problems = []
+    if len(env.get("JWT_SECRET", "")) < 32:
+        problems.append("JWT_SECRET must be 32+ characters (an ephemeral one would sign everyone out on every restart)")
+    if env.get("COOKIE_SECURE", "").lower() != "true":
+        problems.append("COOKIE_SECURE must be true (session cookies over HTTPS only)")
+    if not env.get("DATABASE_URL"):
+        problems.append("DATABASE_URL is not set")
+    origins = [o.strip() for o in env.get("CORS_ORIGINS", "").split(",") if o.strip()]
+    if not origins or any(o.startswith("http://") for o in origins):
+        problems.append("CORS_ORIGINS must list only HTTPS / app origins (no http://)")
+    return problems
+
+
 @app.on_event("startup")
 async def startup_db_client():
+    problems = production_config_problems()
+    if problems:
+        # Fail the deploy loudly rather than serve with unsafe settings.
+        raise RuntimeError("Refusing to start in production: " + "; ".join(problems))
     await run_migrations()
 
 
