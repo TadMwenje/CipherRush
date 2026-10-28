@@ -63,7 +63,7 @@ The package name comes from the first upload: `com.aximoix.cipherrush`.
 - Feature graphic: `feature-graphic-1024x500.png`.
 - Phone screenshots (24-bit PNG, no alpha, as Play requires): `phone-1-welcome.png` and `phone-2-practice.png`, 1080×2160
   (Play's 2:1 maximum), taken on a Galaxy SM-E135F with the status bar cropped
-  off. That's the 2 Play requires. **Retake `phone-2-practice.png`**: its top edge still shows the old Atbash tab, which Match-3 has replaced. Better ones to add later: a Cipher puzzle
+  off (the welcome shot). That's the 2 Play requires. `phone-2-practice.png` is the Match-3 practice board, rendered from the production web build at 360×720 CSS px ×3 in headless Chrome (the same UI the app ships). Better ones to add later: a Cipher puzzle
   mid-solve, Rush with a combo, and the leaderboard. Crop new captures the same
   way: `sips -c 2160 1080 --cropOffset 130 0 file.png`.
 
