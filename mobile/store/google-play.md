@@ -58,10 +58,14 @@ The package name comes from the first upload: `com.aximoix.cipherrush`.
 | Website | https://aximoix.com |
 | Privacy policy | https://aximoix.com/privacy/#cipherrush |
 
-**Graphics still needed:**
-- App icon: 512×512 PNG, 32-bit, max 1 MB. Export from `mobile/assets/icon-only.svg`.
-- Feature graphic: 1024×500 PNG or JPG.
-- At least 2 phone screenshots (16:9 or 9:16, 320-3840 px per side). Take them on a real device.
+**Graphics** (`mobile/store/assets/`):
+- App icon: `icon-512.png`, 512×512 PNG, opaque. Rendered from `mobile/assets/icon-only.svg`.
+- Feature graphic: `feature-graphic-1024x500.png`.
+- Phone screenshots: **still needed**, at least 2 (16:9 or 9:16). Take them on
+  the phone with power + volume-down, or with
+  `adb exec-out screencap -p > mobile/store/assets/phone-1.png`. Good picks: the
+  welcome screen, a Cipher puzzle mid-solve, Rush with a combo, the leaderboard
+  and Practice Mode.
 
 ## App content
 
@@ -121,8 +125,31 @@ cd mobile && npm run sync
 cd android && JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home" ./gradlew bundleRelease
 ```
 
-**After Play App Signing is on**, copy the *app signing key* SHA-1 and SHA-256 from Setup → App signing. Google sign-in on Android needs them:
-- for the Android OAuth client in Google Cloud;
-- for the Web client ID that the app passes as `serverClientId`. That client doesn't exist yet.
+## Signing certificates for Google sign-in
+
+Google sign-in on Android checks the certificate that signed the installed app,
+so the Android OAuth client in Google Cloud (project `cipherrush-auth`, package
+`com.aximoix.cipherrush`) needs every certificate that installs can come from.
+Create one Android client per SHA-1:
+
+| Certificate | Used by | SHA-1 |
+| --- | --- | --- |
+| Play app signing key | Every install from Google Play, including internal testing | Copy it from Play Console → Test and release → App integrity → App signing (it exists after the first upload) |
+| Upload key (`~/.cipherrush-signing/`) | Release builds sideloaded with `adb install` | `2D:4D:EF:E4:FD:74:E3:44:F4:CD:A3:83:F5:75:B0:63:E1:61:80:21` |
+| This Mac's debug key (`~/.android/debug.keystore`) | `app-debug.apk` | `64:D3:D4:68:41:95:DE:69:B2:92:50:F8:8C:08:57:D2:F7:15:93:8A` |
+
+Upload key SHA-256: `FA:61:F6:3C:BD:5D:D9:9E:9F:AA:88:9C:46:D0:29:30:68:2B:85:0B:2E:DA:D5:C3:CF:21:61:5C:87:BB:4E:06`.
+
+Android also needs a **Web application** OAuth client in the same project. Its
+client ID goes in two places:
+- `REACT_APP_GOOGLE_WEB_CLIENT_ID` in `frontend/.env.production`. It's a public
+  identifier, not a secret.
+- Appended to `GOOGLE_CLIENT_IDS` in `render.yaml`, comma-separated after the iOS
+  ID. That makes it a valid server audience.
+
+The app signs in with native ID tokens, so no redirect URIs are needed and the
+API has no `/auth/google/callback`. Until the Web client exists, Android hides
+the Google button and offers email and password only. Sign in with Apple is
+iOS (and web) only, by design.
 
 New personal developer accounts need a closed test with at least 12 testers for 14 days before production access.
