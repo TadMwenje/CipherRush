@@ -91,11 +91,11 @@ Encrypted in transit: **Yes** (the API is HTTPS only; Cloudflare with Full (stri
 Users can request deletion: **Yes** (see above).
 Data collected and shared for advertising or tracking: **None**.
 
-"Shared" in Play's sense excludes service providers acting for you (Render and Cloudflare) and transfers the user starts themselves (Google and Apple sign-in). So the answer is **No data shared**.
+"Shared" in Play's sense excludes service providers acting for you (Render, Cloudflare, and Zoho ZeptoMail, which delivers the verification and password-reset emails) and transfers the user starts themselves (Google and Apple sign-in). So the answer is **No data shared**.
 
 | Data type (Play category) | Collected | Required? | Purposes |
 | --- | --- | --- | --- |
-| Personal info → Email address | Yes | Required | App functionality, Account management |
+| Personal info → Email address | Yes | Required | App functionality, Account management, Developer communications (the confirmation code and password-reset emails only), Fraud prevention / security |
 | Personal info → Name | Yes (only if shared through Google or Apple sign-in; used to suggest the starting username) | Optional | Account management |
 | Personal info → User IDs | Yes (account ID, Google or Apple subject ID) | Required | App functionality, Account management, Fraud prevention / security |
 | App activity → App interactions | Yes (rounds played, answers, scores) | Required | App functionality, Fraud prevention / security, Analytics (aggregate balancing only) |
