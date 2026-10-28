@@ -106,7 +106,10 @@ function initNative() {
 export async function signInWithGoogleNative() {
   const plugin = await initNative();
   const nonce = makeNonce();
-  const res = await plugin.login({ provider: "google", options: { scopes: ["email", "profile"], nonce } });
+  // Android always asks for openid, email and profile, and rejects any explicit
+  // `scopes` list unless MainActivity is rebuilt for the plugin. iOS needs them spelled out.
+  const options = platform() === "android" ? { nonce } : { scopes: ["email", "profile"], nonce };
+  const res = await plugin.login({ provider: "google", options });
   const idToken = res?.result?.idToken;
   if (!idToken) throw new Error("Google didn't return a sign-in token.");
   return (await api.post("/auth/google", { id_token: idToken, nonce })).data;

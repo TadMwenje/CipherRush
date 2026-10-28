@@ -56,3 +56,22 @@ test("a server error is not reported as a timeout", async () => {
   const pending = withDeadline(() => Promise.reject(err))({ timeout: 1000 });
   await expect(pending).rejects.toBe(err);
 });
+
+describe("errorMessage", () => {
+  const { errorMessage } = jest.requireActual("./api");
+  const { AxiosError } = jest.requireActual("axios");
+
+  test("a request that got no answer is a signal problem", () => {
+    expect(errorMessage(new AxiosError("Network Error", "ERR_NETWORK"))).toMatch(/Can't reach the server/);
+  });
+
+  test("a failure that never hit the network gets the fallback, not a signal warning", () => {
+    expect(errorMessage(new Error("plugin said no"), "Google sign-in didn't go through.")).toBe(
+      "Google sign-in didn't go through."
+    );
+  });
+
+  test("the server's own message wins", () => {
+    expect(errorMessage({ response: { data: { detail: "That handle's taken." } } })).toBe("That handle's taken.");
+  });
+});

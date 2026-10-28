@@ -173,7 +173,9 @@ onAppResume(({ awayMs }) => {
 });
 
 export function errorMessage(err, fallback = "That didn't go through. Try again.") {
-  if (!err?.response) return "Can't reach the server. Check your signal.";
+  // Only a request that got no answer is a signal problem; anything else that
+  // failed before reaching us (a native sign-in plugin, say) gets the fallback.
+  if (!err?.response) return axios.isAxiosError(err) ? "Can't reach the server. Check your signal." : fallback;
   const detail = err.response.data?.detail;
   return typeof detail === "string" ? detail : fallback;
 }

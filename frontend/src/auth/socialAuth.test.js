@@ -1,5 +1,5 @@
 import api from "../api";
-import { availableProviders, SOCIAL_CONFIG } from "./socialAuth";
+import { availableProviders, signInWithGoogleNative, SOCIAL_CONFIG } from "./socialAuth";
 
 jest.mock("../api", () => ({ __esModule: true, default: { get: jest.fn(), post: jest.fn() } }));
 
@@ -54,4 +54,21 @@ test("nothing shows when the server can't be reached", async () => {
   SOCIAL_CONFIG.googleIosClientId = IOS_ID;
   api.get.mockRejectedValue(new Error("offline"));
   expect(await availableProviders()).toEqual({ google: false, apple: false });
+});
+
+test("Android Google sign-in sends no scopes (the plugin rejects them); iOS does", async () => {
+  // jsdom has no Web Crypto; Node's is the same API.
+  Object.defineProperty(window, "crypto", { value: require("crypto").webcrypto, configurable: true });
+  const login = jest.fn().mockResolvedValue({ result: { idToken: "id-token" } });
+  api.post.mockResolvedValue({ data: { user: {} } });
+  asPlatform("android");
+  window.Capacitor.Plugins.SocialLogin = { initialize: jest.fn().mockResolvedValue(), login };
+  await signInWithGoogleNative();
+  expect(login.mock.calls[0][0].options.scopes).toBeUndefined();
+  expect(login.mock.calls[0][0].options.nonce).toBeTruthy();
+
+  asPlatform("ios");
+  window.Capacitor.Plugins.SocialLogin = { initialize: jest.fn().mockResolvedValue(), login };
+  await signInWithGoogleNative();
+  expect(login.mock.calls[1][0].options.scopes).toEqual(["email", "profile"]);
 });
