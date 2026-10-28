@@ -249,7 +249,7 @@ The VORA evaluation scored the original build **4.7 / 10**. Every score was calc
 | O-11 | Branch push | See §4 | The AximoIX repo pushed fine on 2026-10-21, so the credentials work again |
 | O-13 | Google / Apple sign-in needs real client IDs | High for launch | Code and tests are done; buttons stay hidden until configured. Steps in `mobile/README.md` (OAuth consent screen, Web/iOS/Android clients, Apple App ID + key, iOS reversed-client-ID URL scheme) |
 | O-14 | Apple refresh tokens stored unencrypted | Low | Only usable together with the server's `.p8` key. Consider encrypting at rest |
-| O-15 | No production API | Blocker for release | Deploy the backend over HTTPS (`COOKIE_SECURE=true`, `COOKIE_SAMESITE=none`, `CORS_ORIGINS` incl. `capacitor://localhost,https://localhost`), then set `REACT_APP_BACKEND_URL` in `frontend/.env.production` |
+| O-15 | ~~No production API~~ | Live 2026-10-28 on free plans | `https://cipherrush-api.onrender.com` (Render Blueprint `cipherrush` from `render.yaml`, Frankfurt). Before launch: move to paid plans (free web sleeps after 15 min idle; free Postgres expires after 30 days), grant Render's GitHub app access to the repo for auto-deploy (it currently deploys from the public URL, so backend changes need a manual sync), add the Apple keys in the dashboard |
 | O-12 | Database password present in git history | Medium | `backend/.env` was tracked before Phase 0. Rotate the password; optionally rewrite history |
 
 ---
