@@ -61,9 +61,9 @@ The package name comes from the first upload: `com.aximoix.cipherrush`.
 **Graphics** (`mobile/store/assets/`):
 - App icon: `icon-512.png`, 512×512 PNG, opaque. Rendered from `mobile/assets/icon-only.svg`.
 - Feature graphic: `feature-graphic-1024x500.png`.
-- Phone screenshots: `phone-1-welcome.png` and `phone-2-practice.png`, 1080×2160
+- Phone screenshots (24-bit PNG, no alpha, as Play requires): `phone-1-welcome.png` and `phone-2-practice.png`, 1080×2160
   (Play's 2:1 maximum), taken on a Galaxy SM-E135F with the status bar cropped
-  off. That's the 2 Play requires. Better ones to add later: a Cipher puzzle
+  off. That's the 2 Play requires. **Retake `phone-2-practice.png`**: its top edge still shows the old Atbash tab, which Match-3 has replaced. Better ones to add later: a Cipher puzzle
   mid-solve, Rush with a combo, and the leaderboard. Crop new captures the same
   way: `sips -c 2160 1080 --cropOffset 130 0 file.png`.
 
