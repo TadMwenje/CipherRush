@@ -1,5 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { NETWORK_EVENT } from "../api";
+import { isOnline, onNetworkChange } from "./network";
+import { onAppResume } from "./lifecycle";
 
 function readViewport() {
   const vv = window.visualViewport;
@@ -45,24 +47,58 @@ export function useElementSize(ref) {
   return size;
 }
 
-/** "online" | "offline" | "retrying" - drives the connection banner. */
+/**
+ * "online" | "offline" | "retrying" - drives the connection banner.
+ *
+ * Connectivity comes from mobile/network (the OS, in the native app). The API
+ * layer adds "retrying" while a dropped request is being retried, and always
+ * reports how that ended: "ok" or "failed" both clear it, so the banner can't
+ * get stuck on "Reconnecting" once the request has given up.
+ */
 export function useNetworkStatus() {
-  const [status, setStatus] = useState(navigator.onLine === false ? "offline" : "online");
+  const [status, setStatus] = useState(isOnline() ? "online" : "offline");
   useEffect(() => {
-    const online = () => setStatus("online");
-    const offline = () => setStatus("offline");
+    const fromNetwork = (s) => setStatus(s.online ? "online" : "offline");
     const fromApi = (e) => {
       if (e.detail === "retrying") setStatus((s) => (s === "offline" ? s : "retrying"));
-      if (e.detail === "ok") setStatus("online");
+      if (e.detail === "ok" || e.detail === "failed") setStatus(isOnline() ? "online" : "offline");
     };
-    window.addEventListener("online", online);
-    window.addEventListener("offline", offline);
+    fromNetwork({ online: isOnline() });
+    const off = onNetworkChange(fromNetwork);
     window.addEventListener(NETWORK_EVENT, fromApi);
     return () => {
-      window.removeEventListener("online", online);
-      window.removeEventListener("offline", offline);
+      off();
       window.removeEventListener(NETWORK_EVENT, fromApi);
     };
   }, []);
   return status;
+}
+
+/** true while the phone has a connection. Re-renders on change. */
+export function useOnline() {
+  const [online, setOnline] = useState(isOnline);
+  useEffect(() => {
+    setOnline(isOnline());
+    return onNetworkChange((s) => setOnline(s.online));
+  }, []);
+  return online;
+}
+
+/**
+ * Re-run `load` when the connection comes back or the app returns to the
+ * foreground, but only while the screen is mounted - nothing refreshes in the
+ * background, and nothing is fetched while offline.
+ */
+export function useRefetchOnReturn(load) {
+  const loadRef = useRef(load);
+  loadRef.current = load;
+  useEffect(() => {
+    const again = () => isOnline() && loadRef.current();
+    const offNet = onNetworkChange((s) => s.online && again());
+    const offResume = onAppResume(again);
+    return () => {
+      offNet();
+      offResume();
+    };
+  }, []);
 }

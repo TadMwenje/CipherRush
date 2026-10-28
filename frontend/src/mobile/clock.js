@@ -51,11 +51,3 @@ export function isClockSynced() {
 export function clockSkewMs() {
   return offsetMs;
 }
-
-if (typeof window !== "undefined") {
-  // Re-sync when the app comes back to the foreground - the phone may have
-  // slept for hours, crossed timezones, or had its clock changed meanwhile.
-  document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible") syncServerClock();
-  });
-}

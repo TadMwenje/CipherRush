@@ -5,6 +5,7 @@ import { playCorrect, playWrong } from "../sound";
 import { haptic } from "../mobile/haptics";
 import { formatClock } from "../mobile/layout";
 import { monoNow, serverNow, syncServerClock } from "../mobile/clock";
+import { syncDailyReminders, noteDailySolved } from "../notifications";
 import { primeKeyboard } from "../mobile/keyboard";
 import GameHeader from "../components/GameHeader";
 import useGameRewards from "../hooks/useGameRewards";
@@ -63,6 +64,7 @@ function DailyGame() {
     try {
       const res = await api.get("/daily");
       setStatus(res.data);
+      syncDailyReminders(res.data);
       if (res.data.round) setRound({ ...res.data.round, receivedAt: monoNow() });
     } catch (err) {
       setError(errorMessage(err));
@@ -108,6 +110,7 @@ function DailyGame() {
       const res = await api.post(`/daily/rounds/${round.round_id}/submit`, { answer: answerRef.current });
       setResult(res.data);
       if (res.data.correct) {
+        noteDailySolved(res.data.seconds);
         playCorrect();
         haptic("win");
       } else {

@@ -4,7 +4,7 @@
   "private": true,
   "description": "Native iOS and Android shells for CipherRush (Capacitor). Wraps the React app in ../frontend.",
   "scripts": {
-    "build:web": "cd ../frontend && yarn build",
+    "build:web": "node ../frontend/scripts/check-backend-url.js && cd ../frontend && yarn build",
     "sync": "npm run build:web && cap sync",
     "ios": "npm run sync && cap open ios",
     "android": "npm run sync && cap open android",
@@ -13,10 +13,13 @@
   },
   "dependencies": {
     "@capacitor/android": "^8.5.3",
+    "@capacitor/app": "^8.1.2",
     "@capacitor/browser": "^8.0.5",
     "@capacitor/core": "^8.5.3",
     "@capacitor/haptics": "^8.0.2",
     "@capacitor/ios": "^8.5.3",
+    "@capacitor/local-notifications": "^8.3.1",
+    "@capacitor/network": "^8.0.1",
     "@capgo/capacitor-social-login": "^8.7.4"
   },
   "devDependencies": {

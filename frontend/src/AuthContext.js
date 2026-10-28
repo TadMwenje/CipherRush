@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext, useCallback } from "react";
 import api, { SESSION_EXPIRED_EVENT } from "./api";
 import { syncServerClock } from "./mobile/clock";
+import { isOnline, onNetworkChange } from "./mobile/network";
 
 const AuthContext = React.createContext();
 
@@ -12,19 +13,38 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     let cancelled = false;
-    syncServerClock();
+    // true while we couldn't reach the server to ask - re-asked on reconnect.
+    let unknown = false;
+    const check = () => {
+      unknown = false;
+      syncServerClock();
+      return api
+        .get("/auth/me")
+        .then((res) => !cancelled && setUser(res.data.user))
+        .catch((err) => {
+          if (cancelled) return;
+          if (!err.response) unknown = true;
+          setUser(null);
+        })
+        .finally(() => !cancelled && setLoading(false));
+    };
     try {
       localStorage.removeItem("cipherrush_user"); // pre-session-auth leftover
     } catch (e) {
       // storage unavailable - nothing to clean up
     }
-    api
-      .get("/auth/me")
-      .then((res) => !cancelled && setUser(res.data.user))
-      .catch(() => !cancelled && setUser(null))
-      .finally(() => !cancelled && setLoading(false));
+    // Launched with no signal: don't hold the splash waiting for a server we
+    // can't reach. Practice Mode works offline; the session is checked as soon
+    // as the connection is back.
+    if (isOnline()) check();
+    else {
+      unknown = true;
+      setLoading(false);
+    }
+    const off = onNetworkChange((net) => net.online && unknown && check());
     return () => {
       cancelled = true;
+      off();
     };
   }, []);
 

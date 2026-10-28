@@ -4,7 +4,8 @@ import api, { errorMessage } from "../api";
 import { playCorrect, playWrong } from "../sound";
 import { haptic } from "../mobile/haptics";
 import { formatClock, shiftAfterDrag } from "../mobile/layout";
-import { monoNow } from "../mobile/clock";
+import { monoNow, serverNow } from "../mobile/clock";
+import { onAppResume } from "../mobile/lifecycle";
 import { primeKeyboard, claimFocus } from "../mobile/keyboard";
 import GameLevelBar from "../components/GameLevelBar";
 import GameHeader from "../components/GameHeader";
@@ -144,12 +145,14 @@ export function KeyLengthView({ ciphertext, keyLength }) {
 export function useCountdown(round, active, onExpire) {
   const [timeLeft, setTimeLeft] = useState(0);
   const deadline = useRef(null);
+  const serverDeadline = useRef(null);
   const expired = useRef(false);
 
   useEffect(() => {
     if (!round) return;
     const seconds = round.time_left ?? round.time_limit;
     deadline.current = round.receivedAt + seconds * 1000;
+    serverDeadline.current = serverNow() - (monoNow() - round.receivedAt) + seconds * 1000;
     expired.current = false;
     setTimeLeft(seconds);
   }, [round]);
@@ -166,7 +169,17 @@ export function useCountdown(round, active, onExpire) {
     };
     tick();
     const id = setInterval(tick, 250);
-    return () => clearInterval(id);
+    // The monotonic clock may not have ticked while the phone was asleep, but
+    // the server's round did. Re-anchor on the server clock and tick at once,
+    // so a round that ran out in the background ends now instead of hanging.
+    const offResume = onAppResume(() => {
+      deadline.current = monoNow() + (serverDeadline.current - serverNow());
+      tick();
+    });
+    return () => {
+      clearInterval(id);
+      offResume();
+    };
   }, [round, active, onExpire]);
 
   return timeLeft;

@@ -1,5 +1,5 @@
-import React, { useState, useCallback } from "react";
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import React, { useState, useCallback, useEffect } from "react";
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 import "./App.css";
 import { AuthProvider, useAuth } from "./AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -7,6 +7,8 @@ import Layout from "./components/Layout";
 import SplashScreen from "./components/SplashScreen";
 import CipherBackground from "./components/CipherBackground";
 import ConnectionBanner from "./components/ConnectionBanner";
+import ScreenBoundary from "./components/ScreenBoundary";
+import { NOTIFICATION_ROUTE_EVENT, takePendingRoute } from "./notifications";
 import Welcome from "./pages/Welcome";
 import Dashboard from "./pages/Dashboard";
 import Battle from "./pages/Battle";
@@ -20,6 +22,7 @@ import TrueFalseGame from "./games/TrueFalseGame";
 import BinHexGame from "./games/BinHexGame";
 import RushGame from "./games/RushGame";
 import DailyGame from "./games/DailyGame";
+import PracticeGame from "./games/PracticeGame";
 
 const SPLASH_KEY = "cipherrush_splash_seen";
 
@@ -48,12 +51,40 @@ function Backdrop() {
   return <CipherBackground calm={pathname !== "/"} />;
 }
 
+// Tapping a reminder opens the screen it's about.
+function NotificationRouter() {
+  const navigate = useNavigate();
+  useEffect(() => {
+    const go = () => {
+      const route = takePendingRoute();
+      if (route) navigate(route);
+    };
+    go();
+    window.addEventListener(NOTIFICATION_ROUTE_EVENT, go);
+    return () => window.removeEventListener(NOTIFICATION_ROUTE_EVENT, go);
+  }, [navigate]);
+  return null;
+}
+
+// A crash in one screen shows a recoverable error there instead of blanking the
+// app. Keyed by path, so switching tabs always mounts a fresh boundary.
+function Screen({ children, title }) {
+  const { pathname } = useLocation();
+  return (
+    <ScreenBoundary key={pathname} title={title}>
+      {children}
+    </ScreenBoundary>
+  );
+}
+
 function AppRoutes() {
   const { loading } = useAuth();
   if (loading) return <div className="loading" aria-busy="true" />;
   return (
     <Routes>
-      <Route path="/" element={<Welcome />} />
+      <Route path="/" element={<Screen><Welcome /></Screen>} />
+      {/* No account or connection needed: unscored, generated on the phone. */}
+      <Route path="/practice" element={<Screen><PracticeGame /></Screen>} />
       <Route
         element={
           <ProtectedRoute>
@@ -61,10 +92,10 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       >
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/battle" element={<Battle />} />
-        <Route path="/leaderboard" element={<Leaderboard />} />
-        <Route path="/profile" element={<Profile />} />
+        <Route path="/dashboard" element={<Screen><Dashboard /></Screen>} />
+        <Route path="/battle" element={<Screen title="Versus didn't load"><Battle /></Screen>} />
+        <Route path="/leaderboard" element={<Screen title="Ranks didn't load"><Leaderboard /></Screen>} />
+        <Route path="/profile" element={<Screen title="Profile didn't load"><Profile /></Screen>} />
       </Route>
       {GAME_ROUTES.map(([path, Game]) => (
         <Route
@@ -72,7 +103,9 @@ function AppRoutes() {
           path={path}
           element={
             <ProtectedRoute>
-              <Game />
+              <Screen>
+                <Game />
+              </Screen>
             </ProtectedRoute>
           }
         />
@@ -102,6 +135,7 @@ function App() {
         <ConnectionBanner />
         <BrowserRouter>
           <Backdrop />
+          <NotificationRouter />
           {/* Routes mount only after the splash, so no game clock starts underneath it. */}
           {!showSplash && <AppRoutes />}
         </BrowserRouter>

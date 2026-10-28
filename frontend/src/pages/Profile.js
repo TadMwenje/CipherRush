@@ -19,9 +19,11 @@ function Profile() {
     async function load() {
       try {
         const response = await api.get("/me/profile");
-        if (!cancelled) setProfile(response.data);
+        const p = response.data;
+        if (typeof p?.username !== "string") throw new Error("Unexpected /me/profile response");
+        if (!cancelled) setProfile({ ...p, achievements: p.achievements || [], game_history: p.game_history || [] });
       } catch (err) {
-        if (!cancelled) setError("Couldn't load your profile.");
+        if (!cancelled) setError(err.response ? "Couldn't load your profile." : "Couldn't load your profile. Check your signal.");
       }
     }
     load();
@@ -56,7 +58,7 @@ function Profile() {
               <div className="stat-label">Level</div>
             </div>
             <div className="stat-card">
-              <div className="stat-number">{profile.total_score.toLocaleString()}</div>
+              <div className="stat-number">{Number(profile.total_score || 0).toLocaleString()}</div>
               <div className="stat-label">Score</div>
             </div>
             <div className="stat-card">

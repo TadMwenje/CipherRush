@@ -7,13 +7,19 @@ function getContext() {
   if (typeof window === "undefined") return null;
   const AudioCtx = window.AudioContext || window.webkitAudioContext;
   if (!AudioCtx) return null;
-  if (!ctx) {
+  if (!ctx || ctx.state === "closed") {
     ctx = new AudioCtx();
   }
-  if (ctx.state === "suspended") {
+  // iOS parks the context as "interrupted" after a call or app switch.
+  if (ctx.state === "suspended" || ctx.state === "interrupted") {
     ctx.resume().catch(() => {});
   }
   return ctx;
+}
+
+/** Release the audio hardware while the app is in the background. */
+export function suspendAudio() {
+  if (ctx && ctx.state === "running") ctx.suspend().catch(() => {});
 }
 
 function tone(freq, startOffset, duration, { type = "sine", gain = 0.15 } = {}) {

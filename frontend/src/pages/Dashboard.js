@@ -1,11 +1,15 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Help, Flame, CheckOct } from "../glyphs";
+import { Help, Flame, CheckOct, SignalOff } from "../glyphs";
 import api from "../api";
 import { useAuth } from "../AuthContext";
 import { GAME_MODES, DAILY_MODE } from "../constants/gameModes";
 import HowToPlayModal from "../components/HowToPlayModal";
 import { haptic } from "../mobile/haptics";
+import { isOnline } from "../mobile/network";
+import { useOnline, useRefetchOnReturn } from "../mobile/hooks";
+import { syncDailyReminders } from "../notifications";
+import { ReminderPrompt } from "../components/Reminders";
 
 const VARIANT_LABEL = { caesar: "Caesar", atbash: "Atbash", vigenere: "Vigenère" };
 
@@ -38,15 +42,26 @@ function Dashboard() {
   const [stats, setStats] = useState(null);
   const [daily, setDaily] = useState(null);
   const [showHowTo, setShowHowTo] = useState(false);
+  const online = useOnline();
 
-  useEffect(() => {
+  const load = useCallback(() => {
     let cancelled = false;
     api.get("/me/dashboard").then((res) => !cancelled && setStats(res.data)).catch(() => {});
-    api.get("/daily").then((res) => !cancelled && setDaily(res.data)).catch(() => {});
+    api
+      .get("/daily")
+      .then((res) => {
+        if (cancelled) return;
+        setDaily(res.data);
+        syncDailyReminders(res.data);
+      })
+      .catch(() => {});
     return () => {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => (isOnline() ? load() : undefined), [load]);
+  useRefetchOnReturn(load);
 
   const s = stats || user;
   const percent = stats?.level_percent ?? 0;
@@ -94,7 +109,7 @@ function Dashboard() {
         </div>
         <div className="progress-xp">
           {stats && stats.xp_for_next_level > 0
-            ? `${stats.xp_into_level.toLocaleString()} / ${stats.xp_for_next_level.toLocaleString()} XP to level ${(s.level ?? 1) + 1}`
+            ? `${Number(stats.xp_into_level || 0).toLocaleString()} / ${stats.xp_for_next_level.toLocaleString()} XP to level ${(s.level ?? 1) + 1}`
             : stats
               ? "Max level. Respect."
               : " "}
@@ -102,6 +117,15 @@ function Dashboard() {
       </div>
 
       <DailyCard daily={daily} onOpen={() => go(DAILY_MODE.path)} />
+      <ReminderPrompt />
+      {!online && (
+        <button className="practice-card" onClick={() => go("/practice")}>
+          <SignalOff size={20} />
+          <span>
+            <strong>You're offline.</strong> Scored games need a connection. Practice Mode works without one.
+          </span>
+        </button>
+      )}
 
       <div className="game-modes-header">
         <h2>Pick a game</h2>
@@ -122,6 +146,11 @@ function Dashboard() {
           </button>
         ))}
       </div>
+      {online && (
+        <button className="practice-link" onClick={() => go("/practice")}>
+          Practice Mode: unscored Caesar, Atbash and True/False that work offline
+        </button>
+      )}
       {showHowTo && <HowToPlayModal onClose={() => setShowHowTo(false)} />}
     </div>
   );

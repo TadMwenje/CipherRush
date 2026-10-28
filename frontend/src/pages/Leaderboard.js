@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Medal, Badge, Bolt, Calendar } from "../glyphs";
+import { Medal, Badge, Bolt, Calendar, SignalOff, Rotate } from "../glyphs";
 import api from "../api";
 import { useAuth } from "../AuthContext";
 import { haptic } from "../mobile/haptics";
+import { isOnline } from "../mobile/network";
+import { useOnline, useRefetchOnReturn } from "../mobile/hooks";
 
 const MEDAL_CLASSES = ["gold", "silver", "bronze"];
 
@@ -37,12 +39,12 @@ function RankCell({ rank }) {
 function entryMeta(board, entry) {
   if (board === "rush") return `${entry.runs} run${entry.runs === 1 ? "" : "s"}`;
   if (board === "daily") return `+${entry.score} pts`;
-  return `Level ${entry.level} · ${entry.games_played} games`;
+  return `Level ${entry.level ?? 1} · ${entry.games_played ?? 0} games`;
 }
 
 function entryValue(board, entry) {
   if (board === "daily") return formatSeconds(entry.seconds);
-  return (board === "rush" ? entry.best_score : entry.score).toLocaleString();
+  return Number((board === "rush" ? entry.best_score : entry.score) || 0).toLocaleString();
 }
 
 function Leaderboard() {
@@ -51,24 +53,38 @@ function Leaderboard() {
   const board = BOARDS[searchParams.get("board")] ? searchParams.get("board") : "overall";
   const [entries, setEntries] = useState(null);
   const [error, setError] = useState("");
+  const online = useOnline();
 
   const setBoard = (key) => {
     haptic("select");
     setSearchParams(key === "overall" ? {} : { board: key }, { replace: true });
   };
 
-  useEffect(() => {
-    let cancelled = false;
-    setEntries(null);
-    setError("");
-    api
-      .get(BOARDS[board].path)
-      .then((res) => !cancelled && setEntries(res.data.leaderboard))
-      .catch(() => !cancelled && setError("Couldn't load the board."));
-    return () => {
-      cancelled = true;
-    };
-  }, [board]);
+  // Live service: fetched when a board opens and when the player returns to
+  // it. No polling, and nothing at all while offline.
+  const load = useCallback(
+    (fresh = true) => {
+      let cancelled = false;
+      if (fresh) setEntries(null);
+      setError("");
+      api
+        .get(BOARDS[board].path)
+        .then((res) => {
+          if (cancelled) return;
+          const list = res.data?.leaderboard;
+          if (Array.isArray(list)) setEntries(list);
+          else setError("Couldn't load the board.");
+        })
+        .catch(() => !cancelled && setError("Couldn't load the board."));
+      return () => {
+        cancelled = true;
+      };
+    },
+    [board]
+  );
+
+  useEffect(() => (isOnline() ? load() : undefined), [load]);
+  useRefetchOnReturn(() => load(false));
 
   return (
     <div className="page-screen leaderboard-page">
@@ -91,8 +107,21 @@ function Leaderboard() {
         ))}
       </div>
 
-      {error && <p className="error">{error}</p>}
-      {!entries && !error && <div className="loading-inline">Loading ranks</div>}
+      {!online && !entries && (
+        <div className="empty-state offline-state">
+          <SignalOff size={22} />
+          <div>Ranks are live, so they need a connection. They'll load when you're back online.</div>
+        </div>
+      )}
+      {online && error && (
+        <div className="empty-state offline-state">
+          <div>{error}</div>
+          <button className="btn-secondary" onClick={() => load()}>
+            <Rotate size={16} /> Try again
+          </button>
+        </div>
+      )}
+      {online && !entries && !error && <div className="loading-inline">Loading ranks</div>}
       {entries && entries.length === 0 && (
         <div className="empty-state">Empty. First one on here gets bragging rights.</div>
       )}

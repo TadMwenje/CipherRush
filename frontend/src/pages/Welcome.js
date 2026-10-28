@@ -5,12 +5,14 @@ import CipherMark from "../brand/CipherMark";
 import HowToPlayModal from "../components/HowToPlayModal";
 import { LegalLinks } from "../components/LegalLinks";
 import { useAuth } from "../AuthContext";
+import { useOnline } from "../mobile/hooks";
 
 function Welcome() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showHowTo, setShowHowTo] = useState(false);
   const { user, login, loading } = useAuth();
   const navigate = useNavigate();
+  const online = useOnline();
 
   const handleLogin = (userData) => {
     login(userData);
@@ -43,6 +45,9 @@ function Welcome() {
           </button>
           <button className="btn-secondary" onClick={() => setShowHowTo(true)}>
             How it works
+          </button>
+          <button className="practice-link" onClick={() => navigate("/practice")}>
+            {online ? "Practice without an account" : "No signal? Practice offline"}
           </button>
         </div>
 

@@ -23,6 +23,7 @@ from content import (
     BINHEX_FORMATS,
     CIPHER_PHRASES,
     GAME_SYMBOLS,
+    PRACTICE_TF_INDICES,
     QUIZ_CATEGORY_LABELS,
     QUIZ_QUESTIONS,
     RUSH_WORDS,
@@ -306,7 +307,9 @@ class TrueFalseAnswer(StrictModel):
 
 def _balanced_statements(max_difficulty: int) -> List[int]:
     """Half true, half false, so 'always tap True' can't carry a round."""
-    pool = [i for i, s in enumerate(TRUE_FALSE_STATEMENTS) if s["difficulty"] <= max_difficulty]
+    # Practice-only statements ship in the app with their answers, so they stay out of scored rounds.
+    pool = [i for i, s in enumerate(TRUE_FALSE_STATEMENTS)
+            if s["difficulty"] <= max_difficulty and i not in PRACTICE_TF_INDICES]
     trues = [i for i in pool if TRUE_FALSE_STATEMENTS[i]["answer"]]
     falses = [i for i in pool if not TRUE_FALSE_STATEMENTS[i]["answer"]]
     half = eco.TF_ROUND_SIZE // 2

@@ -1,0 +1,267 @@
+{
+ "phrases": [
+  "A HASH CANNOT BE TURNED BACK INTO TEXT",
+  "A LONG PASSPHRASE BEATS A SHORT PASSWORD",
+  "A SIGNATURE PROVES WHO SENT THE FILE",
+  "AL KINDI DESCRIBED FREQUENCY ANALYSIS",
+  "ASSUME THE ATTACKER KNOWS YOUR SYSTEM",
+  "ATTACK AT DAWN FROM THE NORTH GATE",
+  "ATTACKERS LOVE DEFAULT PASSWORDS",
+  "BACK UP YOUR FILES",
+  "BIOMETRICS",
+  "BOTNET",
+  "BURN AFTER READING",
+  "CAESAR SHIFT",
+  "CERTIFICATE",
+  "DEFENSE IN DEPTH MEANS MANY LAYERS",
+  "DENY THE PUSH",
+  "DO NOT PAY THE RANSOM WITHOUT ADVICE",
+  "DONT CLICK THAT LINK",
+  "DUMPSTER DIVE",
+  "EVERY ALERT DESERVES A SECOND LOOK",
+  "EYES ONLY",
+  "FREQUENCY ANALYSIS BREAKS SIMPLE SUBSTITUTION",
+  "GAME ACCOUNTS ARE WORTH STEALING TOO",
+  "ISOLATE THE MACHINE BEFORE YOU WIPE IT",
+  "KEY EXCHANGE",
+  "KEYLOGGER",
+  "LEAST PRIVILEGE LIMITS THE DAMAGE",
+  "LOG OUT OF SHARED COMPUTERS",
+  "MALWARE",
+  "MEET ME AT MIDNIGHT",
+  "MFA FATIGUE IS REAL",
+  "MIRROR THE ALPHABET",
+  "NAVAJO CODE TALKERS SERVED IN WORLD WAR TWO",
+  "NEVER ROLL YOUR OWN CRYPTO",
+  "ONE TIME PAD",
+  "PEN TEST",
+  "PHISHING EMAILS OFTEN FAKE A DEADLINE",
+  "PRACTICE THE INCIDENT BEFORE IT HAPPENS",
+  "RANSOMWARE",
+  "READ THE FULL URL",
+  "RED TEAM",
+  "REPORT SUSPICIOUS EMAILS",
+  "ROOTKIT",
+  "ROT THIRTEEN",
+  "SALT MAKES IDENTICAL PASSWORDS LOOK DIFFERENT",
+  "SANDBOX",
+  "SECURITY IS A HABIT NOT A PRODUCT",
+  "SECURITY KEYS STOP FAKE LOGIN PAGES",
+  "SEGMENT THE NETWORK",
+  "SESSION TOKEN",
+  "SLOW DOWN AND VERIFY",
+  "THE ATTACKER ONLY NEEDS ONE WAY IN",
+  "THE BEST TIME TO PATCH WAS YESTERDAY",
+  "THE CALLER ID LIES",
+  "THE EAGLE HAS LANDED",
+  "THE FREE SKIN COSTS YOU YOUR ACCOUNT",
+  "THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG",
+  "THREAT HUNT",
+  "TRUST BUT VERIFY",
+  "USE A PASSWORD MANAGER",
+  "WATCH FOR TYPOS",
+  "YOUR BANK WILL NEVER ASK FOR YOUR PIN"
+ ],
+ "statements": [
+  {
+   "statement": "\"password123\" is a secure password.",
+   "answer": false,
+   "explanation": "It is among the most common leaked passwords and is cracked instantly."
+  },
+  {
+   "statement": "Locking your screen protects your device when you step away briefly.",
+   "answer": true,
+   "explanation": "Locking prevents opportunistic access to an unattended device."
+  },
+  {
+   "statement": "Firewalls only protect against physical theft of a device.",
+   "answer": false,
+   "explanation": "Firewalls filter network traffic, not physical access."
+  },
+  {
+   "statement": "Two-factor codes sent by SMS are better than no second factor at all.",
+   "answer": true,
+   "explanation": "SMS is the weakest MFA option, but still far better than a password alone."
+  },
+  {
+   "statement": "Adding a salt to password hashes defeats precomputed rainbow tables.",
+   "answer": true,
+   "explanation": "A unique salt per password makes precomputed tables useless."
+  },
+  {
+   "statement": "Phishing can arrive by text message, phone call and QR code, not just email.",
+   "answer": true,
+   "explanation": "Smishing, vishing and quishing are all common variants."
+  },
+  {
+   "statement": "Hexadecimal 0x41 and decimal 65 represent the same value.",
+   "answer": true,
+   "explanation": "4 x 16 + 1 = 65."
+  },
+  {
+   "statement": "Ransomware attackers always return your files after you pay.",
+   "answer": false,
+   "explanation": "Payment guarantees nothing and funds further attacks."
+  },
+  {
+   "statement": "Cross-site scripting (XSS) lets attackers run their scripts in other users' browsers.",
+   "answer": true,
+   "explanation": "Escaping output and a Content Security Policy help prevent it."
+  },
+  {
+   "statement": "Rate limiting helps slow down brute-force login attacks.",
+   "answer": true,
+   "explanation": "Capping attempts per time window makes guessing impractical."
+  },
+  {
+   "statement": "Keeping old, unused accounts open has no security impact.",
+   "answer": false,
+   "explanation": "Forgotten accounts with old passwords are easy takeover targets. Close them."
+  },
+  {
+   "statement": "Having antivirus means any attachment is safe to open.",
+   "answer": false,
+   "explanation": "No scanner catches everything, especially brand-new malware."
+  },
+  {
+   "statement": "Banks often text you a link asking you to confirm your PIN.",
+   "answer": false,
+   "explanation": "No bank asks for your PIN. That text is a scam."
+  },
+  {
+   "statement": "Covering the keypad when you type your PIN is a good habit.",
+   "answer": true,
+   "explanation": "It beats shoulder surfers and hidden cameras."
+  },
+  {
+   "statement": "Pirated software is a common source of malware.",
+   "answer": true,
+   "explanation": "Cracks and keygens are easy places to hide a payload."
+  },
+  {
+   "statement": "Security questions should always be answered truthfully.",
+   "answer": false,
+   "explanation": "Use random answers and store them in your password manager."
+  },
+  {
+   "statement": "Decimal 256 fits in a single byte.",
+   "answer": false,
+   "explanation": "A byte holds 0 to 255."
+  },
+  {
+   "statement": "An 'evil twin' is a fake Wi-Fi hotspot copying a real one.",
+   "answer": true,
+   "explanation": "Connect to it and the attacker sits in the middle of your traffic."
+  },
+  {
+   "statement": "Modern Office blocks macros by default in files downloaded from the internet.",
+   "answer": true,
+   "explanation": "Microsoft made this the default in 2022."
+  },
+  {
+   "statement": "A stolen session cookie can sometimes get around MFA.",
+   "answer": true,
+   "explanation": "It proves you already logged in, MFA included."
+  },
+  {
+   "statement": "Adding '1!' to the end of a word makes a strong password.",
+   "answer": false,
+   "explanation": "Cracking tools try that pattern first."
+  },
+  {
+   "statement": "A certificate warning means the site is definitely malicious.",
+   "answer": false,
+   "explanation": "It might be a misconfiguration, but you can't tell, so don't continue."
+  },
+  {
+   "statement": "Air-gapped computers are connected to the internet.",
+   "answer": false,
+   "explanation": "Air-gapped means physically cut off from other networks."
+  },
+  {
+   "statement": "Smart speakers can never be a privacy risk.",
+   "answer": false,
+   "explanation": "Always-on microphones and cloud accounts both carry risk."
+  },
+  {
+   "statement": "An app's permissions should match what the app actually does.",
+   "answer": true,
+   "explanation": "A torch app doesn't need your contacts."
+  },
+  {
+   "statement": "Writing a password in hex makes it safe to store.",
+   "answer": false,
+   "explanation": "Hex is just another way of writing the same bytes."
+  },
+  {
+   "statement": "Your public key should be kept secret.",
+   "answer": false,
+   "explanation": "That's the private key. The public key is meant to be shared."
+  },
+  {
+   "statement": "Phishing pages can be hosted on trusted services like Google Docs or SharePoint.",
+   "answer": true,
+   "explanation": "Trusted domains help them slip past filters."
+  },
+  {
+   "statement": "Vigenere was broken with techniques like Kasiski examination.",
+   "answer": true,
+   "explanation": "Repeated fragments in the ciphertext reveal the key length."
+  },
+  {
+   "statement": "HSTS tells browsers to connect to a site over HTTPS only.",
+   "answer": true,
+   "explanation": "It stops downgrade-to-HTTP tricks."
+  },
+  {
+   "statement": "Lateral movement means an attacker spreading from one machine to others.",
+   "answer": true,
+   "explanation": "The first foothold is rarely the real target."
+  },
+  {
+   "statement": "EDR tools only scan files and never watch behaviour.",
+   "answer": false,
+   "explanation": "Watching behaviour is the whole point of EDR."
+  },
+  {
+   "statement": "Passkeys rely on public-key cryptography.",
+   "answer": true,
+   "explanation": "The private key never leaves your device."
+  },
+  {
+   "statement": "Post-quantum cryptography aims to resist future quantum computers.",
+   "answer": true,
+   "explanation": "NIST published its first post-quantum standards in 2024."
+  },
+  {
+   "statement": "CVSS scores rate vulnerability severity from 0 to 10.",
+   "answer": true,
+   "explanation": "10 is critical. The score is a guide, not the whole story."
+  },
+  {
+   "statement": "Zero trust means devices on the office network are trusted automatically.",
+   "answer": false,
+   "explanation": "Zero trust means nothing is trusted automatically."
+  },
+  {
+   "statement": "Threat hunting means waiting for alerts before investigating.",
+   "answer": false,
+   "explanation": "Hunters go looking without waiting for an alert."
+  },
+  {
+   "statement": "A false positive is a real attack the system failed to detect.",
+   "answer": false,
+   "explanation": "That's a false negative. A false positive is a harmless event flagged as bad."
+  },
+  {
+   "statement": "Tabletop exercises let teams rehearse incident decisions without a live attack.",
+   "answer": true,
+   "explanation": "Cheap practice for an expensive day."
+  },
+  {
+   "statement": "Patching should be prioritised by whether a flaw is being actively exploited.",
+   "answer": true,
+   "explanation": "Exploited, exposed flaws are the ones that bite first."
+  }
+ ]
+}

@@ -4,6 +4,7 @@ import { useAuth } from "../AuthContext";
 import { LegalLinks, ExternalLink } from "./LegalLinks";
 import { LEGAL_URLS } from "../legal";
 import { haptic } from "../mobile/haptics";
+import { ReminderSettings } from "./Reminders";
 
 const PROVIDER_LABEL = { google: "Google", apple: "Apple" };
 
@@ -139,6 +140,8 @@ function AccountSettings() {
           {account.email && <span className="account-email">{account.email}</span>}
         </div>
       )}
+
+      <ReminderSettings />
 
       <div className="account-row">
         <span className="account-label">Legal</span>
