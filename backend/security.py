@@ -10,6 +10,11 @@ def hash_password(password: str) -> str:
     return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt(rounds=BCRYPT_ROUNDS)).decode("utf-8")
 
 
+def has_password(user) -> bool:
+    """False for Google / Apple-only accounts, whose hash is a "!" placeholder."""
+    return bool(user["password_hash"]) and not user["password_hash"].startswith("!")
+
+
 def verify_password(password: str, password_hash: str) -> bool:
     try:
         return bcrypt.checkpw(password.encode("utf-8"), password_hash.encode("utf-8"))

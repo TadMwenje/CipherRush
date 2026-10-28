@@ -248,3 +248,78 @@ def _async_record(calls):
         calls.append((token, client_id))
         return True
     return fn
+
+
+# --- linking a handle and password to a Google / Apple account ----------------------
+
+from tests.conftest import latest_code, latest_email, random_handle  # noqa: E402
+
+LINKED_PASSWORD = "Linked1234abc"
+
+
+def google_account(client):
+    token, claims = google_token()
+    res = sign_in(client, "google", {"id_token": token})
+    assert res.status_code == 200, res.text
+    return claims["email"]
+
+
+def link(client, username, password=LINKED_PASSWORD):
+    return client.post("/api/me/link-credentials", json={"username": username, "password": password}, headers=CSRF)
+
+
+def test_google_account_links_a_handle_and_password_then_confirms_its_email(client):
+    email = google_account(client)
+    handle = random_handle("g_")
+    res = link(client, handle)
+    assert res.status_code == 200, res.text
+    assert res.json()["verification_sent"] is True
+    assert res.json()["user"]["username"] == handle and res.json()["user"]["is_verified"] is False
+
+    details = client.get("/api/me/account").json()
+    assert details["has_password"] is True and details["providers"] == ["google"]
+    assert latest_email(email).subject.startswith("Your CipherRush code")
+
+    res = client.post("/api/me/verify-email", json={"code": latest_code(email)}, headers=CSRF)
+    assert res.status_code == 200 and res.json()["user"]["is_verified"] is True
+
+    client.cookies.clear()
+    login = client.post("/api/auth/login", json={"username": handle, "password": LINKED_PASSWORD}, headers=CSRF)
+    assert login.status_code == 200, login.text
+
+
+def test_linked_account_can_reset_its_password_by_handle(client):
+    email = google_account(client)
+    handle = random_handle("g_")
+    assert link(client, handle).status_code == 200
+    client.cookies.clear()
+    client.post("/api/auth/forgot-password", json={"identifier": handle}, headers=CSRF)
+    assert latest_email(email).subject == "Reset your CipherRush password"
+
+
+def test_link_is_refused_once_a_password_exists(client):
+    google_account(client)
+    assert link(client, random_handle("g_")).status_code == 200
+    res = link(client, random_handle("g_"), "Another999zz")
+    assert res.status_code == 400 and "already has a password" in res.json()["detail"]
+
+
+def test_link_enforces_the_handle_filter_password_rules_and_uniqueness(client, player):
+    google_account(client)
+    assert link(client, "n1gg3r_x").status_code == 400
+    assert link(client, random_handle("g_"), "weak").status_code == 400
+    assert link(client, player.username).status_code == 409
+    # Nothing was saved by the failed attempts.
+    assert client.get("/api/me/account").json()["has_password"] is False
+
+
+def test_link_keeps_placeholder_email_accounts_verified_and_sends_nothing(client):
+    token, claims = apple_token()
+    claims_email = claims["email"]
+    sign_in(client, "apple", {"identity_token": token})
+    placeholder = f"apple-{uuid.uuid4().hex}@users.cipherrush.invalid"
+    _created_emails.append(placeholder)  # so the module cleanup still finds it
+    db_query("UPDATE users SET email = $1 WHERE email = $2", placeholder, claims_email)
+    res = link(client, random_handle("a_"))
+    assert res.status_code == 200, res.text
+    assert res.json()["verification_sent"] is False and res.json()["user"]["is_verified"] is True

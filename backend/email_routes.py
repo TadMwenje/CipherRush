@@ -23,13 +23,12 @@ from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, ConfigDict, Field
 
 import mailer
-from account_routes import has_password
 from auth import _secret, clear_session, get_current_user, public_user
 from db import get_pool
 from mail_templates import password_reset_email, verification_email
 from moderation import ValidationError, normalize_email, normalize_username, validate_password
 from ratelimit import limiter
-from security import hash_password
+from security import has_password, hash_password
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api")

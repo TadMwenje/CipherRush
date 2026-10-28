@@ -142,6 +142,87 @@ function PasswordChange() {
   );
 }
 
+/**
+ * For Google / Apple accounts: add a handle and password so the account can
+ * also log in with them. The server then emails a code to confirm the address.
+ */
+function LinkPassword({ currentHandle, onLinked }) {
+  const [form, setForm] = useState({ handle: currentHandle, password: "", confirm: "" });
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState("");
+
+  const set = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.value }));
+  const handleIssue = handleProblem(form.handle);
+  const problem =
+    handleIssue ||
+    (form.password && !strongEnough(form.password)
+      ? "8+ characters with upper and lower case and a number."
+      : form.confirm && form.confirm !== form.password
+        ? "The passwords don't match."
+        : "");
+  const ready = !handleIssue && strongEnough(form.password) && form.password === form.confirm && !busy;
+
+  const save = async (e) => {
+    e.preventDefault();
+    if (!ready) return;
+    setBusy(true);
+    setMessage("");
+    try {
+      const { data } = await api.post("/me/link-credentials", { username: form.handle.trim(), password: form.password });
+      haptic("success");
+      onLinked(data.user, data.verification_sent);
+    } catch (err) {
+      setMessage(errorMessage(err, "Couldn't save that. Try again."));
+      setBusy(false);
+    }
+  };
+
+  return (
+    <form className="account-row" onSubmit={save}>
+      <span className="account-label">Add a handle and password</span>
+      <span className="account-note">
+        Log in with these on any device, as well as with your current sign-in. We'll email you a code to confirm
+        your address.
+      </span>
+      <input
+        className="answer-input"
+        placeholder="Handle"
+        aria-label="Handle"
+        autoComplete="username"
+        autoCapitalize="none"
+        autoCorrect="off"
+        spellCheck={false}
+        maxLength={20}
+        value={form.handle}
+        onChange={set("handle")}
+      />
+      <input
+        className="answer-input"
+        type="password"
+        placeholder="Password"
+        aria-label="Password"
+        autoComplete="new-password"
+        value={form.password}
+        onChange={set("password")}
+      />
+      <input
+        className="answer-input"
+        type="password"
+        placeholder="Repeat password"
+        aria-label="Repeat password"
+        autoComplete="new-password"
+        value={form.confirm}
+        onChange={set("confirm")}
+      />
+      {problem && <p className="account-message invalid">{problem}</p>}
+      <button type="submit" className="submit-btn" disabled={!ready}>
+        {busy ? "Saving" : "Save handle and password"}
+      </button>
+      {message && <p className="account-message invalid">{message}</p>}
+    </form>
+  );
+}
+
 /** Profile → Account: handle, sign-in methods, legal links, log out, delete. */
 function AccountSettings() {
   const { logout, updateUser, clearSession } = useAuth();
@@ -224,6 +305,17 @@ function AccountSettings() {
       <VerifyEmailCard />
 
       {account?.has_password && <PasswordChange />}
+      {account && !account.has_password && (
+        <LinkPassword
+          currentHandle={account.username}
+          onLinked={(linked, sent) => {
+            updateUser({ username: linked.username, is_verified: linked.is_verified });
+            setAccount((a) => ({ ...a, username: linked.username, has_password: true }));
+            setHandle(linked.username);
+            setMessage(sent ? "Saved. Check your email for the code." : "Saved. You can now log in with your handle.");
+          }}
+        />
+      )}
 
       <ReminderSettings />
 

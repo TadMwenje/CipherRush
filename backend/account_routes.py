@@ -5,15 +5,17 @@ import secrets
 from typing import Literal, Optional
 
 import asyncpg
-from fastapi import APIRouter, Depends, HTTPException, Request, Response
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, Response
 from pydantic import BaseModel, ConfigDict, Field
 
+import mailer
 import oauth
 from auth import clear_session, get_current_user, issue_session, public_user
 from db import get_pool
+from email_routes import can_receive_mail, new_verification
 from moderation import ValidationError, validate_password, validate_username
 from ratelimit import limiter
-from security import hash_password, verify_password
+from security import has_password, hash_password, verify_password
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api")
@@ -50,12 +52,13 @@ class PasswordChange(StrictModel):
     new_password: str = Field(max_length=128)
 
 
+class LinkCredentials(StrictModel):
+    username: str = Field(max_length=50)
+    password: str = Field(max_length=128)
+
+
 class DeleteAccount(StrictModel):
     confirm: Literal["DELETE"]
-
-
-def has_password(user) -> bool:
-    return bool(user["password_hash"]) and not user["password_hash"].startswith("!")
 
 
 # --- usernames for new external accounts ---------------------------------------
@@ -223,6 +226,43 @@ async def change_password(request: Request, response: Response, body: PasswordCh
             await issue_session(conn, response, updated["id"], updated["session_version"])
     logger.info("Password changed: %s", user["id"])
     return {"changed": True}
+
+
+@router.post("/me/link-credentials")
+@limiter.limit("5/minute")
+async def link_credentials(request: Request, background: BackgroundTasks, body: LinkCredentials,
+                           user=Depends(get_current_user)):
+    """Give a Google / Apple account a handle and password, so it can also log in
+    with them on any device. The account's email then has to be confirmed with a
+    code, since it becomes the address password resets go to."""
+    if has_password(user):
+        raise HTTPException(status_code=400, detail="This account already has a password. Change it below instead.")
+    try:
+        username = validate_username(body.username)
+        validate_password(body.password)
+    except ValidationError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    mailable = can_receive_mail(user)
+    mail = None
+    pool = await get_pool()
+    async with pool.acquire() as conn:
+        async with conn.transaction():
+            try:
+                updated = await conn.fetchrow(
+                    """UPDATE users SET username = $2, password_hash = $3,
+                       is_verified = CASE WHEN $4 THEN false ELSE is_verified END
+                       WHERE id = $1 RETURNING *""",
+                    user["id"], username, hash_password(body.password), mailable,
+                )
+            except asyncpg.UniqueViolationError:
+                raise HTTPException(status_code=409, detail="That handle's taken. Try another.")
+            if mailable:
+                await conn.execute("INSERT INTO email_sends (user_id, kind) VALUES ($1, 'verify')", user["id"])
+                mail = await new_verification(conn, updated)
+    if mail:
+        background.add_task(mailer.send, mail)
+    logger.info("Password linked to account %s", user["id"])
+    return {"user": public_user(updated), "verification_sent": mail is not None}
 
 
 @router.get("/me/account")
