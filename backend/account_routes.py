@@ -11,8 +11,9 @@ from pydantic import BaseModel, ConfigDict, Field
 import oauth
 from auth import clear_session, get_current_user, issue_session, public_user
 from db import get_pool
-from moderation import ValidationError, validate_username
+from moderation import ValidationError, validate_password, validate_username
 from ratelimit import limiter
+from security import hash_password, verify_password
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api")
@@ -42,6 +43,11 @@ class AppleSignIn(StrictModel):
 
 class UsernameChange(StrictModel):
     username: str = Field(max_length=50)
+
+
+class PasswordChange(StrictModel):
+    current_password: str = Field(max_length=128)
+    new_password: str = Field(max_length=128)
 
 
 class DeleteAccount(StrictModel):
@@ -185,6 +191,36 @@ async def change_username(request: Request, body: UsernameChange, user=Depends(g
         except asyncpg.UniqueViolationError:
             raise HTTPException(status_code=409, detail="That handle's taken. Try another.")
     return {"user": public_user(updated)}
+
+
+@router.post("/me/password")
+@limiter.limit("5/minute")
+async def change_password(request: Request, response: Response, body: PasswordChange,
+                          user=Depends(get_current_user)):
+    """Change the password, given the current one. Every other device is signed
+    out (session_version bump); this one gets a fresh session."""
+    if not has_password(user):
+        raise HTTPException(status_code=400, detail="This account signs in with Google or Apple, so it has no password to change.")
+    if not verify_password(body.current_password, user["password_hash"]):
+        raise HTTPException(status_code=400, detail="That's not your current password.")
+    if body.new_password == body.current_password:
+        raise HTTPException(status_code=400, detail="Pick a password you haven't been using.")
+    try:
+        validate_password(body.new_password)
+    except ValidationError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    pool = await get_pool()
+    async with pool.acquire() as conn:
+        async with conn.transaction():
+            updated = await conn.fetchrow(
+                """UPDATE users SET password_hash = $2, session_version = session_version + 1
+                   WHERE id = $1 RETURNING id, session_version""",
+                user["id"], hash_password(body.new_password),
+            )
+            await conn.execute("DELETE FROM refresh_tokens WHERE user_id = $1", user["id"])
+            await issue_session(conn, response, updated["id"], updated["session_version"])
+    logger.info("Password changed: %s", user["id"])
+    return {"changed": True}
 
 
 @router.get("/me/account")

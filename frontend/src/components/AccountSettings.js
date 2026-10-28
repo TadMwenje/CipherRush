@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import api, { errorMessage } from "../api";
 import { useAuth } from "../AuthContext";
-import { LegalLinks, ExternalLink } from "./LegalLinks";
+import { LegalLinks, ExternalLink, DataNotice } from "./LegalLinks";
+import { handleProblem } from "../moderation/handle";
 import { LEGAL_URLS } from "../legal";
 import { haptic } from "../mobile/haptics";
 import { ReminderSettings } from "./Reminders";
@@ -67,6 +68,79 @@ function DeleteAccountDialog({ onClose, onDeleted }) {
   );
 }
 
+const strongEnough = (pw) => pw.length >= 8 && /[a-z]/.test(pw) && /[A-Z]/.test(pw) && /\d/.test(pw);
+
+/** Change password - for accounts that have one (not Google / Apple only). */
+function PasswordChange() {
+  const [form, setForm] = useState({ current: "", next: "", confirm: "" });
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState("");
+
+  const set = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.value }));
+  const problem =
+    form.next && !strongEnough(form.next)
+      ? "8+ characters with upper and lower case and a number."
+      : form.confirm && form.confirm !== form.next
+        ? "The new passwords don't match."
+        : "";
+  const ready = form.current && strongEnough(form.next) && form.next === form.confirm && !busy;
+
+  const save = async (e) => {
+    e.preventDefault();
+    if (!ready) return;
+    setBusy(true);
+    setMessage("");
+    try {
+      await api.post("/me/password", { current_password: form.current, new_password: form.next });
+      setForm({ current: "", next: "", confirm: "" });
+      setMessage("Password changed. Other devices have been signed out.");
+      haptic("success");
+    } catch (err) {
+      setMessage(errorMessage(err, "Couldn't change the password. Try again."));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <form className="account-row" onSubmit={save}>
+      <span className="account-label">Change password</span>
+      <input
+        className="answer-input"
+        type="password"
+        placeholder="Current password"
+        aria-label="Current password"
+        autoComplete="current-password"
+        value={form.current}
+        onChange={set("current")}
+      />
+      <input
+        className="answer-input"
+        type="password"
+        placeholder="New password"
+        aria-label="New password"
+        autoComplete="new-password"
+        value={form.next}
+        onChange={set("next")}
+      />
+      <input
+        className="answer-input"
+        type="password"
+        placeholder="Repeat new password"
+        aria-label="Repeat new password"
+        autoComplete="new-password"
+        value={form.confirm}
+        onChange={set("confirm")}
+      />
+      {problem && <p className="account-message invalid">{problem}</p>}
+      <button type="submit" className="submit-btn" disabled={!ready}>
+        {busy ? "Saving" : "Change password"}
+      </button>
+      {message && <p className="account-message">{message}</p>}
+    </form>
+  );
+}
+
 /** Profile → Account: handle, sign-in methods, legal links, log out, delete. */
 function AccountSettings() {
   const { logout, updateUser, clearSession } = useAuth();
@@ -86,8 +160,12 @@ function AccountSettings() {
       .catch(() => {});
   }, []);
 
+  const changed = account && handle.trim() !== account.username;
+  const problem = changed ? handleProblem(handle) : "";
+
   const saveHandle = async (e) => {
     e.preventDefault();
+    if (problem) return;
     setSaving(true);
     setMessage("");
     try {
@@ -125,10 +203,11 @@ function AccountSettings() {
               spellCheck={false}
               maxLength={20}
             />
-            <button type="submit" className="submit-btn" disabled={saving || handle.trim() === account.username}>
+            <button type="submit" className="submit-btn" disabled={saving || !changed || !!problem}>
               Save
             </button>
           </div>
+          {problem && <p className="account-message invalid">{problem}</p>}
           {message && <p className="account-message">{message}</p>}
         </form>
       )}
@@ -141,7 +220,14 @@ function AccountSettings() {
         </div>
       )}
 
+      {account?.has_password && <PasswordChange />}
+
       <ReminderSettings />
+
+      <div className="account-row">
+        <span className="account-label">Your data</span>
+        <DataNotice />
+      </div>
 
       <div className="account-row">
         <span className="account-label">Legal</span>

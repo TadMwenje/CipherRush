@@ -2,9 +2,9 @@ import React, { useState, useMemo } from "react";
 import { Check, Close, Eye, EyeOff, Key, Mail, Terminal, User } from "../glyphs";
 import api from "../api";
 import SocialButtons from "./SocialButtons";
-import { LegalConsent } from "./LegalLinks";
+import { LegalConsent, DataNotice } from "./LegalLinks";
+import { handleProblem } from "../moderation/handle";
 
-const USERNAME_PATTERN = /^[a-zA-Z0-9_]{3,20}$/;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function getPasswordChecks(password) {
@@ -27,7 +27,8 @@ function AuthModal({ isOpen, onClose, onLogin }) {
   const passwordScore = Object.values(passwordChecks).filter(Boolean).length;
   const passwordValid = passwordScore === 3;
 
-  const usernameValid = USERNAME_PATTERN.test(formData.username);
+  const usernameProblem = handleProblem(formData.username);
+  const usernameValid = !usernameProblem;
   const emailValid = EMAIL_PATTERN.test(formData.email);
 
   const canSubmit = isLogin
@@ -116,8 +117,8 @@ function AuthModal({ isOpen, onClose, onLogin }) {
                 required
               />
             </div>
-            {!isLogin && touched.username && !usernameValid && (
-              <div className="auth-field-hint invalid">3–20 characters. Letters, numbers, underscores.</div>
+            {!isLogin && (touched.username || formData.username.length >= 3) && !usernameValid && (
+              <div className="auth-field-hint invalid">{usernameProblem}</div>
             )}
           </div>
 
@@ -200,6 +201,7 @@ function AuthModal({ isOpen, onClose, onLogin }) {
           </button>
         </form>
 
+        {!isLogin && <DataNotice />}
         <LegalConsent />
 
         <p className="auth-switch">
