@@ -4263,3 +4263,66 @@ html.app-paused *::after {
   color: #fca5a5;
   margin-top: 1px;
 }
+
+/* ==========================================================================
+   Badge sharing
+   ========================================================================== */
+
+.achievement-share-btn {
+  min-height: 36px;
+  margin-top: 0.5rem;
+  padding: 0 0.9rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 213, 74, 0.5);
+  background: rgba(255, 213, 74, 0.1);
+  color: #ffd54a;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.achievement-toast .achievement-share-btn {
+  flex-shrink: 0;
+  margin: 0 0 0 auto;
+}
+
+.share-dialog {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  text-align: center;
+}
+
+.share-dialog-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  color: #ffd54a;
+  font-weight: 700;
+}
+
+.share-targets {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+}
+
+.share-targets .btn-secondary {
+  min-height: var(--tap, 48px);
+  padding: 0.6rem;
+  font-size: 0.95rem;
+}
+
+.share-targets .btn-secondary:last-child {
+  grid-column: 1 / -1;
+}
+
+.account-message.invalid {
+  color: #fca5a5;
+}
+
+.data-notice {
+  margin: 0;
+}

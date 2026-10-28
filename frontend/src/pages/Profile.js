@@ -3,6 +3,7 @@ import { Badge, Circuit } from "../glyphs";
 import api from "../api";
 import { getGameMode } from "../constants/gameModes";
 import AccountSettings from "../components/AccountSettings";
+import ShareBadgeDialog from "../components/ShareBadge";
 
 function formatDate(isoString) {
   if (!isoString) return "";
@@ -13,6 +14,7 @@ function formatDate(isoString) {
 function Profile() {
   const [profile, setProfile] = useState(null);
   const [error, setError] = useState("");
+  const [sharing, setSharing] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -84,6 +86,9 @@ function Profile() {
                     </div>
                     <div className="achievement-name">{a.badge_name}</div>
                     <div className="achievement-desc">{a.description}</div>
+                    <button type="button" className="achievement-share-btn" onClick={() => setSharing(a.badge_name)}>
+                      Share
+                    </button>
                   </div>
                 ))}
               </div>
@@ -120,6 +125,7 @@ function Profile() {
           </section>
 
           <AccountSettings />
+          {sharing && <ShareBadgeDialog badge={sharing} onClose={() => setSharing(null)} />}
         </>
       )}
     </div>

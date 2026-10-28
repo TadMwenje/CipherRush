@@ -38,4 +38,15 @@ export function LegalConsent() {
   );
 }
 
+/** What an account sends and why - shown at sign-up and in Profile → Account. */
+export function DataNotice() {
+  return (
+    <p className="legal-consent data-notice">
+      Your handle, email and game results are sent over an encrypted connection to CipherRush's server
+      (api.aximoix.com) to run your account and the leaderboards. Your IP address is used for security and rate
+      limits. No ads, no trackers.
+    </p>
+  );
+}
+
 export { ExternalLink };
