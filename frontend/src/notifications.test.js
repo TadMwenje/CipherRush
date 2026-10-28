@@ -129,3 +129,44 @@ describe("consent", () => {
     expect(ln.cancelled).toEqual(expect.arrayContaining([2001, 3001]));
   });
 });
+
+describe("Android scheduling", () => {
+  test("no reminder asks for an exact alarm (that opens the Alarms & reminders settings page)", () => {
+    const now = new Date(2026, 9, 28, 13, 0);
+    const plan = planReminders(now, { daily: { resets_at: "2026-10-29T00:00:00Z", played: false }, includeComeback: true });
+    expect(plan.length).toBeGreaterThan(0);
+    plan.forEach((n) => expect(n.isExactNotification).toBe(false));
+  });
+
+  test("overlapping re-arms run one at a time, never interleaving cancel and schedule", async () => {
+    const ln = fakePlugin({ display: "granted" });
+    localStorage.setItem("cipherrush_notifications", "on");
+    let inFlight = 0;
+    let maxInFlight = 0;
+    const slow = (fn) => jest.fn(async (arg) => {
+      inFlight += 1;
+      maxInFlight = Math.max(maxInFlight, inFlight);
+      await new Promise((r) => setTimeout(r, 5));
+      inFlight -= 1;
+      return fn(arg);
+    });
+    ln.schedule = slow(({ notifications }) => ln.scheduled.push(...notifications));
+    ln.cancel = slow(({ notifications }) => ln.cancelled.push(...notifications.map((n) => n.id)));
+
+    await Promise.all([syncDailyReminders(null), syncDailyReminders(null), syncDailyReminders(null)]);
+    expect(maxInFlight).toBe(1);
+    // Same plan within the same minute: the OS is only asked once.
+    expect(ln.schedule).toHaveBeenCalledTimes(1);
+    const ids = ln.scheduled.map((n) => n.id);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  test("turning reminders back on after turning them off schedules again", async () => {
+    const ln = fakePlugin({ display: "granted" });
+    await enableNotifications();
+    await disableNotifications();
+    ln.schedule.mockClear();
+    await enableNotifications();
+    expect(ln.schedule).toHaveBeenCalledTimes(1);
+  });
+});

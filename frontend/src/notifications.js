@@ -14,6 +14,15 @@
  *
  * Revoking permission in the OS settings is respected on the next resume:
  * every pending reminder is cancelled, and the settings row says it's blocked.
+ *
+ * Android: reminders are inexact (isExactNotification: false). Asking for
+ * exact alarms without SCHEDULE_EXACT_ALARM makes the plugin open the
+ * "Alarms & reminders" settings page on every schedule call, and since we
+ * re-arm on every pause and resume, that page reopened every time the player
+ * came back to the app. A reminder a few minutes late doesn't matter.
+ *
+ * Every OS call goes through one queue, so pause, resume and /daily refreshes
+ * can't interleave their cancel/schedule pairs and leave duplicate alarms.
  */
 import { onAppPause, onAppResume } from "./mobile/lifecycle";
 
@@ -28,7 +37,8 @@ const ID = {
   dailyOpen: 3001,
   dailyDone: 3002,
 };
-const ALL_IDS = [ID.comeback24, ID.comeback48, ...ID.newDaily, ID.dailyOpen, ID.dailyDone];
+const PLANNED_IDS = [ID.comeback24, ID.comeback48, ...ID.newDaily, ID.dailyOpen];
+const ALL_IDS = [...PLANNED_IDS, ID.dailyDone];
 
 const HOUR = 60 * 60 * 1000;
 export const QUIET_START = 22; // local hour
@@ -107,6 +117,7 @@ function note(id, at, title, body, route) {
     title,
     body,
     schedule: { at, allowWhileIdle: true },
+    isExactNotification: false,
     extra: { route },
     ...(platform() === "android" ? { channelId: CHANNEL } : {}),
   };
@@ -154,12 +165,23 @@ async function schedule(notifications) {
   const ln = plugin();
   if (!ln || notifications.length === 0) return;
   try {
-    await cancel(notifications.map((n) => n.id));
     await ln.schedule({ notifications });
   } catch (e) {
     // scheduling failed (permission revoked mid-call) - next resume retries
   }
 }
+
+// One OS operation at a time, in call order. A failed step doesn't block the next.
+let queue = Promise.resolve();
+function serially(task) {
+  const run = queue.then(task, task);
+  queue = run.catch(() => {});
+  return run;
+}
+
+// What the OS was last given for the planned reminders, to skip identical re-arms.
+let armed = "";
+const signature = (plan) => plan.map((n) => `${n.id}@${Math.floor(n.schedule.at.getTime() / 60000)}`).join(",");
 
 async function allowed() {
   return notificationPreference() === "on" && (await permissionState()) === "granted";
@@ -168,24 +190,35 @@ async function allowed() {
 let lastDaily = null;
 
 /** Re-arm the daily reminders. Call whenever fresh /daily status arrives. */
-export async function syncDailyReminders(daily) {
+export function syncDailyReminders(daily) {
   if (daily) lastDaily = daily;
-  if (!(await allowed())) return;
-  if (lastDaily?.played) await cancel([ID.dailyOpen]);
-  // Come-back nudges are re-armed from "now" every time the app is used, so
-  // they still exist if iOS suspends us before the pause handler finishes.
-  await schedule(planReminders(new Date(), { daily: lastDaily, includeComeback: true }));
+  return serially(async () => {
+    if (!(await allowed())) return;
+    // Come-back nudges are re-armed from "now" every time the app is used, so
+    // they still exist if iOS suspends us before the pause handler finishes.
+    const plan = planReminders(new Date(), { daily: lastDaily, includeComeback: true });
+    const sig = signature(plan);
+    if (sig === armed) return;
+    // Replace the whole planned set, so a reminder that dropped out of the plan
+    // (today's daily got played) goes too.
+    await cancel(PLANNED_IDS);
+    await schedule(plan);
+    armed = sig;
+  });
 }
 
 /** After a Daily Cipher solve: nudge them to check the board once others have played. */
 export async function noteDailySolved(seconds) {
   if (lastDaily) lastDaily = { ...lastDaily, played: true };
-  if (!(await allowed())) return;
-  await cancel([ID.dailyOpen]);
-  const at = politeTime(new Date(Date.now() + 2 * HOUR));
-  await schedule([note(ID.dailyDone, at, "Check your rank",
-    `You cracked today's cipher in ${formatSolveTime(seconds)}. See where that put you on Today's board.`,
-    "/leaderboard?board=daily")]);
+  await serially(async () => {
+    if (!(await allowed())) return;
+    await cancel([ID.dailyOpen, ID.dailyDone]);
+    armed = "";
+    const at = politeTime(new Date(Date.now() + 2 * HOUR));
+    await schedule([note(ID.dailyDone, at, "Check your rank",
+      `You cracked today's cipher in ${formatSolveTime(seconds)}. See where that put you on Today's board.`,
+      "/leaderboard?board=daily")]);
+  });
 }
 
 /** Ask the OS (this shows the system prompt the first time). Returns the permission state. */
@@ -210,7 +243,12 @@ export async function enableNotifications() {
 
 export async function disableNotifications() {
   savePreference("off");
+  await serially(() => cancelEverything());
+}
+
+async function cancelEverything() {
   await cancel(ALL_IDS);
+  armed = "";
 }
 
 /** "Not now" on the opt-in card: remember the answer, don't ask again. */
@@ -238,12 +276,17 @@ export function installNotifications() {
   }
 
   try {
-    ln.addListener("localNotificationActionPerformed", ({ notification }) => {
-      const route = notification?.extra?.route;
-      if (!route) return;
+    ln.addListener("localNotificationActionPerformed", (event) => {
+      const route = event?.notification?.extra?.route;
+      // Only our own in-app paths; anything else just opens the app where it was.
+      if (typeof route !== "string" || !route.startsWith("/")) return;
       // On a cold start the router may not be listening yet; it picks this up on mount.
       pendingRoute = route;
-      window.dispatchEvent(new CustomEvent(NOTIFICATION_ROUTE_EVENT, { detail: route }));
+      try {
+        window.dispatchEvent(new CustomEvent(NOTIFICATION_ROUTE_EVENT, { detail: route }));
+      } catch (e) {
+        // the router collects pendingRoute on mount instead
+      }
     });
   } catch (e) {
     // listener unavailable - tapping still opens the app
@@ -253,7 +296,8 @@ export function installNotifications() {
   onAppPause(() => syncDailyReminders(null));
   onAppResume(async () => {
     // Permission revoked in the OS settings while we were away: clear everything.
-    if (notificationPreference() === "on" && (await permissionState()) !== "granted") await cancel(ALL_IDS);
-    else syncDailyReminders(null);
+    if (notificationPreference() === "on" && (await permissionState()) !== "granted") {
+      await serially(() => cancelEverything());
+    } else syncDailyReminders(null);
   });
 }
