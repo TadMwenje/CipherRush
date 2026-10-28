@@ -104,3 +104,23 @@ def test_refuses_to_take_over_a_real_player(player):
     with pytest.raises(SystemExit):
         run_provision(player.username, "x@example.com", pra.generate_password())
     assert not db_query("SELECT is_review_account FROM users WHERE id = $1::uuid", player.id)[0]["is_review_account"]
+
+
+def test_credentials_file_is_owner_only_and_must_be_gitignored(tmp_path):
+    text = pra.credentials_text("https://api.example.test", [("PLAY", "play_review", "p@example.com", "Secret123abc")])
+    assert "play-review" not in text and "p@example.com / play_review" in text and "Secret123abc" in text
+
+    target = ROOT / "mobile" / "store" / "REVIEWER_CREDENTIALS.txt"
+    existed = target.exists()
+    if not existed:
+        pra.write_credentials(target, text)
+        try:
+            assert target.stat().st_mode & 0o777 == 0o600
+            assert target.read_text() == text
+        finally:
+            target.unlink()
+
+    tracked = ROOT / "mobile" / "store" / "not-ignored.txt"
+    with pytest.raises(SystemExit):
+        pra.write_credentials(tracked, text)
+    assert not tracked.exists()

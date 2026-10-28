@@ -36,6 +36,8 @@ dist
 .env.local
 *token.json*
 *credentials.json*
+# Store review account passwords (backend/scripts/provision_review_account.py)
+REVIEWER_CREDENTIALS.txt
 
 # Logs and debug files
 npm-debug.log*

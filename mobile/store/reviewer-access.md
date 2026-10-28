@@ -39,26 +39,36 @@ email host.
 
 ## Provisioning (run it yourself)
 
-1. Deploy the current backend first (Render → Manual sync). The startup schema
-   adds the `is_review_account` column.
+1. The backend with `is_review_account` is deployed (`c92d32d`, 2026-10-28).
 2. Copy the **External Database URL** from Render → `cipherrush-db` → Connect.
-3. Run the script in a terminal. Don't save the URL in a file.
+3. Run one command. It has no prompts. It creates (or resets) both accounts,
+   checks each one can log in to the live API, then writes the passwords to
+   `mobile/store/REVIEWER_CREDENTIALS.txt`:
 
 ```sh
-cd backend
-read -rs DATABASE_URL && export DATABASE_URL   # paste the URL, press Enter
-.venv/bin/python scripts/provision_review_account.py --username play_review --email play-review@aximoix.com
-.venv/bin/python scripts/provision_review_account.py --username appstore_review --email appstore-review@aximoix.com
+cd ~/Developer/CipherRush/backend
+read -rs DATABASE_URL && export DATABASE_URL   # paste the URL, press Enter (hidden)
+.venv/bin/python scripts/provision_review_account.py --yes \
+    --verify-api https://api.aximoix.com \
+    --credentials-file ../mobile/store/REVIEWER_CREDENTIALS.txt
 unset DATABASE_URL
 ```
 
-The script asks you to type the database host to confirm. It prints a new
-20-character password, which it never saves. Paste it into the store form,
-then clear the terminal (`clear` and Cmd-K).
+`REVIEWER_CREDENTIALS.txt` is gitignored and readable only by you (mode 600).
+The script refuses to write to any path git would track. If a login check
+fails, nothing is written. Running it again rotates both passwords and signs
+out existing sessions; use `--store play` or `--store appstore` to rotate just
+one.
 
-**To rotate a password,** run the same command again. It sets a new password
-and signs out every existing session for that account. Rotate after each
-review cycle, or if a password might have leaked. Then update the store form.
+4. Copy each account into its store form:
+   - Play Console → App content → **App access** → "All or some functionality
+     is restricted" → add instructions: username `play_review`, its password,
+     and the review notes below.
+   - App Store Connect → the app version → **App Review Information** →
+     Sign-in required: username `appstore_review`, its password, and the notes
+     below.
+5. Once both are entered, delete the file or move it into your password
+   manager. The stores keep their own copy.
 
 ## Instructions to paste into the store's review notes
 
