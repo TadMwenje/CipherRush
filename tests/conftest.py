@@ -13,6 +13,8 @@ sys.path.insert(0, str(BACKEND))
 
 from fastapi.testclient import TestClient  # noqa: E402
 
+os.environ["MAIL_BACKEND"] = "memory"  # emails land in mailer.outbox, never on the network
+import mailer  # noqa: E402
 import server  # noqa: E402  (loads backend/.env)
 from auth import REFRESH_COOKIE, SESSION_COOKIE  # noqa: E402
 from ratelimit import limiter  # noqa: E402
@@ -46,12 +48,27 @@ def backdate_round(round_id, seconds):
     )
 
 
+def random_handle(prefix):
+    # Random hex can spell blocked words once digits read as letters (1515 -> isis),
+    # so test handles use letters no blocklist term is made of.
+    return prefix + "".join(secrets.choice("qxzjvwy2") for _ in range(10))
+
+
+def latest_email(to):
+    return next(m for m in reversed(mailer.outbox) if m.to == to)
+
+
+def latest_code(to):
+    """The 6-digit code from the newest verification email to this address."""
+    return latest_email(to).subject.rsplit(" ", 1)[-1]
+
+
 class Player:
     """A registered user plus their session cookie, sharing one TestClient."""
 
-    def __init__(self, client):
+    def __init__(self, client, verified=True):
         self.client = client
-        self.username = f"t_{secrets.token_hex(5)}"
+        self.username = random_handle("t_")
         _created_usernames.append(self.username)
         res = client.post(
             "/api/auth/register",
@@ -62,6 +79,10 @@ class Player:
         self.id = res.json()["user"]["id"]
         self._capture(res)
         assert self.token and self.refresh_token
+        self.email = f"{self.username}@example.com"
+        if verified:
+            res = self.post("/api/me/verify-email", json={"code": latest_code(self.email)})
+            assert res.status_code == 200, res.text
 
     def _capture(self, res):
         self.token = res.cookies.get(SESSION_COOKIE) or getattr(self, "token", None)
@@ -100,4 +121,4 @@ def player(client):
 
 @pytest.fixture
 def make_player(client):
-    return lambda: Player(client)
+    return lambda verified=True: Player(client, verified)

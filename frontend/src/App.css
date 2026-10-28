@@ -4326,3 +4326,59 @@ html.app-paused *::after {
 .data-notice {
   margin: 0;
 }
+
+/* ==========================================================================
+   Email verification and password reset
+   ========================================================================== */
+
+.verify-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+  padding: 0.9rem;
+  border-radius: 14px;
+  background: rgba(0, 212, 255, 0.07);
+  border: 1px solid rgba(0, 212, 255, 0.35);
+}
+
+.verify-card-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #00d4ff;
+  font-weight: 700;
+}
+
+.verify-card .answer-actions .answer-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.verify-code-input {
+  letter-spacing: 0.3em;
+  font-family: Menlo, Consolas, monospace;
+}
+
+.text-link-btn {
+  align-self: flex-start;
+  min-height: 40px;
+  padding: 0;
+  background: none;
+  border: none;
+  color: #00d4ff;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.text-link-btn:disabled {
+  opacity: 0.5;
+}
+
+.auth-forgot-link {
+  display: block;
+  margin: 0.5rem auto 0;
+}

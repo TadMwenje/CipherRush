@@ -199,7 +199,7 @@ async def daily_leaderboard():
     async with pool.acquire() as conn:
         rows = await conn.fetch(
             """SELECT u.username, d.seconds, d.score FROM daily_attempts d JOIN users u ON u.id = d.user_id
-               WHERE d.day = $1 AND d.solved AND NOT u.is_review_account ORDER BY d.seconds ASC, d.score DESC LIMIT 10""",
+               WHERE d.day = $1 AND d.solved AND NOT u.is_review_account AND u.is_verified ORDER BY d.seconds ASC, d.score DESC LIMIT 10""",
             day,
         )
     return {"day": day.isoformat(), "leaderboard": [

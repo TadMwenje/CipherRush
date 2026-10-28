@@ -187,4 +187,5 @@ def public_user(user) -> dict:
         "total_score": user["total_score"],
         "puzzles_completed": user["puzzles_completed"],
         "badges": user["badges"],
+        "is_verified": user["is_verified"],
     }

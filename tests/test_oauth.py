@@ -206,7 +206,7 @@ def test_account_details(client):
     token, claims = google_token()
     sign_in(client, "google", {"id_token": token})
     details = client.get("/api/me/account").json()
-    assert details == {"username": details["username"], "email": claims["email"], "has_password": False,
+    assert details == {"username": details["username"], "email": claims["email"], "has_password": False, "is_verified": True,
                        "providers": ["google"]}
 
 

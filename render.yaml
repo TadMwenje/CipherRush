@@ -61,3 +61,15 @@ services:
         sync: false
       - key: APPLE_PRIVATE_KEY
         sync: false
+      # Verification and password-reset email (backend/mailer.py). ZeptoMail's HTTPS
+      # API, because Render's free plan blocks outbound SMTP. The send token is
+      # entered in the Render dashboard, never committed.
+      - key: ZEPTOMAIL_API_KEY
+        sync: false
+      - key: MAIL_FROM_ADDRESS
+        value: support@aximoix.com
+      - key: MAIL_FROM_NAME
+        value: CipherRush Security
+      # Where the email links point (the reset and confirm pages are served by the API).
+      - key: PUBLIC_BASE_URL
+        value: https://api.aximoix.com

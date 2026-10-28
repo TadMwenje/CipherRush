@@ -236,11 +236,11 @@ async def _evaluate_common_achievements(conn, user_id: uuid.UUID) -> List[str]:
     if distinct_games and distinct_games >= len(GAME_TYPES):
         if await award_achievement(conn, user_id, "security_sentinel"):
             awarded.append("security_sentinel")
-    # Review accounts are unranked (NULL), and never push a real player down.
+    # Review and unverified accounts are unranked (NULL), and never push a real player down.
     rank = await conn.fetchval(
-        """SELECT CASE WHEN me.is_review_account THEN NULL ELSE
+        """SELECT CASE WHEN me.is_review_account OR NOT me.is_verified THEN NULL ELSE
                   (SELECT count(*) + 1 FROM users o
-                    WHERE NOT o.is_review_account AND o.total_score > me.total_score) END
+                    WHERE NOT o.is_review_account AND o.is_verified AND o.total_score > me.total_score) END
            FROM users me WHERE me.id = $1""",
         user_id,
     )

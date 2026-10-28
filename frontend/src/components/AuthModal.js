@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { Check, Close, Eye, EyeOff, Key, Mail, Terminal, User } from "../glyphs";
-import api from "../api";
+import api, { errorMessage } from "../api";
 import SocialButtons from "./SocialButtons";
 import { LegalConsent, DataNotice } from "./LegalLinks";
 import { handleProblem } from "../moderation/handle";
@@ -15,6 +15,79 @@ function getPasswordChecks(password) {
   };
 }
 
+/** Handle or email in; always the same answer back, whether or not an account exists. */
+function ForgotPassword({ onBack }) {
+  const [identifier, setIdentifier] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [sent, setSent] = useState("");
+  const [error, setError] = useState("");
+
+  const submit = async (e) => {
+    e.preventDefault();
+    if (identifier.trim().length < 3) return;
+    setBusy(true);
+    setError("");
+    try {
+      const { data } = await api.post("/auth/forgot-password", { identifier: identifier.trim() });
+      setSent(data.message);
+    } catch (err) {
+      setError(errorMessage(err, "Couldn't send that. Try again."));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <>
+      <div className="auth-modal-header">
+        <div className="auth-modal-icon">
+          <Key size={24} />
+        </div>
+        <h2>Reset password</h2>
+        <p className="auth-modal-subtitle">Enter your handle or email. We'll email a link to the account's address.</p>
+      </div>
+      {error && (
+        <p className="auth-message auth-message-top" role="alert">
+          {error}
+        </p>
+      )}
+      {sent ? (
+        <p className="auth-message success" role="status">
+          {sent} It works for 15 minutes. Check your spam folder too.
+        </p>
+      ) : (
+        <form onSubmit={submit} noValidate>
+          <div className="auth-field">
+            <label htmlFor="auth-forgot">Handle or email</label>
+            <div className="auth-input-wrap">
+              <User size={17} className="auth-input-icon" aria-hidden="true" />
+              <input
+                id="auth-forgot"
+                type="text"
+                placeholder="your_handle"
+                value={identifier}
+                onChange={(e) => setIdentifier(e.target.value)}
+                autoComplete="username"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
+              />
+            </div>
+          </div>
+          <button type="submit" className="auth-submit-btn" disabled={busy || identifier.trim().length < 3}>
+            {busy ? "Sending" : "Email me a link"}
+          </button>
+        </form>
+      )}
+      <p className="auth-switch">
+        <button type="button" onClick={onBack}>
+          Back to log in
+        </button>
+      </p>
+    </>
+  );
+}
+
 function AuthModal({ isOpen, onClose, onLogin }) {
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({ username: "", password: "", email: "" });
@@ -22,6 +95,7 @@ function AuthModal({ isOpen, onClose, onLogin }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [touched, setTouched] = useState({});
+  const [forgot, setForgot] = useState(false);
 
   const passwordChecks = useMemo(() => getPasswordChecks(formData.password), [formData.password]);
   const passwordScore = Object.values(passwordChecks).filter(Boolean).length;
@@ -69,6 +143,16 @@ function AuthModal({ isOpen, onClose, onLogin }) {
   };
 
   if (!isOpen) return null;
+
+  if (forgot) {
+    return (
+      <div className="modal-overlay" onClick={onClose}>
+        <div className="auth-modal" onClick={(e) => e.stopPropagation()}>
+          <ForgotPassword onBack={() => setForgot(false)} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -199,6 +283,11 @@ function AuthModal({ isOpen, onClose, onLogin }) {
           <button type="submit" className="auth-submit-btn" disabled={loading || !canSubmit}>
             {loading ? (isLogin ? "Logging in" : "Creating account") : isLogin ? "Log in" : "Create account"}
           </button>
+          {isLogin && (
+            <button type="button" className="text-link-btn auth-forgot-link" onClick={() => setForgot(true)}>
+              Forgot password?
+            </button>
+          )}
         </form>
 
         {!isLogin && <DataNotice />}

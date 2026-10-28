@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / ".env")
 
-from fastapi import APIRouter, Depends, FastAPI, HTTPException, Request, Response  # noqa: E402
+from fastapi import APIRouter, BackgroundTasks, Depends, FastAPI, HTTPException, Request, Response  # noqa: E402
 from fastapi.exceptions import RequestValidationError  # noqa: E402
 from fastapi.responses import JSONResponse  # noqa: E402
 from pydantic import BaseModel, EmailStr, Field, field_validator  # noqa: E402
@@ -28,6 +28,8 @@ from auth import (  # noqa: E402
 )
 from account_routes import router as account_router  # noqa: E402
 from daily_routes import router as daily_router  # noqa: E402
+from email_routes import new_verification, router as email_router  # noqa: E402
+import mailer  # noqa: E402
 from db import close_pool, get_pool, run_migrations  # noqa: E402
 from game_routes import router as game_router  # noqa: E402
 from leveling import xp_progress  # noqa: E402
@@ -98,7 +100,7 @@ _public_user = public_user
 
 @api_router.post("/auth/register")
 @limiter.limit("5/minute")
-async def register_user(request: Request, response: Response, user_data: UserCreate):
+async def register_user(request: Request, response: Response, background: BackgroundTasks, user_data: UserCreate):
     pool = await get_pool()
     async with pool.acquire() as conn:
         try:
@@ -113,8 +115,11 @@ async def register_user(request: Request, response: Response, user_data: UserCre
             if "email" in constraint:
                 raise HTTPException(status_code=409, detail="That email already has an account. Log in instead.")
             raise HTTPException(status_code=409, detail="An account with those details already exists.")
-        # Signing up logs you straight in.
+        # Signing up logs you straight in; the address is confirmed with the emailed code.
+        await conn.execute("INSERT INTO email_sends (user_id, kind) VALUES ($1, 'verify')", user["id"])
+        mail = await new_verification(conn, user)
         await issue_session(conn, response, user["id"], user["session_version"])
+    background.add_task(mailer.send, mail)
     return {"message": "Account created", "user": _public_user(user)}
 
 
@@ -237,7 +242,7 @@ async def battle_queue(user=Depends(get_current_user)):
     async with pool.acquire() as conn:
         rows = await conn.fetch(
             """SELECT username, level, total_score FROM users
-               WHERE id != $1 AND NOT is_review_account
+               WHERE id != $1 AND NOT is_review_account AND is_verified
                ORDER BY total_score DESC LIMIT 5""",
             user["id"],
         )
@@ -263,7 +268,7 @@ async def get_leaderboard():
                    ON gs.user_id = u.id
             LEFT JOIN (SELECT user_id, count(*) AS achievements_count FROM achievements GROUP BY user_id) ac
                    ON ac.user_id = u.id
-            WHERE NOT u.is_review_account
+            WHERE NOT u.is_review_account AND u.is_verified
             ORDER BY u.total_score DESC
             LIMIT 10
             """
@@ -293,7 +298,7 @@ async def get_rush_leaderboard():
             """
             SELECT u.username, max(gs.score) AS best, count(*) AS runs
             FROM game_sessions gs JOIN users u ON u.id = gs.user_id
-            WHERE gs.game_type = 'rush' AND NOT u.is_review_account
+            WHERE gs.game_type = 'rush' AND NOT u.is_review_account AND u.is_verified
             GROUP BY u.username
             ORDER BY best DESC
             LIMIT 10
@@ -311,6 +316,7 @@ app.include_router(api_router)
 app.include_router(game_router)
 app.include_router(daily_router)
 app.include_router(account_router)
+app.include_router(email_router)
 
 # --- MIDDLEWARE ---
 

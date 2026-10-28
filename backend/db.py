@@ -49,6 +49,14 @@ DATA_MIGRATIONS = [
          WHERE 'Binary Boss' = ANY(badges);
         """,
     ),
+    (
+        "2026_10_existing_accounts_verified",
+        """
+        -- Email verification arrived after these accounts were made; keep them on
+        -- the leaderboards rather than dropping every existing player at once.
+        UPDATE users SET is_verified = true;
+        """,
+    ),
 ]
 
 

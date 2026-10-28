@@ -10,6 +10,7 @@ import { isOnline } from "../mobile/network";
 import { useOnline, useRefetchOnReturn } from "../mobile/hooks";
 import { syncDailyReminders } from "../notifications";
 import { ReminderPrompt } from "../components/Reminders";
+import VerifyEmailCard from "../components/VerifyEmail";
 
 const VARIANT_LABEL = { caesar: "Caesar", atbash: "Atbash", vigenere: "Vigenère" };
 
@@ -79,6 +80,8 @@ function Dashboard() {
         </div>
         <div className="user-avatar">{(user.username || "??").slice(0, 2).toUpperCase()}</div>
       </div>
+
+      <VerifyEmailCard />
 
       <div className="stats-grid">
         <div className="stat-card">

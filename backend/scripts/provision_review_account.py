@@ -70,7 +70,7 @@ async def provision(conn, username: str, email: str, password: str) -> str:
             user_id = existing["id"]
             # Bumping session_version revokes every session issued with the old password.
             await conn.execute(
-                """UPDATE users SET password_hash = $2, email = $3,
+                """UPDATE users SET password_hash = $2, email = $3, is_verified = true,
                           session_version = session_version + 1 WHERE id = $1""",
                 user_id, password_hash, email,
             )
@@ -78,8 +78,9 @@ async def provision(conn, username: str, email: str, password: str) -> str:
             outcome = "reset"
         else:
             user_id = await conn.fetchval(
-                """INSERT INTO users (username, password_hash, email, is_review_account)
-                   VALUES ($1, $2, $3, true) RETURNING id""",
+                # Verified up front: reviewers can't read these inboxes, and mustn't be asked to.
+                """INSERT INTO users (username, password_hash, email, is_review_account, is_verified)
+                   VALUES ($1, $2, $3, true, true) RETURNING id""",
                 username, password_hash, email,
             )
             outcome = "created"

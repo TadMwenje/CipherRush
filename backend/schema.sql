@@ -133,3 +133,43 @@ CREATE TABLE IF NOT EXISTS user_identities (
 );
 
 CREATE INDEX IF NOT EXISTS idx_user_identities_user ON user_identities (user_id);
+
+-- Email verification. Password sign-ups start unverified and stay off the
+-- leaderboards until they confirm their address; Google / Apple accounts arrive
+-- verified. Accounts that predate this were marked verified once (db.py).
+ALTER TABLE users ADD COLUMN IF NOT EXISTS is_verified BOOLEAN NOT NULL DEFAULT false;
+
+-- One live code per account: a 6-digit code typed in the app, plus a link token
+-- for the email's button. Only hashes are stored. attempts caps code guessing.
+CREATE TABLE IF NOT EXISTS email_otps (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    code_hash TEXT NOT NULL,
+    link_hash TEXT NOT NULL UNIQUE,
+    attempts INTEGER NOT NULL DEFAULT 0,
+    expires_at TIMESTAMPTZ NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_email_otps_user ON email_otps (user_id, created_at DESC);
+
+-- Single-use password reset links. Only the SHA-256 of the token is stored.
+CREATE TABLE IF NOT EXISTS password_resets (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    token_hash TEXT NOT NULL UNIQUE,
+    expires_at TIMESTAMPTZ NOT NULL,
+    used_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_password_resets_user ON password_resets (user_id, created_at DESC);
+
+-- When verification emails went out, to cap how many one account can trigger.
+CREATE TABLE IF NOT EXISTS email_sends (
+    user_id UUID NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    kind VARCHAR(20) NOT NULL,
+    sent_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_email_sends_user ON email_sends (user_id, kind, sent_at DESC);

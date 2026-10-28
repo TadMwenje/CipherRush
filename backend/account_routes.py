@@ -114,7 +114,9 @@ async def _sign_in(response: Response, identity: oauth.Identity, name_hint: Opti
                 username = await _available_username(conn, _username_seed(identity, name_hint))
                 try:
                     user = await conn.fetchrow(
-                        "INSERT INTO users (username, password_hash, email) VALUES ($1, $2, $3) RETURNING *",
+                        # Google and Apple have already verified the address (or there is none).
+                        """INSERT INTO users (username, password_hash, email, is_verified)
+                           VALUES ($1, $2, $3, true) RETURNING *""",
                         username, NO_PASSWORD, email,
                     )
                 except asyncpg.UniqueViolationError:
@@ -235,6 +237,7 @@ async def account_details(user=Depends(get_current_user)):
         "username": user["username"],
         "email": None if email.endswith("@users.cipherrush.invalid") else email,
         "has_password": has_password(user),
+        "is_verified": user["is_verified"],
         "providers": providers,
     }
 

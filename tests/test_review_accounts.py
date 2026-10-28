@@ -16,7 +16,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "backend" / "scripts"))
 
 import provision_review_account as pra  # noqa: E402
-from tests.conftest import CSRF, _created_usernames, db_query  # noqa: E402
+from tests.conftest import CSRF, _created_usernames, db_query, random_handle  # noqa: E402
 from moderation import PASSWORD_PATTERN  # noqa: E402
 import rounds  # noqa: E402
 
@@ -33,7 +33,7 @@ def run_provision(username, email, password):
 
 @pytest.fixture
 def reviewer(client):
-    username = f"rv_{secrets.token_hex(5)}"
+    username = random_handle("rv_")
     _created_usernames.append(username)
     password = pra.generate_password()
     assert run_provision(username, f"{username}@example.com", password) == "created"

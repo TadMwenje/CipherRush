@@ -6,6 +6,7 @@ import { handleProblem } from "../moderation/handle";
 import { LEGAL_URLS } from "../legal";
 import { haptic } from "../mobile/haptics";
 import { ReminderSettings } from "./Reminders";
+import VerifyEmailCard from "./VerifyEmail";
 
 const PROVIDER_LABEL = { google: "Google", apple: "Apple" };
 
@@ -219,6 +220,8 @@ function AccountSettings() {
           {account.email && <span className="account-email">{account.email}</span>}
         </div>
       )}
+
+      <VerifyEmailCard />
 
       {account?.has_password && <PasswordChange />}
 
