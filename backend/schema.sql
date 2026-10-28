@@ -67,6 +67,10 @@ CREATE TABLE IF NOT EXISTS game_progress (
 -- with, so incrementing it revokes all outstanding tokens for the account.
 ALTER TABLE users ADD COLUMN IF NOT EXISTS session_version INTEGER NOT NULL DEFAULT 0;
 
+-- App Store / Play review accounts (scripts/provision_review_account.py). Ordinary
+-- players in every other respect, but never listed or ranked on leaderboards.
+ALTER TABLE users ADD COLUMN IF NOT EXISTS is_review_account BOOLEAN NOT NULL DEFAULT false;
+
 -- Server-authoritative game rounds. `state` holds everything the client must
 -- never see (answer keys, deck order, RNG seeds) plus in-progress play, so a
 -- round is scored only from inputs the server validated itself. completed_at

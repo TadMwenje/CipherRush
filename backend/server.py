@@ -261,6 +261,7 @@ async def get_leaderboard():
                    ON gs.user_id = u.id
             LEFT JOIN (SELECT user_id, count(*) AS achievements_count FROM achievements GROUP BY user_id) ac
                    ON ac.user_id = u.id
+            WHERE NOT u.is_review_account
             ORDER BY u.total_score DESC
             LIMIT 10
             """
@@ -290,7 +291,7 @@ async def get_rush_leaderboard():
             """
             SELECT u.username, max(gs.score) AS best, count(*) AS runs
             FROM game_sessions gs JOIN users u ON u.id = gs.user_id
-            WHERE gs.game_type = 'rush'
+            WHERE gs.game_type = 'rush' AND NOT u.is_review_account
             GROUP BY u.username
             ORDER BY best DESC
             LIMIT 10

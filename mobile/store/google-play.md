@@ -69,7 +69,7 @@ The package name comes from the first upload: `com.aximoix.cipherrush`.
 
 **Ads:** No, the app doesn't contain ads.
 
-**App access:** Most features need an account. Practice Mode is the only part that works signed out. Give reviewers a dedicated review account. Create it on the live app yourself and enter its username and password **only** in this form.
+**App access:** Most features need an account. Practice Mode is the only part that works signed out. Give reviewers the `play_review` account: provision it, then paste the reviewer instructions as described in `mobile/store/reviewer-access.md`. Its password goes **only** in this form.
 
 **Target audience:** 13-15, 16-17 and 18+ (the policy says 13 and older). Don't select under-13 groups. Answer "No" to "unintentionally appealing to children" unless Play's questionnaire suggests otherwise.
 
