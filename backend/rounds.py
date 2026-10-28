@@ -263,6 +263,11 @@ async def complete_round(conn, user_id: uuid.UUID, round_row, score: int,
         # Should be unreachable through legitimate play - log loudly and clamp.
         logger.warning("Clamped %s round %s score %s to cap %s", game_type, round_row["id"], score, cap)
         score = cap
+    # A double-points boost (an ad watched before the round, verified in ads.py)
+    # applies after the cap, so the cap keeps guarding the round itself.
+    boosted = bool((round_row["state"] or {}).get("boost"))
+    if boosted:
+        score *= 2
     await conn.execute("UPDATE game_rounds SET completed_at = now() WHERE id = $1", round_row["id"])
 
     puzzles = await conn.fetchval(
@@ -305,6 +310,7 @@ async def complete_round(conn, user_id: uuid.UUID, round_row, score: int,
 
     return {
         "score": score,
+        "boosted": boosted,
         "passed": passed,
         "new_achievements": achievement_payload(keys),
         "game_progress": game_progress,

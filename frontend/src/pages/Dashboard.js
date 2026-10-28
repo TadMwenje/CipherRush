@@ -11,6 +11,9 @@ import { useOnline, useRefetchOnReturn } from "../mobile/hooks";
 import { syncDailyReminders } from "../notifications";
 import { ReminderPrompt } from "../components/Reminders";
 import VerifyEmailCard from "../components/VerifyEmail";
+import BoostOffer from "../components/BoostOffer";
+import { initAds } from "../ads/admob";
+import { shouldOfferBoost } from "../ads/pacing";
 
 const VARIANT_LABEL = { caesar: "Caesar", atbash: "Atbash", vigenere: "Vigenère" };
 
@@ -43,6 +46,7 @@ function Dashboard() {
   const [stats, setStats] = useState(null);
   const [daily, setDaily] = useState(null);
   const [showHowTo, setShowHowTo] = useState(false);
+  const [boostFor, setBoostFor] = useState(null);
   const online = useOnline();
 
   const load = useCallback(() => {
@@ -62,6 +66,9 @@ function Dashboard() {
   }, []);
 
   useEffect(() => (isOnline() ? load() : undefined), [load]);
+  useEffect(() => {
+    initAds();
+  }, []);
   useRefetchOnReturn(load);
 
   const s = stats || user;
@@ -69,6 +76,15 @@ function Dashboard() {
   const go = (path) => {
     haptic("tap");
     navigate(path);
+  };
+  // Now and then, offer double points before a scored game (see ads/pacing.js).
+  const play = (mode) => {
+    if (online && shouldOfferBoost(mode.key)) {
+      haptic("tap");
+      setBoostFor(mode);
+    } else {
+      go(mode.path);
+    }
   };
 
   return (
@@ -138,7 +154,7 @@ function Dashboard() {
       </div>
       <div className="game-modes">
         {GAME_MODES.map(({ key, path, label, tagline, Icon, css }) => (
-          <button key={key} className={`game-mode-btn ${css}`} onClick={() => go(path)}>
+          <button key={key} className={`game-mode-btn ${css}`} onClick={() => play({ key, path, label })}>
             <div className="game-icon">
               <Icon size={24} />
             </div>
@@ -151,10 +167,19 @@ function Dashboard() {
       </div>
       {online && (
         <button className="practice-link" onClick={() => go("/practice")}>
-          Practice Mode: unscored Caesar, Atbash and True/False that work offline
+          Practice Mode: unscored Caesar, Match-3 and True/False that work offline
         </button>
       )}
       {showHowTo && <HowToPlayModal onClose={() => setShowHowTo(false)} />}
+      {boostFor && (
+        <BoostOffer
+          label={boostFor.label}
+          onDone={() => {
+            setBoostFor(null);
+            navigate(boostFor.path);
+          }}
+        />
+      )}
     </div>
   );
 }

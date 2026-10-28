@@ -29,6 +29,7 @@ from auth import (  # noqa: E402
 from account_routes import router as account_router  # noqa: E402
 from daily_routes import router as daily_router  # noqa: E402
 from email_routes import new_verification, router as email_router  # noqa: E402
+from ads import router as ads_router  # noqa: E402
 import mailer  # noqa: E402
 from db import close_pool, get_pool, run_migrations  # noqa: E402
 from game_routes import router as game_router  # noqa: E402
@@ -317,6 +318,7 @@ app.include_router(game_router)
 app.include_router(daily_router)
 app.include_router(account_router)
 app.include_router(email_router)
+app.include_router(ads_router)
 
 # --- MIDDLEWARE ---
 

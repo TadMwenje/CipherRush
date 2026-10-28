@@ -5,6 +5,7 @@ import { playCorrect, playWrong } from "../sound";
 import { haptic } from "../mobile/haptics";
 import GameLevelBar from "../components/GameLevelBar";
 import GameHeader from "../components/GameHeader";
+import { afterBreak } from "../ads/pacing";
 import useGameRewards from "../hooks/useGameRewards";
 import useRound from "../hooks/useRound";
 
@@ -157,7 +158,7 @@ function QuizGame() {
               })}
             </ol>
 
-            <button className="retry-btn" onClick={() => startNew({ category })}>
+            <button className="retry-btn" onClick={afterBreak(() => startNew({ category }))}>
               Five more
             </button>
           </div>

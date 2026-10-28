@@ -2504,6 +2504,35 @@ body {
   cursor: default;
 }
 
+/* Hint paid for with a rewarded video instead of points (ads/rewards.js). */
+.free-hint-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  width: 100%;
+  min-height: var(--tap, 48px);
+  margin-bottom: 0.5rem;
+  padding: 0.6rem 1rem;
+  border-radius: 12px;
+  border: 1px dashed rgba(74, 222, 128, 0.45);
+  background: rgba(74, 222, 128, 0.08);
+  color: #86efac;
+  font: inherit;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.free-hint-btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.boost-dialog .share-targets .btn-primary {
+  min-height: var(--tap, 48px);
+}
+
 .hint-paid {
   margin-top: 0.4rem;
   padding-top: 0.4rem;
@@ -4287,7 +4316,8 @@ html.app-paused *::after {
   margin: 0 0 0 auto;
 }
 
-.share-dialog {
+.share-dialog,
+.boost-dialog {
   display: flex;
   flex-direction: column;
   gap: 0.9rem;

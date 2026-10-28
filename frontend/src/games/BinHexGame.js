@@ -6,6 +6,7 @@ import { haptic } from "../mobile/haptics";
 import { primeKeyboard } from "../mobile/keyboard";
 import GameLevelBar from "../components/GameLevelBar";
 import GameHeader from "../components/GameHeader";
+import { afterBreak } from "../ads/pacing";
 import useGameRewards from "../hooks/useGameRewards";
 import useRound from "../hooks/useRound";
 import { AnswerInput } from "./CipherGame";
@@ -224,7 +225,7 @@ function BinHexGame() {
             <div className="final-score">+{result.score}</div>
             {!result.passed && <p className="match3-result-copy">3 needed to count toward your level.</p>}
             <div className="match3-result-actions">
-              <button className="restart-btn" onClick={() => startNew()}>
+              <button className="restart-btn" onClick={afterBreak(() => startNew())}>
                 Five more
               </button>
             </div>

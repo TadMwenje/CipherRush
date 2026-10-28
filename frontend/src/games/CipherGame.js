@@ -11,6 +11,9 @@ import GameLevelBar from "../components/GameLevelBar";
 import GameHeader from "../components/GameHeader";
 import useGameRewards from "../hooks/useGameRewards";
 import useRound from "../hooks/useRound";
+import { adsAvailable } from "../ads/admob";
+import { earnReward } from "../ads/rewards";
+import { afterBreak } from "../ads/pacing";
 
 const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 const WARNING_SECONDS = 20;
@@ -142,11 +145,16 @@ export function KeyLengthView({ ciphertext, keyLength }) {
 }
 
 /** Ciphertext + answer box + timer, shared by Cipher Puzzles and the Daily Cipher. */
-export function useCountdown(round, active, onExpire) {
+/**
+ * `addedSeconds` moves the deadline later as it grows - time the server gave
+ * back (a hint video's length). It starts from 0 again with each new round.
+ */
+export function useCountdown(round, active, onExpire, addedSeconds = 0) {
   const [timeLeft, setTimeLeft] = useState(0);
   const deadline = useRef(null);
   const serverDeadline = useRef(null);
   const expired = useRef(false);
+  const applied = useRef(0);
 
   useEffect(() => {
     if (!round) return;
@@ -154,8 +162,17 @@ export function useCountdown(round, active, onExpire) {
     deadline.current = round.receivedAt + seconds * 1000;
     serverDeadline.current = serverNow() - (monoNow() - round.receivedAt) + seconds * 1000;
     expired.current = false;
+    applied.current = 0;
     setTimeLeft(seconds);
   }, [round]);
+
+  useEffect(() => {
+    const delta = addedSeconds - applied.current;
+    if (!delta || deadline.current == null) return;
+    deadline.current += delta * 1000;
+    serverDeadline.current += delta * 1000;
+    applied.current = addedSeconds;
+  }, [addedSeconds]);
 
   useEffect(() => {
     if (!round || !active) return undefined;
@@ -225,6 +242,9 @@ function CipherGame() {
   const [hints, setHints] = useState([]);
   const [result, setResult] = useState(null);
   const [busy, setBusy] = useState(false);
+  // A hint video is playing: the clock is paused, and the server hands the time back.
+  const [watching, setWatching] = useState(false);
+  const [timeAdded, setTimeAdded] = useState(0);
   const answerRef = useRef("");
   const submittedRef = useRef(false);
   const primedRef = useRef(false);
@@ -234,6 +254,7 @@ function CipherGame() {
     setResult(null);
     setAnswer("");
     setHints(round?.hints_shown || []);
+    setTimeAdded(0);
     submittedRef.current = false;
   }, [round]);
 
@@ -263,7 +284,7 @@ function CipherGame() {
   }, [round, applyResult, setError]);
 
   const active = Boolean(round) && !result;
-  const timeLeft = useCountdown(round, active, submit);
+  const timeLeft = useCountdown(round, active && !watching, submit, timeAdded);
 
   const requestHint = async () => {
     if (!round) return;
@@ -273,6 +294,22 @@ function CipherGame() {
       haptic("select");
     } catch (err) {
       setError(errorMessage(err));
+    }
+  };
+
+  const freeHint = async () => {
+    if (!round) return;
+    setWatching(true);
+    try {
+      const rewardId = await earnReward("hint", round.round_id);
+      const res = await api.post(`/games/cipher/rounds/${round.round_id}/hint`, { reward_id: rewardId });
+      setHints((h) => [...h, res.data.hint]);
+      setTimeAdded((t) => t + (res.data.time_added || 0));
+      haptic("select");
+    } catch (err) {
+      setError(errorMessage(err, err.message));
+    } finally {
+      setWatching(false);
     }
   };
 
@@ -346,8 +383,14 @@ function CipherGame() {
                 }}
               >
                 <AnswerInput value={answer} onChange={setAnswer} disabled={!active || busy} focusOnMount={primedRef.current} />
+                {adsAvailable() && hintsLeft > 0 && (
+                  <button type="button" className="free-hint-btn" onClick={freeHint} disabled={!active || busy || watching}>
+                    <Bulb size={16} />
+                    {watching ? "Loading video. The clock is paused." : "Free hint: watch a short video"}
+                  </button>
+                )}
                 <div className="answer-actions">
-                  <button type="button" className="hint-btn" onClick={requestHint} disabled={!active || busy || hintsLeft <= 0}>
+                  <button type="button" className="hint-btn" onClick={requestHint} disabled={!active || busy || watching || hintsLeft <= 0}>
                     <Bulb size={16} />
                     {hintsLeft > 0 ? `Hint −${round.hint_penalty_pct}%` : "No hints left"}
                   </button>
@@ -381,7 +424,7 @@ function CipherGame() {
                   onClick={() => {
                     primeKeyboard();
                     primedRef.current = true;
-                    startNew({ variant });
+                    afterBreak(() => startNew({ variant }))();
                   }}
                 >
                   Next cipher

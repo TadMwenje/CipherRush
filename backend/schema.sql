@@ -173,3 +173,21 @@ CREATE TABLE IF NOT EXISTS email_sends (
 );
 
 CREATE INDEX IF NOT EXISTS idx_email_sends_user ON email_sends (user_id, kind, sent_at DESC);
+
+-- Rewarded-ad slots (backend/ads.py). pending -> earned (Google's signed SSV
+-- callback) -> used (spent by a game route). transaction_id is Google's id for
+-- the ad view, so one view can never pay out twice.
+CREATE TABLE IF NOT EXISTS ad_rewards (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    kind VARCHAR(20) NOT NULL,
+    round_id UUID,
+    status VARCHAR(10) NOT NULL DEFAULT 'pending',
+    transaction_id TEXT UNIQUE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    expires_at TIMESTAMPTZ NOT NULL,
+    earned_at TIMESTAMPTZ,
+    used_at TIMESTAMPTZ
+);
+
+CREATE INDEX IF NOT EXISTS idx_ad_rewards_user ON ad_rewards (user_id, kind, status);

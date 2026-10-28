@@ -5,6 +5,7 @@ import { playCorrect, playWrong, playVictory } from "../sound";
 import { haptic } from "../mobile/haptics";
 import GameLevelBar from "../components/GameLevelBar";
 import GameHeader from "../components/GameHeader";
+import { afterBreak } from "../ads/pacing";
 import useGameRewards from "../hooks/useGameRewards";
 import useRound from "../hooks/useRound";
 
@@ -167,7 +168,7 @@ function TrueFalseGame() {
               {!result.passed && " · 7 needed to count toward your level"}
             </p>
             <div className="match3-result-actions">
-              <button className="restart-btn" onClick={() => startNew()}>
+              <button className="restart-btn" onClick={afterBreak(() => startNew())}>
                 Ten more
               </button>
             </div>

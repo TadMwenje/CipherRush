@@ -7,8 +7,27 @@ import { LEGAL_URLS } from "../legal";
 import { haptic } from "../mobile/haptics";
 import { ReminderSettings } from "./Reminders";
 import VerifyEmailCard from "./VerifyEmail";
+import { privacyOptionsRequired, showPrivacyOptions } from "../ads/admob";
 
 const PROVIDER_LABEL = { google: "Google", apple: "Apple" };
+
+// Where the law asks for ad consent (EEA, UK, Switzerland), a way to change it.
+function AdPrivacyButton() {
+  const [shown, setShown] = useState(false);
+  useEffect(() => {
+    let cancelled = false;
+    privacyOptionsRequired().then((required) => !cancelled && setShown(required));
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+  if (!shown) return null;
+  return (
+    <button type="button" className="btn-secondary" onClick={() => showPrivacyOptions().catch(() => {})}>
+      Ad privacy choices
+    </button>
+  );
+}
 
 function DeleteAccountDialog({ onClose, onDeleted }) {
   const [confirm, setConfirm] = useState("");
@@ -322,6 +341,7 @@ function AccountSettings() {
       <div className="account-row">
         <span className="account-label">Your data</span>
         <DataNotice />
+        <AdPrivacyButton />
       </div>
 
       <div className="account-row">

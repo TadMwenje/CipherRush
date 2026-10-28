@@ -5,6 +5,7 @@ import { haptic } from "../mobile/haptics";
 import { primeKeyboard } from "../mobile/keyboard";
 import { useOnline } from "../mobile/hooks";
 import GameHeader from "../components/GameHeader";
+import { afterBreak, noteRoundFinished } from "../ads/pacing";
 import { AnswerInput, CaesarWheel } from "./CipherGame";
 import Match3Board, { useMatch3Animator } from "./Match3Board";
 import { checkCipher, cipherRound, newSeed, seededRng, trueFalseRound } from "../practice/engine";
@@ -15,6 +16,12 @@ const MODES = [
   { key: "match3", label: "Match-3" },
   { key: "truefalse", label: "True/False" },
 ];
+
+// Practice rounds count toward interstitial pacing like scored ones.
+const breakThen = (fn) => () => {
+  noteRoundFinished();
+  afterBreak(fn)();
+};
 
 const CAESAR_HINT = "Every letter moved the same number of places. Try a shift that turns a short word into a real one.";
 
@@ -97,7 +104,7 @@ function CipherPractice({ variant, rng }) {
             It said <strong>{round.plaintext}</strong>
             {round.shift != null && ` (ROT-${round.shift})`}.
           </div>
-          <button className="next-btn" onClick={next}>
+          <button className="next-btn" onClick={breakThen(next)}>
             Next cipher
           </button>
         </div>
@@ -149,7 +156,7 @@ function TrueFalsePractice({ rng }) {
         </h2>
         <p className="match3-result-copy">Practice round. Nothing was scored.</p>
         <div className="match3-result-actions">
-          <button className="restart-btn" onClick={again}>
+          <button className="restart-btn" onClick={breakThen(again)}>
             Ten more
           </button>
         </div>
@@ -185,7 +192,7 @@ function TrueFalsePractice({ rng }) {
             {feedback.correct ? "Right." : "Wrong."}
           </div>
           <p>{feedback.explanation}</p>
-          <button className="next-btn" onClick={next}>
+          <button className="next-btn" onClick={breakThen(next)}>
             {index + 1 < deck.length ? "Next" : "See how you did"}
           </button>
         </div>
@@ -297,7 +304,7 @@ function Match3Practice({ rng }) {
                 : `${match3.TARGET - score} short. Practice round, nothing scored.`}
             </p>
             <div className="match3-result-actions">
-              <button className="restart-btn" onClick={deal}>
+              <button className="restart-btn" onClick={breakThen(deal)}>
                 New board
               </button>
             </div>

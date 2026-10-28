@@ -9,6 +9,9 @@ import useGameRewards from "../hooks/useGameRewards";
 import useRound from "../hooks/useRound";
 import Match3Board, { useMatch3Animator } from "./Match3Board";
 import { findMatches, swapped } from "../practice/match3";
+import { adsAvailable } from "../ads/admob";
+import { earnReward } from "../ads/rewards";
+import { afterBreak } from "../ads/pacing";
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -23,6 +26,9 @@ function Match3Game() {
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState(null);
   const [syncing, setSyncing] = useState(false);
+  // Ran out short of the target: offer +N moves for a rewarded video, or end it.
+  const [outOfMoves, setOutOfMoves] = useState(null);
+  const [watching, setWatching] = useState(false);
 
   // New or resumed round -> hydrate the board.
   useEffect(() => {
@@ -38,10 +44,51 @@ function Match3Game() {
     setScore(round.score ?? 0);
     setMovesLeft(round.moves_left ?? round.moves_allowed);
     setResult(null);
+    setOutOfMoves(round.out_of_moves ? { moves: 5, message: "" } : null);
   }, [round, reset, setError]);
 
+  const finishWith = (finished) => {
+    setOutOfMoves(null);
+    setResult(finished);
+    if (finished.won) {
+      playVictory();
+      haptic("win");
+    } else {
+      playDefeat();
+      haptic("error");
+    }
+    applyResult(finished);
+  };
+
+  const watchForMoves = async () => {
+    setWatching(true);
+    try {
+      const rewardId = await earnReward("continue", round.round_id);
+      const { data } = await api.post(`/games/match3/rounds/${round.round_id}/continue`, { reward_id: rewardId });
+      setMovesLeft(data.moves_left);
+      setOutOfMoves(null);
+      haptic("success");
+    } catch (err) {
+      setOutOfMoves((o) => ({ ...o, message: errorMessage(err, err.message) }));
+    } finally {
+      setWatching(false);
+    }
+  };
+
+  const endRound = async () => {
+    setWatching(true);
+    try {
+      const { data } = await api.post(`/games/match3/rounds/${round.round_id}/finish`);
+      finishWith(data.result);
+    } catch (err) {
+      setError(errorMessage(err));
+    } finally {
+      setWatching(false);
+    }
+  };
+
   const attemptSwap = async (a, b) => {
-    if (busy || result || !board) return;
+    if (busy || result || outOfMoves || !board) return;
     const attempt = swapped(board, a, b);
     setBusy(true);
 
@@ -59,6 +106,7 @@ function Match3Game() {
       const res = await api.post(`/games/match3/rounds/${round.round_id}/swap`, {
         a: [a.row, a.col],
         b: [b.row, b.col],
+        can_continue: adsAvailable(),
       });
       const data = res.data;
       if (!data.valid) {
@@ -73,17 +121,11 @@ function Match3Game() {
           setBoard(data.board);
           setTimeout(() => setReshuffled(false), 1400);
         }
-        if (data.finished) {
-          setResult(data.result);
-          if (data.result.won) {
-            playVictory();
-            haptic("win");
-          } else {
-            playDefeat();
-            haptic("error");
-          }
-          applyResult(data.result);
+        if (data.out_of_moves) {
+          haptic("error");
+          setOutOfMoves({ moves: data.continue_moves, message: "" });
         }
+        if (data.finished) finishWith(data.result);
       }
     } catch (err) {
       setError(errorMessage(err));
@@ -152,7 +194,7 @@ function Match3Game() {
         {board && (
           <Match3Board
             board={board}
-            locked={busy || !!result}
+            locked={busy || !!result || !!outOfMoves}
             finished={!!result}
             syncing={syncing}
             poppingCells={poppingCells}
@@ -160,6 +202,26 @@ function Match3Game() {
             invalidCells={invalidCells}
             onSwap={attemptSwap}
           />
+        )}
+
+        {outOfMoves && !result && (
+          <div className="match3-result lost" role="dialog" aria-label="Out of moves">
+            <h2 className="match3-result-heading">
+              <Hourglass size={24} /> Out of moves.
+            </h2>
+            <p className="match3-result-copy">
+              {Math.max(target - score, 0)} short. Watch a short video for {outOfMoves.moves} more moves?
+            </p>
+            {outOfMoves.message && <p className="error">{outOfMoves.message}</p>}
+            <div className="match3-result-actions">
+              <button className="restart-btn" onClick={watchForMoves} disabled={watching}>
+                {watching ? "Loading video" : `Watch for +${outOfMoves.moves} moves`}
+              </button>
+              <button className="hint-btn" onClick={endRound} disabled={watching}>
+                End round
+              </button>
+            </div>
+          </div>
         )}
 
         {result && (
@@ -177,7 +239,7 @@ function Match3Game() {
                 : `${Math.max(target - score, 0)} short. Doesn't count toward your level.`}
             </p>
             <div className="match3-result-actions">
-              <button className="restart-btn" onClick={() => startNew()}>
+              <button className="restart-btn" onClick={afterBreak(() => startNew())}>
                 {result.game_progress?.leveled_up ? `Play level ${result.game_progress.level}` : result.won ? "Again" : "Retry"}
               </button>
             </div>

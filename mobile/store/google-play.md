@@ -46,7 +46,7 @@ The package name comes from the first upload: `com.aximoix.cipherrush`.
 > FAIR BY DESIGN
 > Every round is scored on our servers, so the leaderboards stay honest.
 >
-> No ads. No trackers. Reminders are opt-in and never go off at night.
+> Ads are never personalised, and you can watch a short video for a free hint or extra moves. Reminders are opt-in and never go off at night.
 >
 > Made by AximoIX.
 
@@ -71,7 +71,9 @@ The package name comes from the first upload: `com.aximoix.cipherrush`.
 
 **Privacy policy:** https://aximoix.com/privacy/#cipherrush
 
-**Ads:** No, the app doesn't contain ads.
+**Ads:** **Yes**, the app contains ads (Google AdMob: rewarded videos, rewarded interstitials and interstitials between rounds).
+
+**Advertising ID** (Policy → App content → Advertising ID): **Yes**, the app uses an advertising ID, for **Advertising or marketing**, **Analytics** and **Fraud prevention, security and compliance**. The Google Mobile Ads SDK adds the `com.google.android.gms.permission.AD_ID` permission to the merged manifest. Every request is non-personalised (`npa`), but the SDK still reads the ID for frequency capping and fraud prevention.
 
 **App access:** Most features need an account. Practice Mode is the only part that works signed out. Give reviewers the `play_review` account: provision it, then paste the reviewer instructions as described in `mobile/store/reviewer-access.md`. Its password goes **only** in this form.
 
@@ -89,9 +91,9 @@ The package name comes from the first upload: `com.aximoix.cipherrush`.
 
 Encrypted in transit: **Yes** (the API is HTTPS only; Cloudflare with Full (strict) TLS).
 Users can request deletion: **Yes** (see above).
-Data collected and shared for advertising or tracking: **None**.
+Data collected and shared: **Yes**, by the Google Mobile Ads SDK (AdMob). Google's own guidance for the SDK lists what it collects and shares; the AdMob rows below follow it.
 
-"Shared" in Play's sense excludes service providers acting for you (Render, Cloudflare, and Zoho ZeptoMail, which delivers the verification and password-reset emails) and transfers the user starts themselves (Google and Apple sign-in). So the answer is **No data shared**.
+"Shared" in Play's sense excludes service providers acting for you (Render, Cloudflare, and Zoho ZeptoMail, which delivers the verification and password-reset emails) and transfers the user starts themselves (Google and Apple sign-in). Those stay **not shared**. AdMob is different: Google uses the data for its own ad serving and fraud prevention, so its rows are **shared**.
 
 | Data type (Play category) | Collected | Required? | Purposes |
 | --- | --- | --- | --- |
@@ -101,9 +103,14 @@ Data collected and shared for advertising or tracking: **None**.
 | App activity → App interactions | Yes (rounds played, answers, scores) | Required | App functionality, Fraud prevention / security, Analytics (aggregate balancing only) |
 | App activity → Other user-generated content | Yes (username shown on leaderboards) | Required | App functionality |
 | App info and performance → Diagnostics | Yes (server request logs) | Required | Fraud prevention / security, App functionality |
-| Device or other IDs | **No** (IP addresses aren't a Play data type; no advertising ID) | | |
+| App activity → App interactions (AdMob: ad views, taps, video completions) | Yes, **shared** with Google | Required | Advertising or marketing, Analytics, Fraud prevention / security |
+| App info and performance → Crash logs, Diagnostics, Other app performance data (AdMob SDK) | Yes, **shared** with Google | Required | Analytics, Fraud prevention / security |
+| Device or other IDs (advertising ID, app set ID; AdMob) | Yes, **shared** with Google | Required | Advertising or marketing, Analytics, Fraud prevention / security |
+| Location → Approximate location (AdMob derives it from the IP address) | Yes, **shared** with Google | Required | Advertising or marketing, Analytics, Fraud prevention / security |
 
-Not collected: location, contacts, photos, files, audio, calendar, messages, health, financial info and web browsing.
+Not collected: precise location, contacts, photos, files, audio, calendar, messages, health, financial info and web browsing.
+
+"Required" for the AdMob rows because players can't turn ads off. In the EEA, UK and Switzerland, Google's consent form runs first, and Profile → Account → "Ad privacy choices" reopens it.
 
 Every collected item is processed ephemerally? **No**. It's stored on the server.
 

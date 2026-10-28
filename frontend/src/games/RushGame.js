@@ -9,6 +9,7 @@ import { onAppResume } from "../mobile/lifecycle";
 import { primeKeyboard, claimFocus } from "../mobile/keyboard";
 import GameLevelBar from "../components/GameLevelBar";
 import GameHeader from "../components/GameHeader";
+import { afterBreak } from "../ads/pacing";
 import useGameRewards from "../hooks/useGameRewards";
 import { AnswerInput } from "./CipherGame";
 
@@ -240,7 +241,13 @@ function RushGame() {
               {!result.passed && ` · ${result.pass_threshold} needed to count toward your level`}
             </p>
             <div className="match3-result-actions">
-              <button className="restart-btn" onClick={start}>
+              <button
+                className="restart-btn"
+                onClick={() => {
+                  primeKeyboard(); // inside the tap, before the ad's await
+                  afterBreak(start)();
+                }}
+              >
                 Run it back
               </button>
               <button className="submit-btn" onClick={() => navigate("/leaderboard?board=rush")}>

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import api from "../api";
 import AchievementToast from "../components/AchievementToast";
 import LevelUpToast from "../components/LevelUpToast";
+import { noteRoundFinished } from "../ads/pacing";
 
 // Shared per-game plumbing: loads this game's level/XP track, and turns a
 // completed round's server result into achievement + level-up toasts.
@@ -26,8 +27,10 @@ export default function useGameRewards(gameKey, label) {
   const applyResult = useCallback(
     (result) => {
       if (!result) return;
+      noteRoundFinished();
       if (result.new_achievements?.length) setNewAchievements(result.new_achievements);
       const messages = [];
+      if (result.boosted) messages.push("Double points: this round counted twice.");
       if (result.overall_level_up) messages.push(`Account level ${result.overall_level_up}.`);
       if (result.game_progress) {
         setGameProgress(result.game_progress);

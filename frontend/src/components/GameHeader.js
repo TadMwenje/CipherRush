@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Back, Help } from "../glyphs";
 import HowToPlayModal from "./HowToPlayModal";
+import { atRoundBreak } from "../ads/pacing";
 
 // Shared game screen header: back to dashboard, title, optional right-side
 // slot (timer/level), and a "?" that opens this mode's rules.
@@ -12,7 +13,7 @@ function GameHeader({ title, modeKey, children }) {
   return (
     <>
       <div className="game-header">
-        <button className="back-btn" onClick={() => navigate("/dashboard")} aria-label="Back to dashboard">
+        <button className="back-btn" onClick={() => atRoundBreak().then(() => navigate("/dashboard"))} aria-label="Back to dashboard">
           <Back size={22} />
         </button>
         <h1>{title}</h1>

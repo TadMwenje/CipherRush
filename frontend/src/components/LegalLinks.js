@@ -1,5 +1,6 @@
 import React from "react";
 import { LEGAL_URLS, openExternal } from "../legal";
+import { adsAvailable } from "../ads/admob";
 
 function ExternalLink({ href, children }) {
   return (
@@ -40,11 +41,16 @@ export function LegalConsent() {
 
 /** What an account sends and why - shown at sign-up and in Profile → Account. */
 export function DataNotice() {
+  // The web version has no ads; the apps show Google AdMob ads.
+  const ads = adsAvailable();
   return (
     <p className="legal-consent data-notice">
       Your handle, email and game results are sent over an encrypted connection to CipherRush's server
       (api.aximoix.com) to run your account and the leaderboards. Your IP address is used for security and rate
-      limits. We only email you to confirm your address or reset your password. No ads, no trackers.
+      limits. We only email you to confirm your address or reset your password.{" "}
+      {ads
+        ? "The app shows ads from Google AdMob. They're never personalised, but Google receives your device's advertising ID and IP address to serve them and to stop fraud."
+        : "No ads, no trackers."}
     </p>
   );
 }

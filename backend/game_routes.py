@@ -9,11 +9,12 @@ GET .../rounds/active returns the player's open round (if any) so a phone that
 killed the app mid-game can pick up exactly where it left off.
 """
 import secrets
-from typing import Any, Callable, Dict, List, Literal
+from typing import Any, Callable, Dict, List, Literal, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, ConfigDict, Field
 
+import ads
 import ciphers
 import economy as eco
 import match3_engine
@@ -64,6 +65,9 @@ async def _start(user, game_type: str, build_state, ttl_seconds):
     async with pool.acquire() as conn:
         level = await get_game_level(conn, user["id"], game_type)
         state, public = await build_state(conn, level)
+        if await ads.take_boost(conn, user["id"], game_type):
+            state["boost"] = True
+            public = {**public, "boosted": True}
         state["public"] = public
         ttl = ttl_seconds(state) if callable(ttl_seconds) else ttl_seconds
         round_id = await create_round(conn, user["id"], game_type, level, state, ttl)
@@ -92,6 +96,11 @@ class CipherStart(StrictModel):
 
 class CipherAnswer(StrictModel):
     answer: str = Field(default="", max_length=200)
+
+
+class CipherHint(StrictModel):
+    # Set when the hint was paid for with a verified rewarded ad instead of points.
+    reward_id: Optional[str] = Field(default=None, max_length=64)
 
 
 def build_cipher_puzzle(variant: str, plaintext: str, rng, key_tier: int):
@@ -163,7 +172,8 @@ def _cipher_time_up(row) -> bool:
 
 @router.post("/cipher/rounds/{round_id}/hint")
 @limiter.limit(ACTION_LIMIT)
-async def cipher_hint(request: Request, round_id: str, user=Depends(get_current_user)):
+async def cipher_hint(request: Request, round_id: str, body: Optional[CipherHint] = None,
+                      user=Depends(get_current_user)):
     async def handler(conn, row):
         state = row["state"]
         if _cipher_time_up(row):
@@ -171,9 +181,20 @@ async def cipher_hint(request: Request, round_id: str, user=Depends(get_current_
         used = state["hints_used"]
         if used >= len(state["hints"]):
             raise HTTPException(status_code=400, detail="That's every hint for this puzzle.")
+        time_added = 0
+        if body and body.reward_id:
+            # The clock doesn't run while they watch: the video's time goes back on it.
+            time_added = await ads.spend_reward(conn, user["id"], body.reward_id, "hint", row["id"])
+            state["free_hints"] = state.get("free_hints", 0) + 1
+            state["time_limit"] += time_added
+            await conn.execute(
+                "UPDATE game_rounds SET expires_at = expires_at + make_interval(secs => $2) WHERE id = $1",
+                row["id"], float(time_added),
+            )
         state["hints_used"] = used + 1
         await save_state(conn, row["id"], state)
-        return {"hint": state["hints"][used], "hints_used": used + 1, "hints_remaining": len(state["hints"]) - used - 1}
+        return {"hint": state["hints"][used], "hints_used": used + 1, "hints_remaining": len(state["hints"]) - used - 1,
+                "time_added": time_added}
 
     return await _locked(request, round_id, user, "cipher", handler)
 
@@ -212,7 +233,8 @@ async def cipher_submit(request: Request, round_id: str, body: CipherAnswer, use
                     "game_progress": None, "overall_level_up": None}
 
         score, time_bonus, hint_penalty = score_cipher(
-            state["variant"], row["level"], elapsed_seconds(row), state["time_limit"], state["hints_used"]
+            state["variant"], row["level"], elapsed_seconds(row), state["time_limit"],
+            state["hints_used"] - state.get("free_hints", 0),
         )
         extra = ["codebreaker"] if state["variant"] == "vigenere" else []
         result = await complete_round(conn, user["id"], row, score, extra, puzzle_solved=True)
@@ -463,6 +485,13 @@ def _binhex_view(row):
 class Match3Swap(StrictModel):
     a: List[int] = Field(min_length=2, max_length=2)
     b: List[int] = Field(min_length=2, max_length=2)
+    # The app can offer "+5 moves for a video": when it runs out, hold the round
+    # open for that choice instead of ending it. Clients without ads leave it off.
+    can_continue: bool = False
+
+
+class Match3Continue(StrictModel):
+    reward_id: str = Field(max_length=64)
 
 
 @router.post("/match3/rounds")
@@ -490,6 +519,8 @@ async def match3_swap(request: Request, round_id: str, body: Match3Swap, user=De
         if is_expired(row):
             raise HTTPException(status_code=410, detail="This board timed out.")
         state = row["state"]
+        if state.get("awaiting_continue"):
+            raise HTTPException(status_code=409, detail="Out of moves. Take the extra moves or end the round.")
         board = state["board"]
         size = len(board)
         a, b = tuple(body.a), tuple(body.b)
@@ -511,21 +542,66 @@ async def match3_swap(request: Request, round_id: str, body: Match3Swap, user=De
         won = state["score"] >= state["target"]
         if not won and state["moves_left"] > 0:
             return response
+        if not won and body.can_continue and not state.get("continued"):
+            state["awaiting_continue"] = True
+            await save_state(conn, row["id"], state)
+            response.update({"out_of_moves": True, "continue_moves": ads.MATCH3_CONTINUE_MOVES})
+            return response
 
-        efficiency_bonus = state["moves_left"] * eco.MATCH3_EFFICIENCY_PER_MOVE if won else 0
-        result = await complete_round(conn, user["id"], row, state["score"] + efficiency_bonus,
-                                      ["match_master"] if won and state["moves_left"] >= 5 else [], passed=won)
-        response.update({"finished": True, "result": {
-            "won": won, "efficiency_bonus": efficiency_bonus, "moves_left": state["moves_left"],
-            "final_score": result["score"], **result}})
+        response.update({"finished": True, "result": await _finish_match3(conn, user, row, state, won)})
         return response
+
+    return await _locked(request, round_id, user, "match3", handler)
+
+
+async def _finish_match3(conn, user, row, state, won):
+    efficiency_bonus = state["moves_left"] * eco.MATCH3_EFFICIENCY_PER_MOVE if won else 0
+    # Match Master means winning with 5 moves to spare on the board's own moves.
+    master = won and state["moves_left"] >= 5 and not state.get("continued")
+    result = await complete_round(conn, user["id"], row, state["score"] + efficiency_bonus,
+                                  ["match_master"] if master else [], passed=won)
+    return {"won": won, "efficiency_bonus": efficiency_bonus, "moves_left": state["moves_left"],
+            "final_score": result["score"], **result}
+
+
+@router.post("/match3/rounds/{round_id}/continue")
+@limiter.limit(ACTION_LIMIT)
+async def match3_continue(request: Request, round_id: str, body: Match3Continue, user=Depends(get_current_user)):
+    """+5 moves, once per round, paid for with a verified rewarded ad."""
+    async def handler(conn, row):
+        if is_expired(row):
+            raise HTTPException(status_code=410, detail="This board timed out.")
+        state = row["state"]
+        if not state.get("awaiting_continue"):
+            raise HTTPException(status_code=409, detail="There's nothing to continue.")
+        await ads.spend_reward(conn, user["id"], body.reward_id, "continue", row["id"])
+        state.update({"awaiting_continue": False, "continued": True,
+                      "moves_left": state["moves_left"] + ads.MATCH3_CONTINUE_MOVES})
+        await save_state(conn, row["id"], state)
+        return {"board": state["board"], "score": state["score"], "moves_left": state["moves_left"]}
+
+    return await _locked(request, round_id, user, "match3", handler)
+
+
+@router.post("/match3/rounds/{round_id}/finish")
+@limiter.limit(ACTION_LIMIT)
+async def match3_finish(request: Request, round_id: str, user=Depends(get_current_user)):
+    """Decline the extra moves: the round ends as it stood."""
+    async def handler(conn, row):
+        state = row["state"]
+        if not state.get("awaiting_continue"):
+            raise HTTPException(status_code=409, detail="This round is still going.")
+        state["awaiting_continue"] = False
+        await save_state(conn, row["id"], state)
+        return {"finished": True, "result": await _finish_match3(conn, user, row, state, False)}
 
     return await _locked(request, round_id, user, "match3", handler)
 
 
 def _match3_view(row):
     state = row["state"]
-    return {"board": state["board"], "score": state["score"], "moves_left": state["moves_left"]}
+    return {"board": state["board"], "score": state["score"], "moves_left": state["moves_left"],
+            "out_of_moves": bool(state.get("awaiting_continue"))}
 
 
 # =============================================================================
