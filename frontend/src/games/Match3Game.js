@@ -1,130 +1,53 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { Flame, Confetti, Hourglass, Shuffle } from "../glyphs";
 import api, { errorMessage } from "../api";
-import { playMatch, playInvalid, playVictory, playDefeat } from "../sound";
+import { playVictory, playDefeat } from "../sound";
 import { haptic } from "../mobile/haptics";
-import { swipeDirection } from "../mobile/layout";
-import GameSymbolIcon from "../icons/GameSymbolIcon";
 import GameLevelBar from "../components/GameLevelBar";
 import GameHeader from "../components/GameHeader";
 import useGameRewards from "../hooks/useGameRewards";
 import useRound from "../hooks/useRound";
+import Match3Board, { useMatch3Animator } from "./Match3Board";
+import { findMatches, swapped } from "../practice/match3";
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-const HINT_DELAY_MS = 7000;
-
-function swapped(board, a, b) {
-  const next = board.map((row) => [...row]);
-  [next[a.row][a.col], next[b.row][b.col]] = [next[b.row][b.col], next[a.row][a.col]];
-  return next;
-}
-
-// Same rule the server applies - used only for instant feedback and hints.
-export function hasMatch(board) {
-  const size = board.length;
-  for (let r = 0; r < size; r++) {
-    for (let c = 0; c < size; c++) {
-      const s = board[r][c];
-      if (c + 2 < size && board[r][c + 1] === s && board[r][c + 2] === s) return true;
-      if (r + 2 < size && board[r + 1][c] === s && board[r + 2][c] === s) return true;
-    }
-  }
-  return false;
-}
-
-export function findHint(board) {
-  const size = board.length;
-  for (let r = 0; r < size; r++) {
-    for (let c = 0; c < size; c++) {
-      for (const [dr, dc] of [[0, 1], [1, 0]]) {
-        const b = { row: r + dr, col: c + dc };
-        if (b.row < size && b.col < size && hasMatch(swapped(board, { row: r, col: c }, b))) {
-          return [{ row: r, col: c }, b];
-        }
-      }
-    }
-  }
-  return null;
-}
-
-const isAdjacent = (a, b) => Math.abs(a.row - b.row) + Math.abs(a.col - b.col) === 1;
 
 function Match3Game() {
   const { gameProgress, applyResult, toasts } = useGameRewards("match3", "Match-3");
   const { round, loading, error, setError, startNew } = useRound("match3");
-  const [board, setBoard] = useState(null);
+  const { board, setBoard, reset, rejectSwap, playSteps, poppingCells, droppingColumns, invalidCells, cascade } =
+    useMatch3Animator();
   const [score, setScore] = useState(0);
   const [movesLeft, setMovesLeft] = useState(0);
-  const [selected, setSelected] = useState(null);
-  const [invalidCells, setInvalidCells] = useState(null);
-  const [poppingCells, setPoppingCells] = useState(new Set());
-  const [droppingColumns, setDroppingColumns] = useState([]);
-  const [cascade, setCascade] = useState(null);
-  const [hint, setHint] = useState(null);
   const [reshuffled, setReshuffled] = useState(false);
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState(null);
   const [syncing, setSyncing] = useState(false);
-  const hintTimer = useRef(null);
-  const pointer = useRef(null);
 
   // New or resumed round -> hydrate the board.
   useEffect(() => {
     if (!round) return;
     if (!Array.isArray(round.board) || round.board.length === 0) {
       // Never sit on a loading state: say so and offer a way out.
-      setBoard(null);
+      reset(null);
       setError("The board didn't come through.");
       return;
     }
     setError("");
-    setBoard(round.board);
+    reset(round.board);
     setScore(round.score ?? 0);
     setMovesLeft(round.moves_left ?? round.moves_allowed);
-    setDroppingColumns(Array(round.board_size).fill(0));
-    setSelected(null);
     setResult(null);
-  }, [round]);
-
-  // Idle hint: glow one legal swap if the player goes quiet.
-  useEffect(() => {
-    clearTimeout(hintTimer.current);
-    setHint(null);
-    if (!board || busy || result) return undefined;
-    hintTimer.current = setTimeout(() => setHint(findHint(board)), HINT_DELAY_MS);
-    return () => clearTimeout(hintTimer.current);
-  }, [board, busy, result, selected]);
-
-  const animateSteps = async (steps) => {
-    for (const step of steps) {
-      setPoppingCells(new Set(step.matched.map(([r, c]) => `${r},${c}`)));
-      playMatch(step.cascade);
-      haptic("match");
-      if (step.cascade > 1) setCascade(step.multiplier);
-      await sleep(320);
-      setPoppingCells(new Set());
-      setBoard(step.board);
-      setDroppingColumns(step.drops);
-      await sleep(260);
-      setDroppingColumns(Array(step.board.length).fill(0));
-    }
-    setCascade(null);
-  };
+  }, [round, reset, setError]);
 
   const attemptSwap = async (a, b) => {
     if (busy || result || !board) return;
     const attempt = swapped(board, a, b);
-    setSelected(null);
     setBusy(true);
 
-    if (!hasMatch(attempt)) {
-      setInvalidCells([a, b]);
-      setBoard(attempt);
-      playInvalid();
-      haptic("error");
-      await sleep(260);
-      setBoard(board);
-      setInvalidCells(null);
+    // Same rule the server applies - used only for instant feedback.
+    if (!findMatches(attempt).size) {
+      await rejectSwap(board, attempt, a, b);
       setBusy(false);
       return;
     }
@@ -141,7 +64,7 @@ function Match3Game() {
       if (!data.valid) {
         setBoard(data.board);
       } else {
-        await animateSteps(data.steps);
+        await playSteps(data.steps);
         setScore(data.score);
         setMovesLeft(data.moves_left);
         if (data.reshuffled) {
@@ -170,47 +93,6 @@ function Match3Game() {
       setSyncing(false);
       setBusy(false);
     }
-  };
-
-  // Touch: swipe a tile into its neighbour. A press without a drag is a tap,
-  // and two taps on neighbours also swap (for players who prefer that).
-  const onPointerDown = (e, row, col) => {
-    if (busy || result) return;
-    pointer.current = { row, col, x: e.clientX, y: e.clientY, swiped: false };
-  };
-
-  const onPointerMove = (e) => {
-    const p = pointer.current;
-    if (!p || p.swiped) return;
-    const dir = swipeDirection(e.clientX - p.x, e.clientY - p.y);
-    if (!dir) return;
-    p.swiped = true;
-    const target = { row: p.row + dir.dr, col: p.col + dir.dc };
-    const size = board.length;
-    if (target.row < 0 || target.col < 0 || target.row >= size || target.col >= size) return;
-    attemptSwap({ row: p.row, col: p.col }, target);
-  };
-
-  const onPointerUp = () => {
-    const p = pointer.current;
-    pointer.current = null;
-    if (!p || p.swiped || busy || result) return;
-    const clicked = { row: p.row, col: p.col };
-    haptic("tap");
-    if (!selected) return setSelected(clicked);
-    if (selected.row === p.row && selected.col === p.col) return setSelected(null);
-    if (!isAdjacent(selected, clicked)) return setSelected(clicked);
-    attemptSwap(selected, clicked);
-  };
-
-  const cellState = (r, c) => {
-    const classes = ["board-cell"];
-    if (selected && selected.row === r && selected.col === c) classes.push("selected");
-    if (invalidCells?.some((cell) => cell.row === r && cell.col === c)) classes.push("invalid");
-    if (poppingCells.has(`${r},${c}`)) classes.push("popping");
-    if (droppingColumns[c] > r) classes.push("dropping");
-    if (hint?.some((cell) => cell.row === r && cell.col === c)) classes.push("hint");
-    return classes.join(" ");
   };
 
   const target = round?.target_score ?? 0;
@@ -268,43 +150,16 @@ function Match3Game() {
       <div className="game-stage match3-stage">
         {(loading || !board) && !error && <div className="loading-inline">Loading board</div>}
         {board && (
-          <div
-            className={`match3-board${syncing ? " is-syncing" : ""}`}
-            aria-disabled={!!result}
-            onPointerMove={onPointerMove}
-            onPointerUp={onPointerUp}
-            onPointerCancel={() => (pointer.current = null)}
-            onPointerLeave={() => (pointer.current = null)}
-          >
-            {syncing && <div className="board-syncing" role="status">Syncing</div>}
-            {board.map((rowArr, r) => (
-              <div key={r} className="board-row">
-                {rowArr.map((symbol, c) => (
-                  <button
-                    key={`${r}-${c}`}
-                    className={cellState(r, c)}
-                    onPointerDown={(e) => onPointerDown(e, r, c)}
-                    disabled={!!result || busy}
-                    aria-label={`${symbol}, row ${r + 1}, column ${c + 1}`}
-                  >
-                    <span className="board-cell-symbol">
-                      <GameSymbolIcon symbolKey={symbol} size={24} />
-                    </span>
-                    {poppingCells.has(`${r},${c}`) && (
-                      <span className="particle-burst" aria-hidden="true">
-                        <span />
-                        <span />
-                        <span />
-                        <span />
-                        <span />
-                        <span />
-                      </span>
-                    )}
-                  </button>
-                ))}
-              </div>
-            ))}
-          </div>
+          <Match3Board
+            board={board}
+            locked={busy || !!result}
+            finished={!!result}
+            syncing={syncing}
+            poppingCells={poppingCells}
+            droppingColumns={droppingColumns}
+            invalidCells={invalidCells}
+            onSwap={attemptSwap}
+          />
         )}
 
         {result && (

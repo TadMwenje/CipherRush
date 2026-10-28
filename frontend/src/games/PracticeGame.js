@@ -1,23 +1,22 @@
-import React, { useCallback, useMemo, useRef, useState } from "react";
-import { Bulb, Check, CheckOct, Close, CrossOct, SignalOff } from "../glyphs";
-import { playCorrect, playWrong } from "../sound";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Bulb, Check, CheckOct, Close, Confetti, CrossOct, Flame, Hourglass, Shuffle, SignalOff } from "../glyphs";
+import { playCorrect, playDefeat, playVictory, playWrong } from "../sound";
 import { haptic } from "../mobile/haptics";
 import { primeKeyboard } from "../mobile/keyboard";
 import { useOnline } from "../mobile/hooks";
 import GameHeader from "../components/GameHeader";
-import { AnswerInput, AtbashMirror, CaesarWheel } from "./CipherGame";
+import { AnswerInput, CaesarWheel } from "./CipherGame";
+import Match3Board, { useMatch3Animator } from "./Match3Board";
 import { checkCipher, cipherRound, newSeed, seededRng, trueFalseRound } from "../practice/engine";
+import * as match3 from "../practice/match3";
 
 const MODES = [
   { key: "caesar", label: "Caesar" },
-  { key: "atbash", label: "Atbash" },
+  { key: "match3", label: "Match-3" },
   { key: "truefalse", label: "True/False" },
 ];
 
-const FREE_HINT = {
-  caesar: "Every letter moved the same number of places. Try a shift that turns a short word into a real one.",
-  atbash: "A↔Z, B↔Y, C↔X. The mirror below does the work.",
-};
+const CAESAR_HINT = "Every letter moved the same number of places. Try a shift that turns a short word into a real one.";
 
 export function PracticeBanner({ online }) {
   return (
@@ -68,11 +67,11 @@ function CipherPractice({ variant, rng }) {
           <Bulb size={20} />
         </div>
         <div className="hint-text">
-          <div>{FREE_HINT[variant]}</div>
+          <div>{CAESAR_HINT}</div>
         </div>
       </div>
 
-      {variant === "caesar" ? <CaesarWheel /> : <AtbashMirror />}
+      <CaesarWheel />
 
       {!result && (
         <form className="answer-section" onSubmit={submit}>
@@ -195,6 +194,120 @@ function TrueFalsePractice({ rng }) {
   );
 }
 
+function Match3Practice({ rng }) {
+  const { board, setBoard, reset, rejectSwap, playSteps, poppingCells, droppingColumns, invalidCells, cascade } =
+    useMatch3Animator();
+  const [score, setScore] = useState(0);
+  const [movesLeft, setMovesLeft] = useState(match3.MOVES);
+  const [busy, setBusy] = useState(false);
+  const [reshuffled, setReshuffled] = useState(false);
+  const [outcome, setOutcome] = useState(null); // "won" | "lost"
+
+  const deal = useCallback(() => {
+    reset(match3.generateBoard(rng));
+    setScore(0);
+    setMovesLeft(match3.MOVES);
+    setOutcome(null);
+  }, [reset, rng]);
+
+  useEffect(deal, [deal]);
+
+  const attemptSwap = async (a, b) => {
+    if (busy || outcome || !board) return;
+    const attempt = match3.swapped(board, a, b);
+    setBusy(true);
+    if (!match3.findMatches(attempt).size) {
+      await rejectSwap(board, attempt, a, b);
+      setBusy(false);
+      return;
+    }
+    setBoard(attempt);
+    const res = match3.resolveSwap(board, a, b, rng);
+    await playSteps(res.steps);
+    const nextScore = score + res.gained;
+    const nextMoves = movesLeft - 1;
+    setScore(nextScore);
+    setMovesLeft(nextMoves);
+    if (res.reshuffled) {
+      setReshuffled(true);
+      setBoard(res.board);
+      setTimeout(() => setReshuffled(false), 1400);
+    }
+    if (nextScore >= match3.TARGET || nextMoves <= 0) {
+      const won = nextScore >= match3.TARGET;
+      setOutcome(won ? "won" : "lost");
+      if (won) {
+        playVictory();
+        haptic("win");
+      } else {
+        playDefeat();
+        haptic("error");
+      }
+    }
+    setBusy(false);
+  };
+
+  return (
+    <div className="match3-game">
+      <div className="game-stats">
+        <div className="stat">
+          <span className="stat-label">Score</span> {score}
+        </div>
+        <div className={`stat${movesLeft <= 3 && !outcome ? " stat-warning" : ""}`}>
+          <span className="stat-label">Moves</span> {movesLeft}
+        </div>
+        <div className="stat">
+          <span className="stat-label">Target</span> {match3.TARGET}
+        </div>
+      </div>
+      <div className="progress-bar match3-target-bar">
+        <div className="progress-fill" style={{ width: `${Math.min(100, Math.round((score / match3.TARGET) * 100))}%` }} />
+      </div>
+      {cascade && (
+        <div className="cascade-banner">
+          <Flame size={18} /> Chain x{cascade}
+        </div>
+      )}
+      {reshuffled && (
+        <div className="cascade-banner reshuffle-banner">
+          <Shuffle size={18} /> Dead board. Reshuffling.
+        </div>
+      )}
+      <div className="match3-stage">
+        {board && (
+          <Match3Board
+            board={board}
+            locked={busy || !!outcome}
+            finished={!!outcome}
+            poppingCells={poppingCells}
+            droppingColumns={droppingColumns}
+            invalidCells={invalidCells}
+            onSwap={attemptSwap}
+          />
+        )}
+        {outcome && (
+          <div className={`match3-result ${outcome}`}>
+            <h2 className="match3-result-heading">
+              {outcome === "won" ? <Confetti size={24} /> : <Hourglass size={24} />}
+              {outcome === "won" ? "Board cleared." : "Out of moves."}
+            </h2>
+            <p className="match3-result-copy">
+              {outcome === "won"
+                ? `${movesLeft} moves to spare. Practice round, nothing scored.`
+                : `${match3.TARGET - score} short. Practice round, nothing scored.`}
+            </p>
+            <div className="match3-result-actions">
+              <button className="restart-btn" onClick={deal}>
+                New board
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 /** /practice - works with no account and no connection. */
 function PracticeGame() {
   const online = useOnline();
@@ -226,11 +339,9 @@ function PracticeGame() {
       </div>
 
       <div className="game-stage">
-        {mode === "truefalse" ? (
-          <TrueFalsePractice key="tf" rng={rng} />
-        ) : (
-          <CipherPractice key={mode} variant={mode} rng={rng} />
-        )}
+        {mode === "truefalse" && <TrueFalsePractice key="tf" rng={rng} />}
+        {mode === "match3" && <Match3Practice key="match3" rng={rng} />}
+        {mode === "caesar" && <CipherPractice key="caesar" variant="caesar" rng={rng} />}
       </div>
     </div>
   );

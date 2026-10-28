@@ -109,3 +109,13 @@ test("Practice online still says it's unscored", () => {
   act(() => root.render(<PracticeGame />));
   expect(container.textContent).toContain("Practice Mode — unscored");
 });
+
+test("Practice offers Caesar, Match-3 and True/False, and Match-3 deals a playable board", () => {
+  act(() => root.render(<PracticeGame />));
+  const tabs = [...container.querySelectorAll('[role="tab"]')].map((t) => t.textContent);
+  expect(tabs).toEqual(["Caesar", "Match-3", "True/False"]);
+  const match3Tab = [...container.querySelectorAll('[role="tab"]')].find((t) => t.textContent === "Match-3");
+  act(() => match3Tab.click());
+  expect(container.querySelectorAll(".match3-board .board-cell")).toHaveLength(36);
+  expect(container.textContent).toContain("Target");
+});

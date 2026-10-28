@@ -76,7 +76,12 @@ test("the bundled bank ships no scoring data", () => {
 });
 
 test("practice code never imports the API client, so it can't submit scores", () => {
-  const files = [path.join(__dirname, "engine.js"), path.join(__dirname, "..", "games", "PracticeGame.js")];
+  const files = [
+    path.join(__dirname, "engine.js"),
+    path.join(__dirname, "match3.js"),
+    path.join(__dirname, "..", "games", "PracticeGame.js"),
+    path.join(__dirname, "..", "games", "Match3Board.js"),
+  ];
   files.forEach((file) => {
     const source = fs.readFileSync(file, "utf8");
     expect(source).not.toMatch(/from\s+["'][./]*api["']/);
