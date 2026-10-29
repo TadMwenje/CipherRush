@@ -54,6 +54,15 @@ into the store forms:
    alone, so restarts don't sign reviewers out. It never touches a handle
    owned by a real player. The values must meet the app's password rule
    (8+ characters with lower case, upper case and a digit).
+4. Check the deploy's logs. Every start logs one line per account:
+   `Review account play_review created|reset from REVIEW_PLAY_PASSWORD`,
+   `... already uses the password in ...`, `... is not set ...`, or an error
+   if the value breaks the password rule. A refused login logs why
+   (`Login refused: no account with that handle` or `wrong password for user`),
+   never the password.
+
+Reviewers can sign in with the handle or the email address, in any case. A
+space or newline pasted onto the end of the password is ignored.
 
 To rotate a password later, change the variable and redeploy, then update the
 store form.

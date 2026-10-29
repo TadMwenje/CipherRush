@@ -198,3 +198,49 @@ def test_seeding_never_takes_over_a_real_players_handle(client, monkeypatch, pla
     password = pra.generate_password()
     run_seed(monkeypatch, {"REVIEW_TEST_PASSWORD": password})
     assert login(client, player.username, password).status_code == 401
+
+
+# --- the real store handles, signing in the ways reviewers actually type them ---
+
+@pytest.mark.parametrize("store", ["play", "appstore"])
+def test_store_reviewer_logs_in_by_handle_or_email(client, monkeypatch, store):
+    _, username, email, var = review_accounts.STORES[store]
+    _created_usernames.append(username)
+    password = pra.generate_password()
+    run_seed(monkeypatch, {var: password})
+    for typed in (username, username.upper(), f" {username} ", email, email.upper()):
+        res = login(client, typed, password)
+        assert res.status_code == 200, (typed, res.text)
+        assert res.json()["user"]["username"] == username
+    # Pasted from the store's notes, the password can pick up a trailing newline.
+    assert login(client, username, password + "\n").status_code == 200
+    assert login(client, username, password[:-1]).status_code == 401
+
+
+def test_refused_logins_log_the_reason_but_never_the_password(client, monkeypatch, seeded_store, caplog):
+    password = pra.generate_password()
+    run_seed(monkeypatch, {"REVIEW_TEST_PASSWORD": password})
+    with caplog.at_level("WARNING", logger="server"):
+        assert login(client, seeded_store, "Wrong" + password).status_code == 401
+        assert login(client, "nobody_here_x", password).status_code == 401
+        assert login(client, "nobody@example.com", password).status_code == 401
+    logged = caplog.text
+    assert "wrong password for user" in logged and "review account" in logged
+    assert "no account with that handle ('nobody_here_x')" in logged
+    assert "no account with that email" in logged and "nobody@example.com" not in logged
+    assert password not in logged
+
+
+def test_seeding_logs_each_decision(monkeypatch, seeded_store, caplog):
+    password = pra.generate_password()
+    with caplog.at_level("INFO", logger="review_accounts"):
+        run_seed(monkeypatch, {})
+        run_seed(monkeypatch, {"REVIEW_TEST_PASSWORD": "weak"})
+        run_seed(monkeypatch, {"REVIEW_TEST_PASSWORD": password})
+        run_seed(monkeypatch, {"REVIEW_TEST_PASSWORD": password})
+    logged = caplog.text
+    assert "REVIEW_TEST_PASSWORD is not set" in logged
+    assert "doesn't meet the password rules" in logged
+    assert f"Review account {seeded_store} created" in logged
+    assert "already uses the password" in logged
+    assert password not in logged

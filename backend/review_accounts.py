@@ -94,6 +94,7 @@ async def seed_from_env(conn, env=os.environ) -> None:
     for label, username, email, var in STORES.values():
         password = env.get(var, "").strip()
         if not password:
+            logger.info("%s is not set; review account %s left as it is", var, username)
             continue
         if not PASSWORD_PATTERN.match(password):
             logger.error("%s doesn't meet the password rules; %s not seeded", var, username)
@@ -102,6 +103,7 @@ async def seed_from_env(conn, env=os.environ) -> None:
             "SELECT password_hash, is_review_account FROM users WHERE lower(username) = $1", username
         )
         if row and row["is_review_account"] and verify_password(password, row["password_hash"]):
+            logger.info("Review account %s already uses the password in %s", username, var)
             continue
         try:
             outcome = await provision(conn, validate_username(username), normalize_email(email), password)

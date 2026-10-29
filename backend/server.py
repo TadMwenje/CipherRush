@@ -129,12 +129,26 @@ async def register_user(request: Request, response: Response, background: Backgr
 @limiter.limit("10/minute")
 async def login_user(request: Request, response: Response, login_data: UserLogin):
     pool = await get_pool()
+    identifier = login_data.username.strip()
+    by_email = "@" in identifier  # handles can't contain @, so this is an email address
     async with pool.acquire() as conn:
-        user = await conn.fetchrow(
-            "SELECT * FROM users WHERE username = $1", normalize_username(login_data.username)
-        )
-        password_ok = verify_password(login_data.password, user["password_hash"] if user else _DUMMY_HASH)
+        if by_email:
+            user = await conn.fetchrow("SELECT * FROM users WHERE lower(email) = $1", normalize_email(identifier))
+        else:
+            user = await conn.fetchrow("SELECT * FROM users WHERE username = $1", normalize_username(identifier))
+        password_hash = user["password_hash"] if user else _DUMMY_HASH
+        password_ok = verify_password(login_data.password, password_hash)
+        if not password_ok and user and login_data.password.strip() != login_data.password:
+            # Pasted from a store form or a notes app, a password often picks up a space or newline.
+            password_ok = verify_password(login_data.password.strip(), password_hash)
         if not user or not password_ok:
+            # Logged for support, never the password; the client gets the same message either way.
+            if not user:
+                logger.warning("Login refused: no account with that %s%s",
+                               "email" if by_email else "handle", "" if by_email else f" ({identifier[:50]!r})")
+            else:
+                logger.warning("Login refused: wrong password for user %s (%s%s)", user["id"], user["username"],
+                               ", review account" if user["is_review_account"] else "")
             raise HTTPException(status_code=401, detail="Wrong handle or password.")
         await conn.execute("UPDATE users SET last_active = now() WHERE id = $1", user["id"])
         await issue_session(conn, response, user["id"], user["session_version"])
