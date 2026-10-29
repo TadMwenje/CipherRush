@@ -101,6 +101,17 @@ both from the web build at the iPad 13" viewport. Regenerate with
 **App Store header (5244×2950):** `ios-header-5244x2950.png`, on the
 version page's "Header and Search Results" tab.
 
+## Game Center
+
+Leave **Game Center unticked** on the version page. CipherRush's leaderboards
+and achievements are server-side; the app has no GameKit code or
+`com.apple.developer.game-center` entitlement, and App Store Connect blocks
+review if the box is ticked without that entitlement in the build.
+
+## Pricing and availability
+
+Free ($0.00, base country United States) in all 175 countries or regions.
+
 ## Age rating
 
 Answer **None** to every content question. "Unrestricted web access": No.
