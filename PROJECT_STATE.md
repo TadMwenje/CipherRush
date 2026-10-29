@@ -4,10 +4,10 @@ Single source of truth for what CipherRush is, how it's built, what has been don
 
 | | |
 | --- | --- |
-| **Last updated** | 2026-10-28 |
-| **Branch** | `mobile-native-phase3`, commit `2027411`. Committed locally; **not yet pushed** (GitHub rejected the stored credentials, see §4) |
-| **Test status** | 93 backend tests passing · 79 frontend tests passing · strict production build clean · iOS simulator build and Android debug APK build |
-| **Native builds** | iOS simulator build succeeds · Android debug APK builds (`com.aximoix.cipherrush`) |
+| **Last updated** | 2026-10-29 |
+| **Branch** | `ios-device-testing`, pushed to GitHub (`TadMwenje/CipherRush`) |
+| **Test status** | 195 backend tests · 154 frontend tests · strict production build clean |
+| **Native builds** | iOS 1.0.0 (2) uploaded to App Store Connect · Android 1.0.0 (4) signed AAB, (3) in Play closed testing |
 | **Publisher** | AximoIX. Bundle/package ID `com.aximoix.cipherrush`. Legal terms: [aximoix.com/terms](https://aximoix.com/terms/#cipherrush) and [aximoix.com/privacy](https://aximoix.com/privacy/#cipherrush) |
 
 ---
@@ -215,6 +215,25 @@ The VORA evaluation scored the original build **4.7 / 10**. Every score was calc
 - **Android release signing:** release bundles are signed with the Play upload key. The keystore and `keystore.properties` live outside the repo in `~/.cipherrush-signing/` (override with `CIPHERRUSH_KEYSTORE_PROPERTIES`); without them release builds are unsigned. **Back that folder up somewhere safe** (password manager or encrypted drive); if it is lost, Play App Signing allows an upload-key reset through Play support. Version 1.0.0 (versionCode 1); bump `versionCode` for every upload.
 - **Not done:** nothing verified on a real device (O-01). Android builds now need JDK 21 (Android Studio's bundled JBR).
 
+### 2.10 Accounts, ads and store releases (2026-10-28/29, branch `ios-device-testing`)
+
+- **Email:** verification codes and password resets through Zoho ZeptoMail (`backend/mailer.py`, `email_routes.py`). Unverified players stay off leaderboards and Versus. Google/Apple accounts can add a handle and password (`POST /api/me/link-credentials`).
+- **Ads (Google AdMob, `frontend/src/ads/`, `backend/ads.py`):**
+  - Rewarded video: free Cipher hint, +5 Match-3 moves once per round.
+  - Rewarded interstitial: opt-in double points on a scored round, 3 a day, never Rush or Daily.
+  - Interstitial: every 3rd finished round, only at a break the player chose, at least 2 min apart.
+  - Rewards are granted only by AdMob's signed server-side verification callback (`/api/ads/ssv`, verified in AdMob for all four rewarded units). Every request is non-personalised; UMP consent runs in the EEA/UK/CH.
+  - Test builds never request live ads; `npm run sync:release` does. Setup: `mobile/store/ads-setup.md`.
+- **Android:** CipherMark launcher icon and splash replace Capacitor's placeholders (`mobile/scripts/android-assets.sh`). Google sign-in from Play installs needed an OAuth client for Play's app signing key (SHA-1 `B5:1C:…:B7:31`), added in Google Cloud. Advertising ID declared in Play Console. Changelog: `mobile/CHANGELOG.md`.
+- **iOS:** App Store Connect record created; 1.0.0 (1) and (2) uploaded, (2) with the privacy manifest that matches the App Privacy label (`PrivacyInfo.xcprivacy`). Listing, privacy label and TestFlight steps: `mobile/store/app-store.md`. Store images in `mobile/store/assets/`: header 5244×2950, iPhone 1290×2796 (Cipher), iPad 13" 2048×2732 (Match-3 practice), iPad 11" 1640×2360 (dashboard). All are real simulator captures with no alpha (`mobile/scripts/ios-store-assets.mjs fit`).
+- **Still open:**
+  - Google OAuth consent screen is in Testing (only listed test users can use Google sign-in); publish it.
+  - `app-ads.txt` on aximoix.com.
+  - Privacy policy text for AdMob and ZeptoMail (`mobile/store/privacy-policy-email-update.md`).
+  - Play Data safety rows for AdMob.
+  - TestFlight groups and Beta App Review.
+  - O-01 device checks.
+
 ## 3. Known issues and bug registry
 
 ### 3.1 Resolved (kept for traceability)
@@ -279,11 +298,11 @@ The VORA evaluation scored the original build **4.7 / 10**. Every score was calc
 - [x] Native haptics plugin integrated
 - [x] Final `appId`: `com.aximoix.cipherrush`
 - [x] Google / Apple sign-in (server verification, native and web clients), in-app account deletion, AximoIX legal links
-- [ ] Create the OAuth clients and Apple key, then fill the env vars (O-13)
-- [ ] Generate native icons and splash from the rotor artwork (O-02)
-- [ ] Configure signing: an Apple team and provisioning profile; an Android release keystore (stored outside the repo)
-- [ ] Production API on HTTPS. Build with `REACT_APP_BACKEND_URL=https://…`. Confirm sessions survive an app restart (refresh cookie persists in the native cookie store)
-- [ ] TestFlight and Play internal-testing tracks
+- [x] Create the OAuth clients and Apple key, then fill the env vars (O-13). Consent screen still to be published
+- [x] Generate native icons and splash from the rotor artwork (O-02; Android done 2026-10-29)
+- [x] Configure signing: an Apple team and provisioning profile; an Android release keystore (stored outside the repo)
+- [x] Production API on HTTPS. Build with `REACT_APP_BACKEND_URL=https://…`. Confirm sessions survive an app restart (refresh cookie persists in the native cookie store)
+- [ ] TestFlight and Play testing tracks: Play closed testing (Alpha) set up; iOS build 2 uploaded, TestFlight groups not yet created
 
 ### Phase 5: production deployment and pre-launch
 
