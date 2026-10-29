@@ -37,6 +37,27 @@ email host.
   the First Steps and First Decrypt badges, so Profile and Ranks aren't empty.
   Per-mode levels start at 1, and reviewers can play any mode.
 
+## Provisioning from Render (simplest)
+
+The server creates or repairs both accounts every time it starts, from two
+environment variables. Use this when you already have the passwords you typed
+into the store forms:
+
+1. Render → `cipherrush-api` → **Environment** → add (paste the values
+   yourself; never commit them):
+   - `REVIEW_PLAY_PASSWORD`: the Play reviewer's password
+   - `REVIEW_APPSTORE_PASSWORD`: the App Store reviewer's password
+2. Save, then **Manual Deploy → Deploy latest commit** (needs `review_accounts.py`
+   in the deployed commit).
+3. On start, each account is created if missing, or its password set to the
+   variable's value if it differs. A password that already matches is left
+   alone, so restarts don't sign reviewers out. It never touches a handle
+   owned by a real player. The values must meet the app's password rule
+   (8+ characters with lower case, upper case and a digit).
+
+To rotate a password later, change the variable and redeploy, then update the
+store form.
+
 ## Provisioning (run it yourself)
 
 1. The backend with `is_review_account` is deployed (`c92d32d`, 2026-10-28).

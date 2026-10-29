@@ -131,3 +131,70 @@ def test_credentials_file_is_owner_only_and_must_be_gitignored(tmp_path):
     with pytest.raises(SystemExit):
         pra.write_credentials(tracked, text)
     assert not tracked.exists()
+
+
+# --- seeding on server start from the environment (review_accounts.seed_from_env) ---
+
+import review_accounts  # noqa: E402
+
+
+def run_seed(monkeypatch, env):
+    async def go():
+        conn = await asyncpg.connect(os.environ["DATABASE_URL"])
+        try:
+            await review_accounts.seed_from_env(conn, env)
+        finally:
+            await conn.close()
+    asyncio.run(go())
+
+
+@pytest.fixture
+def seeded_store(monkeypatch):
+    username = random_handle("rv_")
+    _created_usernames.append(username)
+    monkeypatch.setattr(review_accounts, "STORES", {
+        "play": ("TEST REVIEWER", username, f"{username}@example.com", "REVIEW_TEST_PASSWORD"),
+    })
+    return username
+
+
+def session_version(username):
+    return db_query("SELECT session_version FROM users WHERE username = $1", username)[0]["session_version"]
+
+
+def test_startup_seed_creates_the_account_with_the_configured_password(client, monkeypatch, seeded_store):
+    password = pra.generate_password()
+    run_seed(monkeypatch, {"REVIEW_TEST_PASSWORD": password})
+    res = login(client, seeded_store, password)
+    assert res.status_code == 200, res.text
+    assert res.json()["user"]["level"] == 2
+
+
+def test_restarts_leave_a_matching_password_and_its_sessions_alone(monkeypatch, seeded_store):
+    password = pra.generate_password()
+    run_seed(monkeypatch, {"REVIEW_TEST_PASSWORD": password})
+    before = session_version(seeded_store)
+    run_seed(monkeypatch, {"REVIEW_TEST_PASSWORD": password})
+    assert session_version(seeded_store) == before
+
+
+def test_a_changed_password_is_applied_on_the_next_start(client, monkeypatch, seeded_store):
+    old, new = pra.generate_password(), pra.generate_password()
+    run_seed(monkeypatch, {"REVIEW_TEST_PASSWORD": old})
+    run_seed(monkeypatch, {"REVIEW_TEST_PASSWORD": new})
+    assert login(client, seeded_store, old).status_code == 401
+    assert login(client, seeded_store, new).status_code == 200
+
+
+def test_no_password_set_means_nothing_is_created(monkeypatch, seeded_store):
+    run_seed(monkeypatch, {})
+    assert db_query("SELECT 1 FROM users WHERE username = $1", seeded_store) == []
+
+
+def test_seeding_never_takes_over_a_real_players_handle(client, monkeypatch, player):
+    monkeypatch.setattr(review_accounts, "STORES", {
+        "play": ("TEST REVIEWER", player.username, "x@example.com", "REVIEW_TEST_PASSWORD"),
+    })
+    password = pra.generate_password()
+    run_seed(monkeypatch, {"REVIEW_TEST_PASSWORD": password})
+    assert login(client, player.username, password).status_code == 401

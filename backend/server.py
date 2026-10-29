@@ -31,6 +31,7 @@ from daily_routes import router as daily_router  # noqa: E402
 from email_routes import new_verification, router as email_router  # noqa: E402
 from ads import router as ads_router  # noqa: E402
 import mailer  # noqa: E402
+import review_accounts  # noqa: E402
 from db import close_pool, get_pool, run_migrations  # noqa: E402
 from game_routes import router as game_router  # noqa: E402
 from leveling import xp_progress  # noqa: E402
@@ -369,6 +370,9 @@ async def startup_db_client():
         # Fail the deploy loudly rather than serve with unsafe settings.
         raise RuntimeError("Refusing to start in production: " + "; ".join(problems))
     await run_migrations()
+    pool = await get_pool()
+    async with pool.acquire() as conn:
+        await review_accounts.seed_from_env(conn)
 
 
 @app.on_event("shutdown")
