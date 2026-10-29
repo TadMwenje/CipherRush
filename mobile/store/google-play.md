@@ -141,7 +141,7 @@ Create one Android client per SHA-1:
 
 | Certificate | Used by | SHA-1 |
 | --- | --- | --- |
-| Play app signing key | Every install from Google Play, including internal testing | Copy it from Play Console → Test and release → App integrity → App signing (it exists after the first upload) |
+| Play app signing key | Every install from Google Play, including internal and closed testing | `B5:1C:08:56:08:0D:0A:D7:5F:EF:FB:52:1B:1E:EB:42:AE:A5:B7:31` (Play Console → Test and release → App integrity → App signing) |
 | Upload key (`~/.cipherrush-signing/`) | Release builds sideloaded with `adb install` | `2D:4D:EF:E4:FD:74:E3:44:F4:CD:A3:83:F5:75:B0:63:E1:61:80:21` |
 | This Mac's debug key (`~/.android/debug.keystore`) | `app-debug.apk` | `64:D3:D4:68:41:95:DE:69:B2:92:50:F8:8C:08:57:D2:F7:15:93:8A` |
 
@@ -153,6 +153,17 @@ client ID goes in two places:
   identifier, not a secret.
 - Appended to `GOOGLE_CLIENT_IDS` in `render.yaml`, comma-separated after the iOS
   ID. That makes it a valid server audience.
+
+All three Android clients exist in `cipherrush-auth` (the Play signing one was
+added on 29 Oct 2026; before that, Google sign-in failed on every Play install).
+
+The OAuth consent screen must be **In production** (Google Auth Platform →
+Audience → Publish app). While it's in Testing, only the listed test users can
+sign in with Google, on Android and iOS alike. The app only asks for the basic
+scopes (openid, email, profile), which don't need Google's app verification.
+The uploaded logo does: Google says a logo means submitting for brand
+verification. If publishing asks for that and you don't want to wait, remove
+the logo, publish, and add it back once you're ready to verify.
 
 The app signs in with native ID tokens, so no redirect URIs are needed and the
 API has no `/auth/google/callback`. Until the Web client exists, Android hides
