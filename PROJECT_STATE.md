@@ -6,8 +6,8 @@ Single source of truth for what CipherRush is, how it's built, what has been don
 | --- | --- |
 | **Last updated** | 2026-10-29 |
 | **Branch** | `ios-device-testing`, pushed to GitHub (`TadMwenje/CipherRush`) |
-| **Test status** | 195 backend tests · 154 frontend tests · strict production build clean |
-| **Native builds** | iOS 1.0.0 (2) uploaded to App Store Connect · Android 1.0.0 (4) signed AAB, (3) in Play closed testing |
+| **Test status** | 210 backend tests · 163 frontend tests · strict production build clean |
+| **Native builds** | iOS 1.0.0 (3): version 1.0 Waiting for Review · Android 1.0.0 (5) live on Play Closed testing - Alpha |
 | **Publisher** | AximoIX. Bundle/package ID `com.aximoix.cipherrush`. Legal terms: [aximoix.com/terms](https://aximoix.com/terms/#cipherrush) and [aximoix.com/privacy](https://aximoix.com/privacy/#cipherrush) |
 
 ---
@@ -231,8 +231,7 @@ The VORA evaluation scored the original build **4.7 / 10**. Every score was calc
 - **AdMob audit (2026-10-29):** account under verification; payment profile complete (AdSense Zimbabwe, US$100 threshold); identity verification not requested yet (it comes at the earnings threshold). Both apps "Requires review / limited ad serving" until linked to a live store listing (AdMob → Apps → Add shop, possible once the app is public on Play / the App Store). All six ad units in AdMob match `ads/config.js`, the native app IDs and `ads.py`. `https://aximoix.com/app-ads.txt` is live (HTTP 200, `public/app-ads.txt` in `AximoIX-website-main`, commit `9c30824`); AdMob → Apps → app-ads.txt can take a day to show it verified.
 - **App Store Connect review blockers (2026-10-29):** build 3 selected on version 1.0. Game Center unticked on the version (the app doesn't use GameKit; leaderboards and achievements are server-side), so no entitlement or new build is needed. Price Free in all 175 countries/regions, available in all of them. Privacy policy URL set; privacy label answered for all 10 data types exactly as `mobile/store/app-store.md` (tracking No). Content Rights answer chosen ("No third-party content").
 - **Still open:**
-  - App Store Connect, by the user (the agent's clicks were blocked as attestations): App Information → Content Rights → **Done** then **Save**; App Privacy → **Publish**. Then "Add for Review" on version 1.0.
-  - Deploy `3de450a` on Render (Manual Deploy → Deploy latest commit).
+  - ~~App Store Connect attestations and Add for Review~~: done, 1.0 is Waiting for Review (§2.11).
   - Google OAuth consent screen is in Testing (only listed test users can use Google sign-in); publish it.
   - Privacy policy text for AdMob and ZeptoMail (`mobile/store/privacy-policy-email-update.md`).
   - Play Data safety rows for AdMob.
@@ -257,6 +256,25 @@ The VORA evaluation scored the original build **4.7 / 10**. Every score was calc
 | B-10 | iOS keyboard didn't open after "Start" / "Next" | Fixed in code, Phase 3.5. **Needs a real-device check** (see O-01) |
 | B-11 | Glossy padlock iconography | Fixed, Phase 3.5 |
 | B-12 | Log out hidden under the bottom nav | Fixed, Phase 4 prep |
+
+### 2.11 Store and AdMob status audit (2026-10-29, evening)
+
+Checked in each console, read-only. Nothing was changed.
+
+| Platform | Status | Blockers or warnings |
+| --- | --- | --- |
+| **Google Play**, Closed testing - Alpha | Release **5 (1.0.0) active**, published 29 Oct (green tick). Publishing overview: nothing pending, managed publishing off. App status: Closed testing, installed audience 0 | Inbox has two account notices, not yet resolved: "Your identity couldn't be verified" (22 Oct; says the account can't publish apps and offers an appeal) and "an urgent issue with your payments account" (28 Oct, "Fix issue"). Release 5 was published after the first one, so it may be out of date, but the user needs to open both in Play Console → Inbox and confirm. Either could block a later production release |
+| **App Store Connect**, iOS 1.0 | **Waiting for Review**, build 3 (1.0.0) attached, sign-in required, review notes filled. Content Rights and App Privacy were done, or submission wouldn't have gone through | None on the page. A new build now means removing the version from review first |
+| **AdMob** | Account **"being verified"** (up to 24 h, rarely 2 weeks). Payment profile complete. Both apps (Android `~8484351363`, iOS `~1291549210`) **Requires review / Limited ad serving: "Add store to lift limit"**, 3 active ad units each, no shop linked | Store linking waits on a public listing: Play is closed testing only and iOS isn't approved yet. No identity-verification alert in AdMob (that comes at the payment threshold) |
+| **app-ads.txt** | `https://aximoix.com/app-ads.txt` returns HTTP 200 `text/plain` with the AdMob `pub-` line and `f08c47fec0942fa0` | AdMob's app-ads.txt tab can take a day to show it verified |
+| **API** | `https://api.aximoix.com/api/time` returns 200 | The reviewer-login fix (`05d595a`: login by handle or email, whitespace-tolerant password, refusal and seeding logs) needs a Manual Deploy on Render if it isn't deployed yet |
+
+**Remaining actions (user):**
+1. Play Console → Inbox: open the identity-verification and payments-account notices; fix or appeal if still active.
+2. Render: deploy `05d595a`, then confirm the `Review account … created/reset/already uses` lines in the startup logs.
+3. App Store: wait for review; answer App Review messages in Resolution Center.
+4. AdMob → Apps → Add shop for each app once its listing is public (Play production or open testing; App Store after approval).
+5. Still open from §2.10: publish the Google OAuth consent screen, Play Data safety AdMob rows, privacy policy text, TestFlight groups, O-01 device checks.
 
 ### 3.2 Open
 
