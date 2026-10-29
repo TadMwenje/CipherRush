@@ -1,11 +1,21 @@
+import asyncio
 import json
+import logging
 import os
 from pathlib import Path
 from typing import Optional
+from urllib.parse import urlsplit
 
 import asyncpg
 
 ROOT_DIR = Path(__file__).parent
+logger = logging.getLogger(__name__)
+
+# A cold or briefly unreachable Postgres shouldn't fail the deploy: retry the
+# first connection with backoff, and never wait on one attempt for long.
+CONNECT_TIMEOUT_SECONDS = 10
+CONNECT_ATTEMPTS = 5
+CONNECT_BACKOFF_SECONDS = (2, 4, 8, 16)
 
 _pool: Optional[asyncpg.Pool] = None
 
@@ -15,12 +25,36 @@ async def _init_connection(conn: asyncpg.Connection) -> None:
     await conn.set_type_codec("jsonb", encoder=json.dumps, decoder=json.loads, schema="pg_catalog")
 
 
+def _db_host(dsn: str) -> str:
+    """Host and database name only: never log the credentials in the URL."""
+    parts = urlsplit(dsn)
+    return f"{parts.hostname}:{parts.port or 5432}{parts.path}"
+
+
 async def get_pool() -> asyncpg.Pool:
     global _pool
     if _pool is None:
-        _pool = await asyncpg.create_pool(
-            dsn=os.environ["DATABASE_URL"], min_size=1, max_size=10, init=_init_connection
-        )
+        dsn = os.environ.get("DATABASE_URL")
+        if not dsn:
+            raise RuntimeError("DATABASE_URL is not set")
+        for attempt in range(1, CONNECT_ATTEMPTS + 1):
+            try:
+                _pool = await asyncpg.create_pool(
+                    dsn=dsn, min_size=1, max_size=10, init=_init_connection, timeout=CONNECT_TIMEOUT_SECONDS
+                )
+                if attempt > 1:
+                    logger.info("Connected to Postgres at %s on attempt %d", _db_host(dsn), attempt)
+                break
+            except (OSError, asyncio.TimeoutError, asyncpg.PostgresError) as exc:
+                if attempt == CONNECT_ATTEMPTS:
+                    raise RuntimeError(
+                        f"Couldn't connect to Postgres at {_db_host(dsn)} after {attempt} attempts: "
+                        f"{type(exc).__name__}: {exc}"
+                    ) from exc
+                wait = CONNECT_BACKOFF_SECONDS[min(attempt, len(CONNECT_BACKOFF_SECONDS)) - 1]
+                logger.warning("Postgres at %s not reachable (attempt %d/%d: %s: %s); retrying in %ds",
+                               _db_host(dsn), attempt, CONNECT_ATTEMPTS, type(exc).__name__, exc, wait)
+                await asyncio.sleep(wait)
     return _pool
 
 

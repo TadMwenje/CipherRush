@@ -370,9 +370,14 @@ async def startup_db_client():
         # Fail the deploy loudly rather than serve with unsafe settings.
         raise RuntimeError("Refusing to start in production: " + "; ".join(problems))
     await run_migrations()
-    pool = await get_pool()
-    async with pool.acquire() as conn:
-        await review_accounts.seed_from_env(conn)
+    # The review accounts are a convenience: a failure here is logged, and the
+    # API still starts for everyone else.
+    try:
+        pool = await get_pool()
+        async with pool.acquire() as conn:
+            await review_accounts.seed_from_env(conn)
+    except Exception:  # noqa: BLE001
+        logger.exception("Seeding the store review accounts failed")
 
 
 @app.on_event("shutdown")
