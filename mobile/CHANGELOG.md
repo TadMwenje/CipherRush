@@ -2,6 +2,21 @@
 
 Native app changes (Android and iOS). Server and web changes are in git history.
 
+## Android 1.0.0 (5) and iOS 1.0.0 (3), 29 Oct 2026
+
+Needs the matching server (commit `3de450a`) deployed first.
+
+### Added
+- **How to Play walkthroughs:** a game's ? button now opens a step-by-step
+  walkthrough for Cipher Puzzles, Daily Cipher, Speed Cipher Rush and
+  Binary/Hex. Each step has a worked example on letter tiles (Caesar, Atbash,
+  Vigenère, ROT-13, hex and binary bytes) and a strategy tip, followed by the
+  quick rules.
+- **Security Quiz hints:** a hint rules out one wrong answer, down to two
+  options. Three a round are free. After that, a rewarded video buys another,
+  verified by AdMob server-side verification like the Cipher hint. Hints cost
+  no points.
+
 ## Android 1.0.0 (4), 29 Oct 2026
 
 ### Fixed
