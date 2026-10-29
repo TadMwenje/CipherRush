@@ -7,6 +7,10 @@
 //       Puts a 1290x2796 capture on an iPhone body with a Dynamic Island under a short
 //       caption, at 1290x2796 (the 6.9" slot). --status-bar draws 9:41, signal and battery
 //       above captures that don't have them (browser captures); simulator captures do.
+//   node scripts/ios-store-assets.mjs iphone-set
+//       All iPhone screenshots for both App Store Connect slots, from store/assets/raw/:
+//       ios-iphone-6.9-NN.png (1290x2796) and ios-iphone-6.3-NN.png (1179x2556, the same
+//       proportions, so it's a pure downscale).
 //   node scripts/ios-store-assets.mjs fit <raw-capture.png> <name> <width> <height>
 //       Scales a simulator capture to cover width x height, crops the overflow, drops
 //       the alpha channel and writes store/assets/<name>.png.
@@ -54,7 +58,7 @@ async function fit(input, name, w, h) {
 
 // iPhone body at 1290x2796: caption on top, then the phone. Screen proportions follow a
 // 6.9" iPhone (430x932 pt); the island is 126x37 pt, 11 pt from the top.
-async function framed(input, name, caption, statusBar) {
+async function framed(input, name, caption, statusBar, smaller = null) {
   const [W, H] = [1290, 2796];
   const screenW = 930;
   const pt = screenW / 430;
@@ -94,15 +98,37 @@ async function framed(input, name, caption, statusBar) {
     ${status}
     <rect x="${sx + (screenW - isl.w) / 2}" y="${isl.y}" width="${isl.w}" height="${isl.h}" rx="${isl.h / 2}" fill="#000000"/>
   </svg>`;
-  await sharp(Buffer.from(svg)).flatten({ background: BG }).removeAlpha()
-    .png({ palette: false }).toFile(join(out, `${name}.png`));
+  const full = await sharp(Buffer.from(svg)).flatten({ background: BG }).removeAlpha().png({ palette: false }).toBuffer();
+  await sharp(full).toFile(join(out, `${name}.png`));
+  if (smaller) {
+    await sharp(full).resize(smaller.w, smaller.h, { fit: "fill", kernel: "lanczos3" }).removeAlpha()
+      .png({ palette: false }).toFile(join(out, `${smaller.name}.png`));
+  }
+}
+
+// Upload order: the first three are what App Store search results show.
+const IPHONE_SET = [
+  ["iphone-cipher-simulator.png", "Beat the clock|Caesar, Atbash and Vigenère", false],
+  ["iphone-match3.png", "Match-3, security style|Keys, locks, shields and alarms", true],
+  ["iphone-truefalse.png", "Spot the myths|True or false? Swipe or tap", true],
+  ["iphone-caesar.png", "Practise offline|No account, no signal needed", true],
+  ["iphone-welcome.png", "Real skills, fast|Ciphers, scams and bytes", true],
+];
+
+async function iphoneSet() {
+  for (const [i, [raw, caption, statusBar]] of IPHONE_SET.entries()) {
+    const n = String(i + 1).padStart(2, "0");
+    await framed(join(out, "raw", raw), `ios-iphone-6.9-${n}`, caption, statusBar,
+      { name: `ios-iphone-6.3-${n}`, w: 1179, h: 2556 });
+  }
 }
 
 const [cmd, ...args] = process.argv.slice(2);
 if (cmd === "header") await header();
+else if (cmd === "iphone-set") await iphoneSet();
 else if (cmd === "framed" && args.length >= 3) await framed(args[0], args[1], args[2], args.includes("--status-bar"));
 else if (cmd === "fit" && args.length === 4) await fit(args[0], args[1], +args[2], +args[3]);
 else {
-  console.error('usage: header | framed <raw.png> <name> "<caption>" [--status-bar] | fit <raw.png> <name> <width> <height>');
+  console.error('usage: header | iphone-set | framed <raw.png> <name> "<caption>" [--status-bar] | fit <raw.png> <name> <width> <height>');
   process.exit(1);
 }

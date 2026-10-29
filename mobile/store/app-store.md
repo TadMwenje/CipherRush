@@ -61,19 +61,28 @@ as is.
 
 Every image is a real capture of the app (guideline 2.3.3), saved as a
 24-bit PNG with no alpha. Raw captures are in `assets/raw/`; regenerate with
-`node mobile/scripts/ios-store-assets.mjs framed …` (see the script header).
+`node mobile/scripts/ios-store-assets.mjs iphone-set` (both iPhone sets) or
+`framed …` (see the script header).
 
-**iPhone 6.9" slot (1290×2796)**, upload in this order:
+Each slot takes only its own sizes, so match the file to the slot:
 
-1. `ios-iphone-1-cipher.png`: "Beat the clock" (a scored Cipher round, simulator)
-2. `ios-iphone-2-match3.png`: "Match-3, security style"
-3. `ios-iphone-3-truefalse.png`: "Spot the myths"
-4. `ios-iphone-4-practice.png`: "Practise offline"
-5. `ios-iphone-5-welcome.png`: "Real skills, fast"
+| App Store Connect slot | Accepted sizes | Files |
+| --- | --- | --- |
+| iPhone with Dynamic Island (medium display), 6.1"/6.3" | 1179×2556, 1206×2622 | `ios-iphone-6.3-01..05.png` (**uploaded**) |
+| iPhone 6.9" (View All Sizes in Media Manager; optional) | 1290×2796, 1260×2736, 1320×2868 | `ios-iphone-6.9-01..05.png` |
+| iPad 13" | 2048×2732 | `ios-ipad13-2048x2732.png` |
+| Header and Search Results tab | 5244×2950 | `ios-header-5244x2950.png` |
 
-1290×2796 is one of the sizes the 6.9" slot accepts (alongside 1260×2736
-and 1320×2868), and App Store Connect scales it down for smaller iPhones.
-If an upload is refused, check you dropped it in the iPhone slot, not iPad.
+The iPhone order is the same in both sets:
+
+1. `01`: "Beat the clock" (a scored Cipher round, simulator)
+2. `02`: "Match-3, security style"
+3. `03`: "Spot the myths"
+4. `04`: "Practise offline"
+5. `05`: "Real skills, fast"
+
+The 6.3 set is a straight downscale of the 6.9 set. A 1290×2796 file put in
+the medium-display slot is refused; that's what happened to the first batch.
 
 **Search results:** there's no separate search-results asset. A search
 result shows the icon, name, subtitle and the **first three screenshots**
@@ -84,7 +93,8 @@ and True/False first.
 simulator). **iPad 11" (1640×2360)**, optional: `ios-ipad11-1640x2360.png`
 (the dashboard).
 
-**App Store header (5244×2950):** `ios-header-5244x2950.png`.
+**App Store header (5244×2950):** `ios-header-5244x2950.png`, on the
+version page's "Header and Search Results" tab.
 
 ## Age rating
 
