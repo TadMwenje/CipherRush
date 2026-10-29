@@ -53,6 +53,7 @@ export const GAME_MODES = [
     rules: [
       "Pick a topic: phishing, social engineering, crypto, malware or incident response.",
       "Five questions a round. Get 3 right to clear it. Every answer comes with the why.",
+      "Stuck? A hint rules out one wrong answer. Three a round are free; after that, a short video buys another.",
     ],
   },
   {

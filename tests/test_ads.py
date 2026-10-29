@@ -146,6 +146,62 @@ def test_paid_hints_still_cost_points(player):
     assert done["hint_penalty"] > 0
 
 
+# --- quiz hints ----------------------------------------------------------------------
+
+def quiz_round(player):
+    return player.post("/api/games/quiz/rounds", json={"category": "phishing"}).json()
+
+
+def quiz_hint(player, rid, question, reward_id=None):
+    body = {"question": question} if reward_id is None else {"question": question, "reward_id": reward_id}
+    return player.post(f"/api/games/quiz/rounds/{rid}/hint", json=body)
+
+
+def test_three_free_quiz_hints_strike_out_wrong_options(player):
+    data = quiz_round(player)
+    rid = data["round_id"]
+    assert data["free_hints_left"] == 3
+    for n, q in enumerate([0, 0, 1], start=1):
+        res = quiz_hint(player, rid, q)
+        assert res.status_code == 200, res.text
+        assert res.json()["free_hints_left"] == 3 - n
+    state = round_state(rid)
+    for q, removed in state["removed"].items():
+        assert state["items"][int(q)]["correct"] not in removed
+    assert len(state["removed"]["0"]) == 2
+    # Two options left on question 0: the answer and one decoy. No more hints there.
+    assert quiz_hint(player, rid, 0).status_code == 400
+
+
+def test_the_fourth_quiz_hint_needs_a_watched_video(client, player):
+    rid = quiz_round(player)["round_id"]
+    for q in (0, 1, 2):
+        assert quiz_hint(player, rid, q).status_code == 200
+    assert quiz_hint(player, rid, 3).status_code == 402
+    assert quiz_hint(player, rid, 3, reward(player, "hint", rid)).status_code == 402  # not watched
+    paid = earned(player, client, "hint", rid)
+    assert quiz_hint(player, rid, 3, paid).status_code == 200
+    assert quiz_hint(player, rid, 4, paid).status_code == 402  # spent
+    assert round_state(rid)["hints_used"] == 4
+
+
+def test_quiz_hints_dont_cost_points_and_survive_a_resume(player):
+    rid = quiz_round(player)["round_id"]
+    quiz_hint(player, rid, 2)
+    active = player.get("/api/games/quiz/rounds/active").json()
+    view = active.get("round") or active
+    assert view["hints_used"] == 1 and len(view["removed"]["2"]) == 1
+    right = [item["correct"] for item in round_state(rid)["items"]]
+    done = player.post(f"/api/games/quiz/rounds/{rid}/submit", json={"answers": right}).json()
+    assert done["correct_count"] == 5 and done["score"] > 0
+
+
+def test_a_cipher_reward_cant_pay_for_someone_elses_quiz_hint(client, player, make_player):
+    other = make_player()
+    rid = quiz_round(other)["round_id"]
+    assert player.post("/api/ads/rewards", json={"kind": "hint", "round_id": rid}).status_code == 404
+
+
 # --- match-3 continue ----------------------------------------------------------------
 
 def last_move_round(player):

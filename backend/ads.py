@@ -15,7 +15,8 @@ enough. Every reward goes through AdMob server-side verification (SSV):
      Each earned reward is spent exactly once, by its owner.
 
 Kinds:
-  * hint     - a Cipher Puzzles hint without the point cost (bound to a round)
+  * hint     - a Cipher Puzzles hint without the point cost, or a Security Quiz
+               hint once the round's free ones are used (bound to a round)
   * continue - +5 moves on a Match-3 round that ran out (bound to a round)
   * boost    - double points on the next scored round (not Rush or Daily),
                at most BOOSTS_PER_DAY a day
@@ -142,11 +143,11 @@ async def request_reward(request: Request, body: RewardRequest, user=Depends(get
     pool = await get_pool()
     async with pool.acquire() as conn:
         if body.kind in ("hint", "continue"):
-            game_type = "cipher" if body.kind == "hint" else "match3"
+            game_types = ["cipher", "quiz"] if body.kind == "hint" else ["match3"]
             live = round_id and await conn.fetchval(
-                """SELECT 1 FROM game_rounds WHERE id = $1 AND user_id = $2 AND game_type = $3
+                """SELECT 1 FROM game_rounds WHERE id = $1 AND user_id = $2 AND game_type = ANY($3::text[])
                    AND completed_at IS NULL AND expires_at > now()""",
-                round_id, user["id"], game_type,
+                round_id, user["id"], game_types,
             )
             if not live:
                 raise HTTPException(status_code=404, detail="That round has finished.")

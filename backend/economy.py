@@ -42,6 +42,11 @@ CIPHER_FLOOR = 0.1            # a solve is always worth at least 10% of the base
 QUIZ_PER_CORRECT = 30
 QUIZ_ROUND_SIZE = 5
 QUIZ_PASS_RATIO = 0.6
+# Hints strike out one wrong option each. The first few a round are free; after
+# that each one is paid for with a rewarded video (ads.py), never with points.
+QUIZ_FREE_HINTS = 3
+# A hint never takes a question below two options (the answer and one decoy).
+QUIZ_MIN_OPTIONS = 2
 
 TF_PER_CORRECT = 12
 TF_ROUND_SIZE = 10

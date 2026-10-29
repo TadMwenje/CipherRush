@@ -267,6 +267,18 @@ class QuizAnswers(StrictModel):
     answers: List[int] = Field(min_length=1, max_length=eco.QUIZ_ROUND_SIZE)
 
 
+class QuizHint(StrictModel):
+    question: int = Field(ge=0, lt=eco.QUIZ_ROUND_SIZE)
+    # Needed once the round's free hints are used: a verified rewarded ad.
+    reward_id: Optional[str] = Field(default=None, max_length=64)
+
+
+def _quiz_hint_view(state):
+    used = state.get("hints_used", 0)
+    return {"removed": state.get("removed", {}), "hints_used": used,
+            "free_hints_left": max(0, eco.QUIZ_FREE_HINTS - used)}
+
+
 @router.post("/quiz/rounds")
 @limiter.limit(START_LIMIT)
 async def start_quiz(request: Request, body: QuizStart, user=Depends(get_current_user)):
@@ -284,7 +296,8 @@ async def start_quiz(request: Request, body: QuizStart, user=Depends(get_current
             public.append({"index": i, "question": q["question"], "options": [q["options"][o] for o in order]})
         return (
             {"category": body.category, "items": items},
-            {"category": body.category, "category_label": QUIZ_CATEGORY_LABELS[body.category], "questions": public},
+            {"category": body.category, "category_label": QUIZ_CATEGORY_LABELS[body.category], "questions": public,
+             "free_hints_left": eco.QUIZ_FREE_HINTS},
         )
 
     return await _start(user, "quiz", build, 1800)
@@ -314,6 +327,34 @@ async def quiz_submit(request: Request, round_id: str, body: QuizAnswers, user=D
                                       passed=correct_count / total >= eco.QUIZ_PASS_RATIO)
         return {"correct_count": correct_count, "total_questions": total,
                 "percent": round(100 * correct_count / total), "results": results, **result}
+
+    return await _locked(request, round_id, user, "quiz", handler)
+
+
+@router.post("/quiz/rounds/{round_id}/hint")
+@limiter.limit(ACTION_LIMIT)
+async def quiz_hint(request: Request, round_id: str, body: QuizHint, user=Depends(get_current_user)):
+    """Strike out one wrong option on a question. Free for the first few a round,
+    then each one needs a rewarded video the server has verified."""
+    async def handler(conn, row):
+        state = row["state"]
+        items = state["items"]
+        if body.question >= len(items):
+            raise HTTPException(status_code=400, detail="No such question.")
+        item = items[body.question]
+        removed = state.setdefault("removed", {}).setdefault(str(body.question), [])
+        decoys = [i for i in range(len(item["order"])) if i != item["correct"] and i not in removed]
+        if len(item["order"]) - len(removed) <= eco.QUIZ_MIN_OPTIONS or not decoys:
+            raise HTTPException(status_code=400, detail="That's as far as hints go on this question.")
+        used = state.get("hints_used", 0)
+        if used >= eco.QUIZ_FREE_HINTS:
+            if not body.reward_id:
+                raise HTTPException(status_code=402, detail="Free hints used. Watch a short video for another.")
+            await ads.spend_reward(conn, user["id"], body.reward_id, "hint", row["id"])
+        removed.append(_rand.choice(decoys))
+        state["hints_used"] = used + 1
+        await save_state(conn, row["id"], state)
+        return {"question": body.question, **_quiz_hint_view(state)}
 
     return await _locked(request, round_id, user, "quiz", handler)
 
@@ -814,7 +855,7 @@ def _rush_view(row):
 
 ACTIVE_VIEWS: Dict[str, Callable] = {
     "cipher": _cipher_view,
-    "quiz": lambda row: {},
+    "quiz": lambda row: _quiz_hint_view(row["state"]),
     "truefalse": _truefalse_view,
     "binhex": _binhex_view,
     "match3": _match3_view,

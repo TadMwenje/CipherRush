@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { CheckOct, CrossOct } from "../glyphs";
+import { Bulb, CheckOct, CrossOct } from "../glyphs";
 import api, { errorMessage } from "../api";
 import { playCorrect, playWrong } from "../sound";
 import { haptic } from "../mobile/haptics";
 import GameLevelBar from "../components/GameLevelBar";
 import GameHeader from "../components/GameHeader";
+import { adsAvailable } from "../ads/admob";
 import { afterBreak } from "../ads/pacing";
+import { earnReward } from "../ads/rewards";
 import useGameRewards from "../hooks/useGameRewards";
 import useRound from "../hooks/useRound";
 
@@ -24,11 +26,18 @@ function QuizGame() {
   const [answers, setAnswers] = useState([]);
   const [result, setResult] = useState(null);
   const [busy, setBusy] = useState(false);
+  // Hints strike out wrong options. The server picks which, and counts them:
+  // the first few a round are free, then each one is a rewarded video.
+  const [removed, setRemoved] = useState({});
+  const [freeLeft, setFreeLeft] = useState(0);
+  const [watching, setWatching] = useState(false);
 
   useEffect(() => {
     setCurrent(0);
     setAnswers([]);
     setResult(null);
+    setRemoved(round?.removed || {});
+    setFreeLeft(round?.free_hints_left ?? 0);
   }, [round]);
 
   const category = round?.category || "phishing";
@@ -60,6 +69,32 @@ function QuizGame() {
       setError(errorMessage(err));
     } finally {
       setBusy(false);
+    }
+  };
+
+  const struck = removed[String(current)] || [];
+  const canHint = question && question.options.length - struck.length > 2;
+
+  const hint = async () => {
+    const paid = freeLeft <= 0;
+    if (paid) setWatching(true);
+    try {
+      const body = { question: current };
+      if (paid) body.reward_id = await earnReward("hint", round.round_id);
+      const { data } = await api.post(`/games/quiz/rounds/${round.round_id}/hint`, body);
+      setRemoved(data.removed);
+      setFreeLeft(data.free_hints_left);
+      const gone = data.removed[String(current)] || [];
+      if (gone.includes(answers[current])) {
+        const nextAnswers = [...answers];
+        nextAnswers[current] = undefined;
+        setAnswers(nextAnswers);
+      }
+      haptic("select");
+    } catch (err) {
+      setError(errorMessage(err, err.message));
+    } finally {
+      setWatching(false);
     }
   };
 
@@ -107,17 +142,42 @@ function QuizGame() {
             <div className="question-text">{question.question}</div>
 
             <div className="options">
-              {question.options.map((option, index) => (
-                <button
-                  key={option}
-                  className={`option-btn ${answers[current] === index ? "selected" : ""}`}
-                  onClick={() => select(index)}
-                  aria-pressed={answers[current] === index}
-                >
-                  {option}
-                </button>
-              ))}
+              {question.options.map((option, index) =>
+                struck.includes(index) ? (
+                  <button key={option} className="option-btn struck" disabled aria-label={`${option} (ruled out)`}>
+                    {option}
+                  </button>
+                ) : (
+                  <button
+                    key={option}
+                    className={`option-btn ${answers[current] === index ? "selected" : ""}`}
+                    onClick={() => select(index)}
+                    aria-pressed={answers[current] === index}
+                  >
+                    {option}
+                  </button>
+                )
+              )}
             </div>
+
+            {canHint && freeLeft > 0 && (
+              <button type="button" className="hint-btn quiz-hint-btn" onClick={hint} disabled={busy}>
+                <Bulb size={16} />
+                Hint: rule one out ({freeLeft} free left)
+              </button>
+            )}
+            {canHint && freeLeft <= 0 && adsAvailable() && (
+              <button type="button" className="free-hint-btn" onClick={hint} disabled={busy || watching}>
+                <Bulb size={16} />
+                {watching ? "Loading video" : "Another hint: watch a short video"}
+              </button>
+            )}
+            {canHint && freeLeft <= 0 && !adsAvailable() && (
+              <button type="button" className="hint-btn quiz-hint-btn" disabled>
+                <Bulb size={16} />
+                No free hints left this round
+              </button>
+            )}
 
             <button className="next-btn" onClick={next} disabled={answers[current] === undefined || busy}>
               {current < questions.length - 1 ? "Next" : "Lock in answers"}

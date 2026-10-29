@@ -922,6 +922,18 @@ body {
   color: #00d4ff;
 }
 
+/* Ruled out by a quiz hint. */
+.option-btn.struck {
+  opacity: 0.35;
+  text-decoration: line-through;
+  cursor: default;
+}
+
+.quiz-hint-btn {
+  align-self: center;
+  min-height: var(--tap, 48px);
+}
+
 .quiz-result {
   text-align: center;
   background: rgba(255, 255, 255, 0.05);
@@ -2894,6 +2906,166 @@ body {
 .howto-section.truefalse { border-left-color: #60a5fa; }
 .howto-section.match3 { border-left-color: #ffe66d; }
 .howto-section.memory { border-left-color: #a78bfa; }
+
+/* Step-through tutorial inside the How to Play sheet (components/Walkthrough.js). */
+.walkthrough {
+  margin-bottom: 0.85rem;
+  padding: 1rem;
+  border-radius: 12px;
+  background: rgba(0, 212, 255, 0.06);
+  border: 1px solid rgba(0, 212, 255, 0.2);
+}
+
+.walkthrough-count {
+  color: #9fb3c8;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.walkthrough-title {
+  font-size: 1.05rem;
+  margin: 0.25rem 0 0.4rem;
+}
+
+.walkthrough-body {
+  color: #c9d6e3;
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+.walkthrough-demo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin: 0.85rem 0 0.25rem;
+  overflow-x: auto;
+}
+
+.walkthrough-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.walkthrough-label {
+  flex: 0 0 3.6rem;
+  color: #9fb3c8;
+  font-size: 0.75rem;
+}
+
+.walkthrough-cells {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  gap: 0.3rem;
+}
+
+.walkthrough-cell {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 2.4rem;
+  padding: 0.35rem 0.1rem;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #e6f1ff;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.95rem;
+  text-align: center;
+  white-space: nowrap;
+  animation: walkthrough-in 0.35s ease both;
+}
+
+.walkthrough-cells.bytes .walkthrough-cell {
+  max-width: 7rem;
+  font-size: 0.8rem;
+}
+
+.walkthrough-row.dim .walkthrough-cell {
+  background: none;
+  border-style: dashed;
+  color: #9fb3c8;
+  font-size: 0.75rem;
+}
+
+.walkthrough-row.accent .walkthrough-cell {
+  background: rgba(74, 222, 128, 0.12);
+  border-color: rgba(74, 222, 128, 0.5);
+  color: #86efac;
+  font-weight: 700;
+}
+
+@keyframes walkthrough-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .walkthrough-cell { animation: none; }
+}
+
+.walkthrough-tip {
+  display: flex;
+  gap: 0.4rem;
+  margin-top: 0.75rem;
+  color: #fcd34d;
+  font-size: 0.825rem;
+  line-height: 1.4;
+}
+
+.walkthrough-tip svg {
+  flex: 0 0 auto;
+  margin-top: 0.15rem;
+}
+
+.walkthrough-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: 0.9rem;
+}
+
+.walkthrough-btn {
+  min-height: var(--tap, 48px);
+  min-width: 5.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.05);
+  color: #e6f1ff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.walkthrough-btn.primary {
+  border-color: #00d4ff;
+  background: rgba(0, 212, 255, 0.15);
+  color: #00d4ff;
+}
+
+.walkthrough-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.walkthrough-dots {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.walkthrough-dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.walkthrough-dots span.on {
+  background: #00d4ff;
+}
 
 .howto-link {
   display: inline-flex;

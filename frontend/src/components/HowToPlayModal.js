@@ -1,20 +1,25 @@
 import React, { useEffect, useRef } from "react";
 import { Close, Trophy } from "../glyphs";
 import { GAME_MODES, DAILY_MODE } from "../constants/gameModes";
+import { WALKTHROUGHS } from "../constants/walkthroughs";
+import Walkthrough from "./Walkthrough";
 
 // Rules for every mode. Opened from the welcome screen, the dashboard, and
-// each game's "?" button (scrolled to that game via focusKey).
+// each game's "?" button (scrolled to that game via focusKey). From a game,
+// modes with a walkthrough show it first, then the quick rules.
 function HowToPlayModal({ onClose, focusKey }) {
   const sectionRefs = useRef({});
+  // A walkthrough opens at its first step, so don't scroll past it to the rules.
+  const steps = focusKey && WALKTHROUGHS[focusKey];
 
   useEffect(() => {
-    if (focusKey && sectionRefs.current[focusKey]) {
+    if (focusKey && !steps && sectionRefs.current[focusKey]) {
       sectionRefs.current[focusKey].scrollIntoView({ block: "start" });
     }
     const onKey = (e) => e.key === "Escape" && onClose();
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [focusKey, onClose]);
+  }, [focusKey, steps, onClose]);
 
   const all = [DAILY_MODE, ...GAME_MODES];
   const modes = focusKey ? all.filter((m) => m.key === focusKey) : all;
@@ -41,14 +46,21 @@ function HowToPlayModal({ onClose, focusKey }) {
             couple of other modes. Every score is worked out on our server, so nobody's faking the board.
           </p>
         )}
+        {steps && <Walkthrough steps={steps} />}
         <div className="howto-sections">
           {modes.map(({ key, label, Icon, css, rules }) => (
             <section key={key} className={`howto-section ${css}`} ref={(el) => (sectionRefs.current[key] = el)}>
               <h3>
-                <span className="game-icon">
-                  <Icon size={18} aria-hidden="true" />
-                </span>
-                {label}
+                {steps ? (
+                  "Quick rules"
+                ) : (
+                  <>
+                    <span className="game-icon">
+                      <Icon size={18} aria-hidden="true" />
+                    </span>
+                    {label}
+                  </>
+                )}
               </h3>
               <ul>
                 {rules.map((rule) => (
