@@ -57,6 +57,9 @@ cipher,cryptography,cybersecurity,code breaker,decode,caesar,binary,hex,phishing
 **Description:** the full description from `google-play.md` → Store listing,
 as is.
 
+All four (promotional text, description, keywords, support URL) are filled in
+on the 1.0 version page; Marketing URL stays empty.
+
 ## Screenshots (`mobile/store/assets/`)
 
 Every image is a real capture of the app (guideline 2.3.3), saved as a
@@ -70,7 +73,7 @@ Each slot takes only its own sizes, so match the file to the slot:
 | --- | --- | --- |
 | iPhone with Dynamic Island (medium display), 6.1"/6.3" | 1179×2556, 1206×2622 | `ios-iphone-6.3-01..05.png` (**uploaded**) |
 | iPhone 6.9" (View All Sizes in Media Manager; optional) | 1290×2796, 1260×2736, 1320×2868 | `ios-iphone-6.9-01..05.png` |
-| iPad 13" | 2048×2732 | `ios-ipad13-2048x2732.png` |
+| iPad 13" (required: the app runs on iPad) | 2048×2732 | `ios-ipad13-01..03.png` (**uploaded**) |
 | Header and Search Results tab | 5244×2950 | `ios-header-5244x2950.png` |
 
 The iPhone order is the same in both sets:
@@ -89,9 +92,11 @@ result shows the icon, name, subtitle and the **first three screenshots**
 (or an app preview video). That's why the order above puts Cipher, Match-3
 and True/False first.
 
-**iPad 13" (2048×2732):** `ios-ipad13-2048x2732.png` (Match-3 practice,
-simulator). **iPad 11" (1640×2360)**, optional: `ios-ipad11-1640x2360.png`
-(the dashboard).
+**iPad 13" (2048×2732)**, in this order: `ios-ipad13-01.png` (Match-3
+practice, simulator), `02` (Caesar practice) and `03` (True/False practice),
+both from the web build at the iPad 13" viewport. Regenerate with
+`ios-store-assets.mjs ipad-set`. **iPad 11" (1640×2360)**, optional:
+`ios-ipad11-1640x2360.png` (the dashboard).
 
 **App Store header (5244×2950):** `ios-header-5244x2950.png`, on the
 version page's "Header and Search Results" tab.

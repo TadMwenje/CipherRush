@@ -11,6 +11,10 @@
 //       All iPhone screenshots for both App Store Connect slots, from store/assets/raw/:
 //       ios-iphone-6.9-NN.png (1290x2796) and ios-iphone-6.3-NN.png (1179x2556, the same
 //       proportions, so it's a pure downscale).
+//   node scripts/ios-store-assets.mjs ipad-set
+//       The iPad 13" screenshots, ios-ipad13-NN.png (2048x2732), from store/assets/raw/
+//       (Match-3 from the simulator; Caesar and True/False from the web build at the
+//       iPad 13" viewport, 1024x1366 @2x).
 //   node scripts/ios-store-assets.mjs fit <raw-capture.png> <name> <width> <height>
 //       Scales a simulator capture to cover width x height, crops the overflow, drops
 //       the alpha channel and writes store/assets/<name>.png.
@@ -123,12 +127,21 @@ async function iphoneSet() {
   }
 }
 
+const IPAD_SET = ["ipad-match3-simulator.png", "ipad-caesar.png", "ipad-truefalse.png"];
+
+async function ipadSet() {
+  for (const [i, raw] of IPAD_SET.entries()) {
+    await fit(join(out, "raw", raw), `ios-ipad13-${String(i + 1).padStart(2, "0")}`, 2048, 2732);
+  }
+}
+
 const [cmd, ...args] = process.argv.slice(2);
 if (cmd === "header") await header();
 else if (cmd === "iphone-set") await iphoneSet();
+else if (cmd === "ipad-set") await ipadSet();
 else if (cmd === "framed" && args.length >= 3) await framed(args[0], args[1], args[2], args.includes("--status-bar"));
 else if (cmd === "fit" && args.length === 4) await fit(args[0], args[1], +args[2], +args[3]);
 else {
-  console.error('usage: header | iphone-set | framed <raw.png> <name> "<caption>" [--status-bar] | fit <raw.png> <name> <width> <height>');
+  console.error('usage: header | iphone-set | ipad-set | framed <raw.png> <name> "<caption>" [--status-bar] | fit <raw.png> <name> <width> <height>');
   process.exit(1);
 }
