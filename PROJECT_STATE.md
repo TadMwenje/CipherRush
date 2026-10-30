@@ -295,6 +295,13 @@ Note: the deletion endpoint is `POST /api/me/delete` (there is no `/api/auth/del
 
 **Remaining for the user:** charge the iPad (it was at 7%) → record the flow in the checklist → upload unlisted → paste the link into the reply → send the reply in App Store Connect → paste the same text into App Review Information → Notes → Resubmit to App Review.
 
+### 2.13 Tester links (2026-10-30)
+
+All links and the joining steps are in `TESTING_LINKS.md`.
+- **Android:** Closed testing - Alpha is active, with release 5 (1.0.0). Testers come from email list `test1` (3 addresses). Join on the web: https://play.google.com/apps/testing/com.aximoix.cipherrush. A new tester must be added to `test1` first.
+- **iOS:** TestFlight external group `external` has build 1.0.0 (3). Public link https://testflight.apple.com/join/gyxtrtHv, 1 of 10 tester slots used.
+- **App Store:** https://apps.apple.com/app/id6828379997 goes live after approval.
+
 ### 3.2 Open
 
 | ID | Issue | Severity | Notes |
