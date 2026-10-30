@@ -8,7 +8,7 @@ How to use this file:
 
 1. Record the video (checklist at the bottom), upload it as an unlisted link
    (YouTube unlisted, iCloud Drive or Google Drive share link, "anyone with the
-   link"), and replace `[INSERT_SCREEN_RECORDING_URL]` below.
+   link"), and replace the screen-recording placeholder below (done: YouTube Shorts link).
 2. Copy everything between the two lines into **Reply to App Review**, send it.
 3. Paste the same text into the version's **App Review Information → Notes**
    (4,000-character limit: the reply below is about 3,600), Save, then
@@ -24,8 +24,8 @@ Hello App Review team,
 Thank you for the review. Here is the information you asked for.
 
 **1. Screen recording (physical device, latest iOS)**
-[INSERT_SCREEN_RECORDING_URL]
-Recorded on an iPad Pro 11-inch (4th generation) on iPadOS 26. It starts from launching the app and shows: sign-up of a new account, login with the demo account, the main game modes, a rewarded-video hint, and in-app account deletion (Profile → Delete account → type DELETE → Delete forever). CipherRush has no paid content or in-app purchases.
+https://youtube.com/shorts/op6apcXnna8?feature=share
+Recorded on a physical device running iOS 26. It starts from launching the app and shows: sign-up of a new account, login with the demo account, the main game modes, a rewarded-video hint, and in-app account deletion (Profile → Delete account → type DELETE → Delete forever). CipherRush has no paid content or in-app purchases.
 
 **2. Purpose and audience**
 CipherRush is a free puzzle game that teaches practical cybersecurity basics through short arcade rounds: cracking classical ciphers (Caesar, Atbash, Vigenère), decoding binary and hex bytes, spotting phishing and scams in a quiz and true-or-false rounds, plus Match-3 and memory games with security themes and a Daily Cipher that everyone plays. It is for casual puzzle players, students and anyone who wants to recognise everyday online threats. Each round takes a minute or two and every quiz answer comes with a short explanation.
