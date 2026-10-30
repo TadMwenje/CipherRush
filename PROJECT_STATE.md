@@ -7,7 +7,7 @@ Single source of truth for what CipherRush is, how it's built, what has been don
 | **Last updated** | 2026-10-29 |
 | **Branch** | `ios-device-testing`, pushed to GitHub (`TadMwenje/CipherRush`) |
 | **Test status** | 210 backend tests · 163 frontend tests · strict production build clean |
-| **Native builds** | iOS 1.0.0 (3): version 1.0 Waiting for Review · Android 1.0.0 (5) live on Play Closed testing - Alpha |
+| **Native builds** | iOS 1.0.0 (3): version 1.0 returned under Guideline 2.1 (information needed), reply prepared · Android 1.0.0 (5) live on Play Closed testing - Alpha |
 | **Publisher** | AximoIX. Bundle/package ID `com.aximoix.cipherrush`. Legal terms: [aximoix.com/terms](https://aximoix.com/terms/#cipherrush) and [aximoix.com/privacy](https://aximoix.com/privacy/#cipherrush) |
 
 ---
@@ -275,6 +275,25 @@ Checked in each console, read-only. Nothing was changed.
 3. App Store: wait for review; answer App Review messages in Resolution Center.
 4. AdMob → Apps → Add shop for each app once its listing is public (Play production or open testing; App Store after approval).
 5. Still open from §2.10: publish the Google OAuth consent screen, Play Data safety AdMob rows, privacy policy text, TestFlight groups, O-01 device checks.
+
+### 2.12 iPad device pass and Guideline 2.1 reply (2026-10-30)
+
+Apple returned 1.0 (3) under **Guideline 2.1 – Information Needed** (a new developer account with little review history). This is a request for information, not a bug report. Apple wants a screen recording made on a physical device, starting at launch and covering registration, login and account deletion, plus written answers on purpose, setup, external services, regional differences and regulated content. The reply is in `mobile/store/apple-guideline-2.1-response.md` (about 3,600 characters, so it also fits the Notes field), with a `[INSERT_SCREEN_RECORDING_URL]` placeholder and a recording checklist.
+
+Device pass:
+
+| Check | Result | How |
+| --- | --- | --- |
+| Device detection | iPad Pro 11" (4th gen, iPad14,4, iPadOS 26.6.2) paired over `devicectl`; iPhone 17 Pro Max also paired | `xcrun devicectl list devices` |
+| Build, install, launch | Debug build with test ads succeeded; installed and launched; login screen renders correctly at 1668×2388 | `xcodebuild -project App.xcodeproj` (SPM, no workspace), `devicectl device install/launch`, `devicectl device capture screenshot` |
+| Walkthroughs (Cipher, Daily) at iPad size | Pass: tiles, the 6-letter Vigenère row, step dots and Back/Next all fit, nothing clipped | Web build at 834×1194 (iPad Pro 11" points), local API |
+| Account deletion | Pass: Profile → Delete account → the dialog requires DELETE → `POST /api/me/delete` 200 → "Account deleted" logged → 0 rows left → welcome screen | Throwaway local account, local API |
+| Reviewer login (`appstore_review`) | Server side ready: `05d595a` is **live on Render** (handle or email, pasted whitespace forgiven, refusals logged). Not exercised by the agent: it doesn't type production passwords | The user signs in on the iPad |
+| Rewarded-video hints on device | **Not yet verified on hardware.** Needs taps on the iPad. The SSV path is covered by `tests/test_ads.py`; the UI by `QuizGame.test.js` | The user, during the recording |
+
+Note: the deletion endpoint is `POST /api/me/delete` (there is no `/api/auth/delete`).
+
+**Remaining for the user:** charge the iPad (it was at 7%) → record the flow in the checklist → upload unlisted → paste the link into the reply → send the reply in App Store Connect → paste the same text into App Review Information → Notes → Resubmit to App Review.
 
 ### 3.2 Open
 
