@@ -302,6 +302,7 @@ All links and the joining steps are in `TESTING_LINKS.md`.
 - **iOS:** TestFlight external group `external` has build 1.0.0 (3). Public link https://testflight.apple.com/join/gyxtrtHv, 1 of 10 tester slots used.
 - **App Store:** https://apps.apple.com/app/id6828379997 goes live after approval.
 - **Testers invited (2026-10-30/31):** `test1` now holds 9 addresses (Play has no email invite; send testers the web opt-in link). TestFlight `external` has 4 email invites plus 1 public-link tester. One Android address was refused because it isn't a Google account. Names and addresses are kept out of git, in the gitignored `mobile/store/TESTERS_LIST.md`.
+- **Status 2026-10-31:** Play production access needs 12 opted-in testers for 14 days; 6 of the 9 on `test1` have opted in (Play doesn't show which), and nothing is in Play review. iOS 1.0 is still Waiting for Review (resubmitted 2026-10-30 08:45), with no new message from Apple. TestFlight: 2 of the 4 email invitees have installed it.
 
 ### 3.2 Open
 
