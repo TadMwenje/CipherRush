@@ -301,6 +301,7 @@ All links and the joining steps are in `TESTING_LINKS.md`.
 - **Android:** Closed testing - Alpha is active, with release 5 (1.0.0). Testers come from email list `test1` (3 addresses). Join on the web: https://play.google.com/apps/testing/com.aximoix.cipherrush. A new tester must be added to `test1` first.
 - **iOS:** TestFlight external group `external` has build 1.0.0 (3). Public link https://testflight.apple.com/join/gyxtrtHv, 1 of 10 tester slots used.
 - **App Store:** https://apps.apple.com/app/id6828379997 goes live after approval.
+- **Testers invited (2026-10-30/31):** `test1` now holds 9 addresses (Play has no email invite; send testers the web opt-in link). TestFlight `external` has 4 email invites plus 1 public-link tester. One Android address was refused because it isn't a Google account. Names and addresses are kept out of git, in the gitignored `mobile/store/TESTERS_LIST.md`.
 
 ### 3.2 Open
 
