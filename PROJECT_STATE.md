@@ -303,6 +303,11 @@ All links and the joining steps are in `TESTING_LINKS.md`.
 - **App Store:** https://apps.apple.com/app/id6828379997 goes live after approval.
 - **Testers invited (2026-10-30/31):** `test1` now holds 9 addresses (Play has no email invite; send testers the web opt-in link). TestFlight `external` has 4 email invites plus 1 public-link tester. One Android address was refused because it isn't a Google account. Names and addresses are kept out of git, in the gitignored `mobile/store/TESTERS_LIST.md`.
 - **Status 2026-10-31:** Play production access needs 12 opted-in testers for 14 days; 6 of the 9 on `test1` have opted in (Play doesn't show which), and nothing is in Play review. iOS 1.0 is still Waiting for Review (resubmitted 2026-10-30 08:45), with no new message from Apple. TestFlight: 2 of the 4 email invitees have installed it.
+- **Audit 2026-11-02:**
+  - Play: `test1` holds 12 addresses, 9 opted in. The 12-opted-in requirement is not met, so the 14-day requirement has no tick and the Console shows no countdown. Earliest production application is 14 days after the 12th opt-in. Nothing in review; last published 29 Oct.
+  - Play notices: "Your identity couldn't be verified" (22 Oct) is still listed and says the account can't publish apps; it offers an appeal. The Developer account page shows no matching warning, and release 5 was published after the notice. Current effect on production is unconfirmed; the owner must check it. Also listed: enrolled for the 15% service fee (28 Oct), add Play Games services (29 Oct).
+  - iOS: 1.0 (build 3) Waiting for Review since Fri 30 Oct 08:45. The submission has 2 messages (Apple's and our reply), nothing new. The App Review sidebar shows a red dot.
+  - TestFlight: `external` is working, with 5 testers and build 1.0.0 (3). 3 installed, 2 invited (no install yet), no crashes or feedback.
 
 ### 3.2 Open
 
