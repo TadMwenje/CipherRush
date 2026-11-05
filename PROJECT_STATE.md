@@ -308,6 +308,7 @@ All links and the joining steps are in `TESTING_LINKS.md`.
   - Play notices: "Your identity couldn't be verified" (22 Oct) is still listed and says the account can't publish apps; it offers an appeal. The Developer account page shows no matching warning, and release 5 was published after the notice. Current effect on production is unconfirmed; the owner must check it. Also listed: enrolled for the 15% service fee (28 Oct), add Play Games services (29 Oct).
   - iOS: 1.0 (build 3) Waiting for Review since Fri 30 Oct 08:45. The submission has 2 messages (Apple's and our reply), nothing new. The App Review sidebar shows a red dot.
   - TestFlight: `external` is working, with 5 testers and build 1.0.0 (3). 3 installed, 2 invited (no install yet), no crashes or feedback.
+- **2026-11-05:** 2 Android testers were added (`test1` now holds 14; still 9 opted in, 12 needed) and 1 TestFlight email invite was sent (`external` now has 6 testers: 3 installed, 3 invited).
 
 ### 3.2 Open
 
