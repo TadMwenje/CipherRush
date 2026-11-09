@@ -309,6 +309,11 @@ All links and the joining steps are in `TESTING_LINKS.md`.
   - iOS: 1.0 (build 3) Waiting for Review since Fri 30 Oct 08:45. The submission has 2 messages (Apple's and our reply), nothing new. The App Review sidebar shows a red dot.
   - TestFlight: `external` is working, with 5 testers and build 1.0.0 (3). 3 installed, 2 invited (no install yet), no crashes or feedback.
 - **2026-11-05:** 2 Android testers were added (`test1` now holds 14; still 9 opted in, 12 needed) and 1 TestFlight email invite was sent (`external` now has 6 testers: 3 installed, 3 invited).
+- **Audit 2026-11-09:**
+  - Play: the "12 testers opted in" task is ticked. The dashboard says "12 testers have currently been opted in for 4 days continuously", so the 14-day run should end around 19 Nov if 12 stay opted in (no margin). `test1` now holds 16 addresses (one more was added outside this session). Closed testing - Alpha is active, latest release 5 (1.0.0), 178 countries/regions.
+  - Play notices: "Your identity couldn't be verified" (22 Oct) is still listed. New since the last audit: "Declare your trader status by 1 February 2027" (action required, 5 Nov) and "Review changes to Google Play policies" (5 Nov).
+  - iOS: 1.0 (build 3) still Waiting for Review since 30 Oct 08:45 (10 days). Still 2 messages, nothing new from Apple.
+  - TestFlight: unchanged. 3 installed (2 named testers plus the public link), 3 invited and not yet accepted, no crashes or feedback.
 
 ### 3.2 Open
 
