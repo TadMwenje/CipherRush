@@ -315,6 +315,7 @@ All links and the joining steps are in `TESTING_LINKS.md`.
   - iOS: 1.0 (build 3) still Waiting for Review since 30 Oct 08:45 (10 days). Still 2 messages, nothing new from Apple.
   - TestFlight: unchanged. 3 installed (2 named testers plus the public link), 3 invited and not yet accepted, no crashes or feedback.
 - **2026-11-11: iOS rejected under Guideline 2.3.6 (Accurate Metadata).** Apple's 3rd message (reviewed on iPad Air 11-inch M3) says the Age Rating questionnaire claimed In-App Controls but the app has no Parental Controls or Age Assurance. Fix: the questionnaire's Parental Controls answer was changed from Yes to No and saved (Age Assurance was already No; rating still 4+). No new build needed. The Resolution Center reply is drafted in `mobile/store/apple-guideline-2.3.6-response.md`; sending it and pressing "Resubmit to App Review" are still to do. Open question: the questionnaire's "Advertising" answer is No although the app shows AdMob ads (`mobile/store/app-store.md` says ads: Yes).
+- **2026-11-11 (later):** Advertising changed from No to Yes and saved; questionnaire now reads Parental Controls No, Age Assurance No, Advertising Yes, rating 4+. The reply (updated to mention both corrections) was sent in App Review; the submission shows 4 messages. **Not yet resubmitted:** "Resubmit to App Review" is greyed out on the submission page; the version page's "Update Review" button needs clicking by the developer.
 
 ### 3.2 Open
 

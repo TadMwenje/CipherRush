@@ -14,9 +14,10 @@ App Store Connect → App Information → Age Ratings → Step 1 (Features):
 | --- | --- | --- |
 | Parental Controls | Yes | **No** |
 | Age Assurance | No | No |
+| Advertising (Capabilities) | No | **Yes** (AdMob rewarded videos and interstitials) |
 
 Everything else was left as it was. The calculated rating is still 4+.
-No new build is needed; this is a metadata change.
+No new build is needed; these are metadata changes.
 
 ## Reply to send in App Review (Resolution Center)
 
@@ -30,16 +31,24 @@ No new build is needed; this is a metadata change.
 >
 > We have updated the Age Rating questionnaire on the App Information page.
 > Parental Controls is now set to "No" (none), and Age Assurance is also "No".
-> The calculated age rating is unchanged at 4+. No other part of the app or
-> its metadata has changed, so we have resubmitted the same build, 1.0 (3).
+> While reviewing the questionnaire we also corrected "Advertising" to "Yes",
+> because the app shows Google AdMob ads (optional rewarded videos and
+> occasional interstitials between rounds).
+>
+> The calculated age rating is unchanged at 4+. The app binary has not
+> changed, so we have resubmitted the same build, 1.0 (3).
 >
 > Thank you for reviewing CipherRush.
 >
 > Kind regards,
 > AximoIX
 
-## Steps to finish
+## Status
 
-1. App Review → the submission → **Reply to App Review**, paste the reply
-   above, and send it.
-2. Click **Resubmit to App Review** on the same page.
+- 2026-11-11: Advertising set to Yes and saved (checked by reopening the
+  questionnaire).
+- 2026-11-11: the reply above was sent in App Review (the submission now
+  shows 4 messages).
+- Still to do: resubmit. On the submission page "Resubmit to App Review" is
+  greyed out. Open the version (Distribution → iOS App 1.0, or "Edit" on the
+  submission item), click **Update Review**, then confirm the resubmission.
