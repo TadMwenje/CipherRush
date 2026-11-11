@@ -314,6 +314,7 @@ All links and the joining steps are in `TESTING_LINKS.md`.
   - Play notices: "Your identity couldn't be verified" (22 Oct) is still listed. New since the last audit: "Declare your trader status by 1 February 2027" (action required, 5 Nov) and "Review changes to Google Play policies" (5 Nov).
   - iOS: 1.0 (build 3) still Waiting for Review since 30 Oct 08:45 (10 days). Still 2 messages, nothing new from Apple.
   - TestFlight: unchanged. 3 installed (2 named testers plus the public link), 3 invited and not yet accepted, no crashes or feedback.
+- **2026-11-11: iOS rejected under Guideline 2.3.6 (Accurate Metadata).** Apple's 3rd message (reviewed on iPad Air 11-inch M3) says the Age Rating questionnaire claimed In-App Controls but the app has no Parental Controls or Age Assurance. Fix: the questionnaire's Parental Controls answer was changed from Yes to No and saved (Age Assurance was already No; rating still 4+). No new build needed. The Resolution Center reply is drafted in `mobile/store/apple-guideline-2.3.6-response.md`; sending it and pressing "Resubmit to App Review" are still to do. Open question: the questionnaire's "Advertising" answer is No although the app shows AdMob ads (`mobile/store/app-store.md` says ads: Yes).
 
 ### 3.2 Open
 
