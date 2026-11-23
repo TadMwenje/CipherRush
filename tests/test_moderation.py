@@ -15,11 +15,15 @@ BLOCKED = [
     "white_pig", "blackpig", "Wh1te_P1g", "pig_white", "black__monkey", "asian_ape", "jew_rat", "gay_scum",
     "fuuuuck_you", "n1gg3r", "niiigger", "sp1c", "coon", "paki_99", "h1tl3r", "whitepower", "the_1488",
     "kill_all_jews", "a55ho1e", "admin", "CipherRush_dev",
+    # v1.0.1 additions, with leetspeak and repeats
+    "h1tler", "adolf_99", "s4tan", "nute11a", "god", "god_mode", "allah", "osama_bin_laden", "lucifer",
+    "sexy_coder", "fruit", "twitter_guy", "messiah", "jesus_christ", "jesus", "the_satan",
 ]
 ALLOWED = [
     "tadiwa_mwenje", "grapefruit", "therapist_tom", "spicy_cipher", "raccoon", "crisis_ops", "torpedo",
     "black_cat", "white_hat", "red_team", "snow_white", "coonhound_fan", "pakistan_fan", "jewel",
     "homeland", "scunthorpe", "blackhat_42", "shiitake", "assassin",
+    "good_game", "goodluck", "sussex_fan", "essex", "breadfruit", "callahan", "godot",
 ]
 
 

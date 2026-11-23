@@ -21,10 +21,13 @@ const alternation = (terms) =>
 
 const ANYWHERE = new RegExp(alternation(blocklist.anywhere));
 const WHOLE = new RegExp(`^(?:${alternation(blocklist.whole)})$`);
+// Exact words: no letter stretching, so "god" never catches "good".
+const EXACT = new Set(blocklist.exact || []);
 const TARGET = alternation(blocklist.targets);
 const INSULT = alternation(blocklist.insults);
 const HATE_PAIR = new RegExp(`(?:${TARGET}).{0,3}(?:${INSULT})|(?:${INSULT}).{0,3}(?:${TARGET})`);
-const ALLOW = new RegExp(blocklist.allow.map(escape).join("|"), "g");
+// Longest first, so "grapefruit" is blanked before "grape" gets a chance.
+const ALLOW = new RegExp([...new Set(blocklist.allow)].sort((a, b) => b.length - a.length).map(escape).join("|"), "g");
 
 export const HANDLE_PATTERN = /^[a-zA-Z0-9_]{3,20}$/;
 
@@ -32,7 +35,7 @@ export function isBlockedHandle(handle) {
   const lowered = handle.trim().toLowerCase();
   for (const reading of new Set([leet(lowered, "i"), leet(lowered, "l")])) {
     const parts = reading.split("_").filter(Boolean);
-    if ([...parts, parts.join("")].some((p) => WHOLE.test(p))) return true;
+    if ([...parts, parts.join("")].some((p) => WHOLE.test(p) || EXACT.has(p))) return true;
     const joined = parts.join("").replace(ALLOW, "#");
     if (ANYWHERE.test(joined) || HATE_PAIR.test(joined)) return true;
   }
@@ -42,6 +45,6 @@ export function isBlockedHandle(handle) {
 /** The message to show under the field, or "" when the handle looks fine. */
 export function handleProblem(handle) {
   if (!HANDLE_PATTERN.test(handle.trim())) return "3-20 letters, numbers or underscores.";
-  if (isBlockedHandle(handle)) return "That handle isn't allowed. Pick another.";
+  if (isBlockedHandle(handle)) return "That username isn't available. Please choose another.";
   return "";
 }

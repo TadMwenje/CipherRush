@@ -39,10 +39,13 @@ def _alternation(terms) -> str:
 
 _ANYWHERE = re.compile(_alternation(_BLOCKLIST["anywhere"]))
 _WHOLE = re.compile(rf"^(?:{_alternation(_BLOCKLIST['whole'])})$")
+# Exact words: no letter stretching, so "god" never catches "good".
+_EXACT = set(_BLOCKLIST.get("exact", []))
 _TARGET = _alternation(_BLOCKLIST["targets"])
 _INSULT = _alternation(_BLOCKLIST["insults"])
 _HATE_PAIR = re.compile(rf"(?:{_TARGET}).{{0,3}}(?:{_INSULT})|(?:{_INSULT}).{{0,3}}(?:{_TARGET})")
-_ALLOW = re.compile("|".join(re.escape(w) for w in _BLOCKLIST["allow"]))
+# Longest first, so "grapefruit" is blanked before "grape" gets a chance.
+_ALLOW = re.compile("|".join(re.escape(w) for w in sorted(set(_BLOCKLIST["allow"]), key=len, reverse=True)))
 
 
 def _readings(text: str):
@@ -55,7 +58,7 @@ def _contains_blocked_word(username: str) -> bool:
         return True
     for reading in _readings(lowered):
         parts = [p for p in reading.split("_") if p]
-        if any(_WHOLE.match(p) for p in parts + ["".join(parts)]):
+        if any(_WHOLE.match(p) or p in _EXACT for p in parts + ["".join(parts)]):
             return True
         joined = _ALLOW.sub("#", "".join(parts))
         if _ANYWHERE.search(joined) or _HATE_PAIR.search(joined):
@@ -89,7 +92,7 @@ def validate_username(username: str) -> str:
         )
 
     if _contains_blocked_word(normalized):
-        raise ValidationError("That username isn't allowed. Please choose another.")
+        raise ValidationError("That username isn't available. Please choose another.")
 
     return normalized
 

@@ -1,5 +1,5 @@
 {
-  "_about": "Handle moderation (backend/moderation.py, mirrored in frontend/src/moderation/handle.js). Matched on the lowercased handle after leetspeak is undone and underscores are removed; every letter may repeat (fuuuck). 'anywhere' terms match inside longer handles; 'whole' terms collide with ordinary words (spicy, raccoon), so they only match a whole handle or one underscore-separated part. 'targets' x 'insults' catches hateful pairs in either order (whitepig, pig_white). 'allow' words are blanked out first, so grapefruit or therapist pass. Keep the frontend copy identical: tests/test_moderation.py checks it.",
+  "_about": "Handle moderation (backend/moderation.py, mirrored in frontend/src/moderation/handle.js). Matched on the lowercased handle after leetspeak is undone and underscores are removed; every letter may repeat (fuuuck). 'anywhere' terms match inside longer handles; 'whole' terms collide with ordinary words (spicy, raccoon), so they only match a whole handle or one underscore-separated part. 'targets' x 'insults' catches hateful pairs in either order (whitepig, pig_white). 'allow' words are blanked out first, so grapefruit or therapist pass. Keep the frontend copy identical: tests/test_moderation.py checks it. 'allow' is applied longest-first, so grapefruit wins over grape. Religious figures, extremists and brand names (god, allah, jesus, satan, osama, hitler, twitter, nutella...) were added in v1.0.1 at the owner's request; 'exact' terms match a whole handle or one underscore part exactly, with no repeated letters (g+o+d+ would also hit good).",
   "anywhere": [
     "fuck",
     "shit",
@@ -67,7 +67,20 @@
     "system",
     "root",
     "official",
-    "staff"
+    "staff",
+    "adolf",
+    "allah",
+    "osama",
+    "binladen",
+    "lucifer",
+    "nutella",
+    "twitter",
+    "messiah",
+    "jesus",
+    "jesuschrist",
+    "satan",
+    "sex",
+    "fruit"
   ],
   "whole": [
     "fag",
@@ -170,6 +183,26 @@
     "shiitake",
     "shitake",
     "scunthorpe",
-    "penistone"
+    "penistone",
+    "sussex",
+    "essex",
+    "wessex",
+    "middlesex",
+    "sextant",
+    "sextet",
+    "sexton",
+    "grapefruit",
+    "breadfruit",
+    "jackfruit",
+    "passionfruit",
+    "starfruit",
+    "dragonfruit",
+    "callahan",
+    "challah",
+    "abdallah"
+  ],
+  "exact": [
+    "god",
+    "gods"
   ]
 }
