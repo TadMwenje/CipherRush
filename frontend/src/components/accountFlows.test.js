@@ -132,7 +132,7 @@ test("the link form refuses a blocked handle before sending anything", async () 
   type(container.querySelector('input[aria-label="Handle"]'), "fuuuck_you");
   type(container.querySelector('input[aria-label="Password"]'), "Linked1234abc");
   type(container.querySelector('input[aria-label="Repeat password"]'), "Linked1234abc");
-  expect(container.textContent).toContain("isn't allowed");
+  expect(container.textContent).toContain("isn't available");
   expect(button("Save handle and password").disabled).toBe(true);
   expect(post).not.toHaveBeenCalled();
 });
