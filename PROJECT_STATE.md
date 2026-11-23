@@ -5,9 +5,9 @@ Single source of truth for what CipherRush is, how it's built, what has been don
 | | |
 | --- | --- |
 | **Last updated** | 2026-11-23 |
-| **Branch** | `v1.0.1` (local, not pushed; branched from `ios-device-testing`) |
+| **Branch** | `v1.0.1`, pushed; `ios-device-testing` fast-forwarded to it (Render deploys `ios-device-testing`) |
 | **Test status** | 234 backend tests · 220 frontend tests · strict production build clean (2026-11-23, branch `v1.0.1`) |
-| **Native builds** | iOS 1.0.0 (3): version 1.0 returned under Guideline 2.1 (information needed), reply prepared · Android 1.0.0 (5) live on Play Closed testing - Alpha |
+| **Native builds** | iOS 1.0 (3) Ready for Distribution; iOS 1.0.1 (4) Waiting for Review (2026-11-23) · Android 1.0.0 (5) live on Closed testing - Alpha; 1.0.1 (6) in review on Alpha; production access application under review |
 | **Publisher** | AximoIX. Bundle/package ID `com.aximoix.cipherrush`. Legal terms: [aximoix.com/terms](https://aximoix.com/terms/#cipherrush) and [aximoix.com/privacy](https://aximoix.com/privacy/#cipherrush) |
 
 ---
@@ -340,11 +340,14 @@ Android 1.0.1 (versionCode 6) and iOS 1.0.1 (build 4). Commits on `v1.0.1` are l
   - Identical GETs in flight are shared.
   - The server gzips responses over 1 KB.
   - Scored quiz and true/false banks are deliberately **not** bundled: their answers would be public. Practice Mode already ships its own offline bank.
-- **Release steps still to do:**
-  - Deploy the server (moderation and gzip; Render deploys from the public repo, so push first).
-  - `yarn build` and `npx cap sync`.
-  - Build and upload Android 6 and iOS 4.
-  - On the iOS 1.0.1 version, answer the age-rating questions (Location Sharing No, Dating No) before 15 Jan 2027.
+- **Released 2026-11-23:**
+  - **Git:** `v1.0.1` (`bceb9a3`) was pushed to `origin`. It was fast-forwarded onto `ios-device-testing` (`61c951e..bceb9a3`), the branch Render deploys. `main` was not changed.
+  - **Render:** Render had no auto-deploy hook, so the deploy was started with Manual Deploy > Deploy latest commit. It succeeded in 1 m 19 s and `cipherrush-api` is live on `bceb9a3`. `api.aximoix.com` now returns `content-encoding: gzip`. The plan was left on Free.
+  - **Android 1.0.1 (6):** built with `npm run sync:release` (live AdMob IDs, `api.aximoix.com`), then `./gradlew bundleRelease`. Gradle needs JDK 21: use `JAVA_HOME` set to Android Studio's bundled JBR. The bundle is signed with the AximoIX upload key. It was uploaded to **Closed testing - Alpha** as release "6 (1.0.1)" with en-GB release notes and sent for review (**Changes in review**). The only warning was "no deobfuscation file" (R8 is off). The production access application and the Production track were not touched.
+  - **iOS 1.0.1 (4):** archived with `xcodebuild archive`, then uploaded with `-exportArchive` (`app-store-connect`, destination `upload`). Build 4 processed in a few minutes.
+    - Version 1.0.1 was created with the What's New text, build 4 attached, and submitted: **Waiting for Review**, submitted 12:08.
+    - Age rating: Location Sharing No and Dating No were saved under App Information. The rating is still 4+, and the 15 Jan 2027 notice is gone.
+  - **EU DSA trader status: not submitted.** The Apple developer account's legal entity is the individual **Tadiwa Mwenje** (Harare, Zimbabwe), not AximoIX. The AximoIX website records give a US address (Decatur, GA) and a +1 phone number. Apple displays the declared address, phone and email publicly on the EU product page and verifies the phone and email with codes. The owner must decide whether to declare as a trader and which contact details to publish. The 27 EU countries stay blocked ("Trader Status Not Provided") until then.
 
 ### 3.2 Open
 
