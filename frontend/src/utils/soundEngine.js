@@ -23,7 +23,12 @@ import { getAudioSettings, subscribeAudioSettings } from "./audioSettings";
 
 const LOOKAHEAD_S = 0.12;
 const TICK_MS = 25;
-const MUSIC_LEVEL = 0.5; // music sits under the effects
+// Bus levels. The notes themselves are written quietly so chords and loops can
+// stack; these lift the sum to a normal phone level (about -20 dBFS RMS for
+// music, peaks near -6 for effects), measured with renderOffline. The limiter
+// on the master output catches anything that would clip.
+const MUSIC_LEVEL = 3.5;
+const SFX_LEVEL = 3;
 const FADE_IN_S = 1.2;
 const FADE_OUT_S = 0.35;
 const IDLE_SUSPEND_MS = 3000; // let the audio hardware sleep when nothing's playing
@@ -55,31 +60,44 @@ function applyLevels(now = ctx?.currentTime || 0) {
   };
   ramp(master.gain, s.muted ? 0 : s.volume * s.volume);
   ramp(musicBus.gain, s.music ? MUSIC_LEVEL : 0);
-  ramp(sfxBus.gain, s.sfx ? 1 : 0);
+  ramp(sfxBus.gain, s.sfx ? SFX_LEVEL : 0);
+}
+
+/** The bus chain on any context (the live one, or an offline one for measuring). */
+function buildGraph(ac) {
+  const limiter = ac.createDynamicsCompressor();
+  limiter.threshold.value = -12;
+  limiter.knee.value = 6;
+  limiter.ratio.value = 8;
+  limiter.attack.value = 0.003;
+  limiter.release.value = 0.15;
+  limiter.connect(ac.destination);
+
+  const out = ac.createGain();
+  out.connect(limiter);
+
+  const soften = ac.createBiquadFilter();
+  soften.type = "lowpass";
+  soften.frequency.value = 3200;
+  soften.connect(out);
+
+  const music = ac.createGain();
+  music.connect(soften);
+  const effects = ac.createGain();
+  effects.connect(out);
+
+  // One second of white noise, shared by every hi-hat and snare.
+  const noiseBuf = ac.createBuffer(1, ac.sampleRate, ac.sampleRate);
+  const data = noiseBuf.getChannelData(0);
+  for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+  return { master: out, musicBus: music, sfxBus: effects, noiseBuffer: noiseBuf };
 }
 
 function build() {
   const AudioCtx = audioClass();
   if (!AudioCtx) return null;
   ctx = new AudioCtx();
-  master = ctx.createGain();
-  master.connect(ctx.destination);
-
-  const soften = ctx.createBiquadFilter();
-  soften.type = "lowpass";
-  soften.frequency.value = 3200;
-  soften.connect(master);
-
-  musicBus = ctx.createGain();
-  musicBus.connect(soften);
-  sfxBus = ctx.createGain();
-  sfxBus.connect(master);
-
-  // One second of white noise, shared by every hi-hat and snare.
-  noiseBuffer = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
-  const data = noiseBuffer.getChannelData(0);
-  for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
-
+  ({ master, musicBus, sfxBus, noiseBuffer } = buildGraph(ctx));
   applyLevels(0);
   return ctx;
 }
@@ -102,22 +120,32 @@ subscribeAudioSettings(() => {
 });
 
 /**
- * Browsers only allow sound after the player touches the screen. The first
- * tap or key press anywhere unlocks audio, and any music that was asked for
- * starts then.
+ * Browsers only allow sound after the player touches the screen, and iOS can
+ * refuse a resume() that doesn't come from a touch (after the app was in the
+ * background, a call, or an ad). So:
+ *  - the first tap or key press anywhere creates and unlocks the context;
+ *  - after that, a tap wakes it again whenever music should be playing but
+ *    the context is paused. On menus with nothing to play it stays asleep.
  */
+const GESTURES = ["pointerdown", "touchend", "keydown"];
 let unlockInstalled = false;
+let unlocked = false;
 export function installAudioUnlock() {
   if (unlockInstalled || typeof document === "undefined") return;
   unlockInstalled = true;
-  const unlock = () => {
-    // A resume() made inside the first gesture is all browsers need, so one is enough.
-    if (!getContext()) return;
-    ["pointerdown", "touchend", "keydown"].forEach((e) => document.removeEventListener(e, unlock, true));
-    syncScheduler();
-    if (!timer) idleSoon();
+  const onGesture = () => {
+    if (!unlocked) {
+      if (!getContext()) return;
+      unlocked = true;
+      syncScheduler();
+      if (!timer) idleSoon();
+      return;
+    }
+    if (timer && holds.size === 0 && ctx && ctx.state !== "running" && ctx.state !== "closed") {
+      ctx.resume().catch(() => {});
+    }
   };
-  ["pointerdown", "touchend", "keydown"].forEach((e) => document.addEventListener(e, unlock, true));
+  GESTURES.forEach((e) => document.addEventListener(e, onGesture, true));
 }
 
 /** Pause all audio for a reason ("background", "ad"). Resumes when every reason is lifted. */
@@ -168,8 +196,8 @@ export function suspendAudio() {
 
 export const midi = (n) => 440 * Math.pow(2, (n - 69) / 12);
 
-function envelope(dest, t, { gain, attack = 0.01, dur }) {
-  const g = ctx.createGain();
+function envelope(ac, dest, t, { gain, attack = 0.01, dur }) {
+  const g = ac.createGain();
   g.gain.setValueAtTime(0.0001, t);
   g.gain.linearRampToValueAtTime(gain, t + attack);
   g.gain.exponentialRampToValueAtTime(0.0001, t + Math.max(dur, attack + 0.02));
@@ -177,59 +205,68 @@ function envelope(dest, t, { gain, attack = 0.01, dur }) {
   return g;
 }
 
-function osc(dest, t, freq, dur, { type = "sine", gain = 0.1, attack = 0.01, detune = 0 } = {}) {
-  const o = ctx.createOscillator();
+function osc(ac, dest, t, freq, dur, { type = "sine", gain = 0.1, attack = 0.01, detune = 0 } = {}) {
+  const o = ac.createOscillator();
   o.type = type;
   o.frequency.setValueAtTime(freq, t);
   if (detune) o.detune.setValueAtTime(detune, t);
-  o.connect(envelope(dest, t, { gain, attack, dur }));
+  o.connect(envelope(ac, dest, t, { gain, attack, dur }));
   o.start(t);
   o.stop(t + dur + 0.05);
   return o;
 }
 
-function noise(dest, t, dur, { gain = 0.05, type = "highpass", freq = 7000 } = {}) {
-  const src = ctx.createBufferSource();
-  src.buffer = noiseBuffer;
-  const filter = ctx.createBiquadFilter();
+function noise(ac, buf, dest, t, dur, { gain = 0.05, type = "highpass", freq = 7000 } = {}) {
+  const src = ac.createBufferSource();
+  src.buffer = buf;
+  const filter = ac.createBiquadFilter();
   filter.type = type;
   filter.frequency.value = freq;
   src.connect(filter);
-  filter.connect(envelope(dest, t, { gain, attack: 0.002, dur }));
+  filter.connect(envelope(ac, dest, t, { gain, attack: 0.002, dur }));
   src.start(t, Math.random() * 0.5);
   src.stop(t + dur + 0.05);
 }
 
-function voices(dest) {
+/** The instruments, playing into `dest` on context `ac`. */
+function voices(ac, buf, dest) {
+  const tone = (t, freq, dur, opts) => osc(ac, dest, t, freq, dur, opts);
   return {
-    pluck: (t, n, dur, gain = 0.05, type = "triangle") => osc(dest, t, midi(n), dur, { type, gain }),
+    tone,
+    pluck: (t, n, dur, gain = 0.05, type = "triangle") => {
+      tone(t, midi(n), dur, { type, gain });
+      // Phone speakers can't play much below ~200 Hz: give low notes an
+      // octave-up overtone so the bass line is still heard.
+      if (n < 55) tone(t, midi(n + 12), dur, { type: "triangle", gain });
+    },
     marimba: (t, n, gain = 0.05) => {
-      osc(dest, t, midi(n), 0.35, { gain, attack: 0.004 });
-      osc(dest, t, midi(n) * 4, 0.08, { gain: gain * 0.18, attack: 0.002 });
+      tone(t, midi(n), 0.35, { gain, attack: 0.004 });
+      tone(t, midi(n) * 4, 0.08, { gain: gain * 0.18, attack: 0.002 });
     },
     bell: (t, n, gain = 0.03) => {
-      osc(dest, t, midi(n), 1.2, { gain, attack: 0.005 });
-      osc(dest, t, midi(n) * 2.76, 0.5, { gain: gain * 0.3, attack: 0.005 });
+      tone(t, midi(n), 1.2, { gain, attack: 0.005 });
+      tone(t, midi(n) * 2.76, 0.5, { gain: gain * 0.3, attack: 0.005 });
     },
     pad: (t, notes, dur, gain = 0.025) =>
       notes.forEach((n) => {
-        osc(dest, t, midi(n), dur, { type: "triangle", gain, attack: dur * 0.35, detune: -5 });
-        osc(dest, t, midi(n), dur, { type: "sine", gain, attack: dur * 0.35, detune: 5 });
+        tone(t, midi(n), dur, { type: "triangle", gain, attack: dur * 0.35, detune: -5 });
+        tone(t, midi(n), dur, { type: "sine", gain, attack: dur * 0.35, detune: 5 });
       }),
     kick: (t, gain = 0.16) => {
-      const o = ctx.createOscillator();
+      noise(ac, buf, dest, t, 0.018, { gain: gain * 0.6, type: "bandpass", freq: 2200 }); // the click a phone can play
+      const o = ac.createOscillator();
       o.frequency.setValueAtTime(140, t);
       o.frequency.exponentialRampToValueAtTime(45, t + 0.12);
-      o.connect(envelope(dest, t, { gain, attack: 0.003, dur: 0.18 }));
+      o.connect(envelope(ac, dest, t, { gain, attack: 0.003, dur: 0.18 }));
       o.start(t);
       o.stop(t + 0.25);
     },
-    hat: (t, gain = 0.025) => noise(dest, t, 0.04, { gain }),
+    hat: (t, gain = 0.025) => noise(ac, buf, dest, t, 0.04, { gain }),
     snare: (t, gain = 0.06) => {
-      noise(dest, t, 0.13, { gain, type: "bandpass", freq: 1800 });
-      osc(dest, t, 190, 0.08, { type: "triangle", gain: gain * 0.6, attack: 0.002 });
+      noise(ac, buf, dest, t, 0.13, { gain, type: "bandpass", freq: 1800 });
+      tone(t, 190, 0.08, { type: "triangle", gain: gain * 0.6, attack: 0.002 });
     },
-    tick: (t, freq, gain = 0.014) => osc(dest, t, freq, 0.025, { gain, attack: 0.001 }),
+    tick: (t, freq, gain = 0.014) => tone(t, freq, 0.025, { gain, attack: 0.001 }),
   };
 }
 
@@ -284,9 +321,9 @@ export const TRACKS = {
       const bar = Math.floor(step / 16);
       const pos = (step + bar * 3) % 16;
       const scale = [72, 74, 76, 79, 81, 84];
-      if ((bits >> pos) & 1) v.pluck(t, scale[(step * 5 + bar * 3) % scale.length], 0.05, 0.022, "square");
+      if ((bits >> pos) & 1) v.pluck(t, scale[(step * 5 + bar * 3) % scale.length], 0.06, 0.05, "square");
       if (step % 16 === 0) v.pluck(t, 45, 0.15, 0.07, "sine");
-      if (step % 4 === 2) v.hat(t, 0.012);
+      if (step % 4 === 2) v.hat(t, 0.02);
     },
   },
 
@@ -314,8 +351,8 @@ export const TRACKS = {
     play(step, t, sd, v) {
       const shift = [0, 0, -2, -4][Math.floor(step / 8) % 4];
       const riff = [50, 50, 62, 50, 50, 62, 50, 53];
-      v.pluck(t, riff[step % 8] + shift, sd * 0.7, 0.04, "square");
-      v.hat(t, step % 2 ? 0.01 : 0.018);
+      v.pluck(t, riff[step % 8] + shift, sd * 0.7, 0.05, "square");
+      v.hat(t, step % 2 ? 0.015 : 0.025);
       if (step % 32 === 30) [62, 65, 69].forEach((n) => v.pluck(t, n + shift, sd * 1.5, 0.025));
     },
   },
@@ -403,7 +440,7 @@ function schedule() {
   const now = ctx.currentTime;
   // Just started, or back from a pause: begin a moment from now.
   if (nextNoteTime < now - 0.05) nextNoteTime = now + 0.05;
-  const v = voices(trackGain);
+  const v = voices(ctx, noiseBuffer, trackGain);
   while (nextNoteTime < now + LOOKAHEAD_S) {
     try {
       track.play(step, nextNoteTime, stepSeconds, v);
@@ -471,94 +508,146 @@ function sfx(play) {
   const audio = getContext();
   if (!audio || audio.state === "closed") return;
   try {
-    play(voices(sfxBus), audio.currentTime);
+    play(voices(ctx, noiseBuffer, sfxBus), audio.currentTime);
   } catch (e) {
     // no sound is better than a crash
   }
   if (!timer) idleSoon();
 }
 
-function tone(v, t, freq, dur, opts) {
-  osc(sfxBus, t, freq, dur, opts);
-}
+const step2 = (n) => Math.pow(2, (Math.min(Math.max(n, 1) - 1, 7) * 2) / 12); // a whole tone per step, up to 8
 
-/** Tile tap or key press: a short, quiet click. */
-export function playTap() {
-  sfx((v, t) => tone(v, t, 880, 0.03, { gain: 0.045, attack: 0.002 }));
-}
-
-export function playFlip() {
-  sfx((v, t) => tone(v, t, 320, 0.08, { type: "triangle", gain: 0.1 }));
-}
-
-export function playPop() {
-  sfx((v, t) => tone(v, t, 660, 0.09, { type: "square", gain: 0.09 }));
-}
-
-/** Match chime; climbs with the cascade level. */
-export function playMatch(cascadeLevel = 1) {
-  const base = 440 * Math.pow(2, (Math.min(Math.max(cascadeLevel, 1) - 1, 7) * 2) / 12);
-  sfx((v, t) => {
-    tone(v, t, base, 0.12, { type: "triangle", gain: 0.13 });
-    tone(v, t + 0.05, base * 1.5, 0.12, { type: "triangle", gain: 0.09 });
-  });
-}
-
-export function playInvalid() {
-  sfx((v, t) => tone(v, t, 180, 0.13, { type: "triangle", gain: 0.1 }));
-}
-
-/** Correct answer; each step of a combo or streak lifts the pitch a tone (up to 8). */
-export function playCorrect(combo = 1) {
-  const lift = Math.pow(2, (Math.min(Math.max(combo, 1) - 1, 7) * 2) / 12);
-  sfx((v, t) => {
-    tone(v, t, 523 * lift, 0.1, { gain: 0.13 });
-    tone(v, t + 0.08, 784 * lift, 0.14, { gain: 0.13 });
-  });
-}
-
-/** Wrong answer: a soft, low buzz rather than a harsh one. */
-export function playWrong() {
-  sfx((v, t) => {
-    tone(v, t, 165, 0.2, { type: "triangle", gain: 0.11 });
-    tone(v, t, 170, 0.2, { type: "square", gain: 0.025 });
-  });
-}
-
-/** A hint unlocked. */
-export function playHint() {
-  sfx((v, t) => {
+/** Every sound effect, as (instruments, time, argument) => notes. */
+export const EFFECTS = {
+  // Tile tap or key press: a short, quiet click.
+  tap: (v, t) => v.tone(t, 880, 0.035, { gain: 0.12, attack: 0.002 }),
+  flip: (v, t) => v.tone(t, 320, 0.08, { type: "triangle", gain: 0.1 }),
+  pop: (v, t) => v.tone(t, 660, 0.09, { type: "square", gain: 0.09 }),
+  // Match chime; climbs with the cascade level.
+  match: (v, t, cascade = 1) => {
+    const base = 440 * step2(cascade);
+    v.tone(t, base, 0.12, { type: "triangle", gain: 0.13 });
+    v.tone(t + 0.05, base * 1.5, 0.12, { type: "triangle", gain: 0.09 });
+  },
+  invalid: (v, t) => v.tone(t, 180, 0.13, { type: "triangle", gain: 0.1 }),
+  // Correct answer; each step of a combo or streak lifts the pitch a tone.
+  correct: (v, t, combo = 1) => {
+    v.tone(t, 523 * step2(combo), 0.1, { gain: 0.13 });
+    v.tone(t + 0.08, 784 * step2(combo), 0.14, { gain: 0.13 });
+  },
+  // Wrong answer: a soft, low buzz rather than a harsh one.
+  wrong: (v, t) => {
+    v.tone(t, 233, 0.2, { type: "triangle", gain: 0.16 });
+    v.tone(t, 240, 0.2, { type: "square", gain: 0.05 });
+  },
+  hint: (v, t) => {
     v.bell(t, 81, 0.06);
     v.bell(t + 0.09, 86, 0.05);
-  });
+  },
+  // Timer warning, once a second for the last 10; sharper in the last 3.
+  tick: (v, t, secondsLeft = 10) =>
+    secondsLeft <= 3
+      ? v.tone(t, 1900, 0.045, { gain: 0.16, attack: 0.001 })
+      : v.tone(t, 1500, 0.04, { gain: 0.11, attack: 0.001 }),
+  victory: (v, t) => [523, 659, 784, 1046].forEach((f, i) => v.tone(t + i * 0.09, f, 0.2, { gain: 0.13 })),
+  // Level up: a short fanfare ending on a held chord.
+  levelUp: (v, t) => {
+    [523, 659, 784].forEach((f, i) => v.tone(t + i * 0.1, f, 0.16, { type: "triangle", gain: 0.12 }));
+    [1046, 1318, 1568].forEach((f) => v.tone(t + 0.32, f, 0.6, { gain: 0.07 }));
+  },
+  defeat: (v, t) => [392, 349, 293].forEach((f, i) => v.tone(t + i * 0.12, f, 0.25, { type: "triangle", gain: 0.1 })),
+};
+
+const effect = (name, arg) => sfx((v, t) => EFFECTS[name](v, t, arg));
+
+export const playTap = () => effect("tap");
+export const playFlip = () => effect("flip");
+export const playPop = () => effect("pop");
+export const playMatch = (cascadeLevel = 1) => effect("match", cascadeLevel);
+export const playInvalid = () => effect("invalid");
+export const playCorrect = (combo = 1) => effect("correct", combo);
+export const playWrong = () => effect("wrong");
+export const playHint = () => effect("hint");
+export const playTick = (secondsLeft = 10) => effect("tick", secondsLeft);
+export const playVictory = () => effect("victory");
+export const playLevelUp = () => effect("levelUp");
+export const playDefeat = () => effect("defeat");
+
+/**
+ * Render a loop or an effect offline, through the same buses and levels as the
+ * app, and return the samples. Used to measure loudness (dev handle below).
+ */
+export async function renderOffline({ track, effect: name, seconds = 4, settings = getAudioSettings() }) {
+  const Offline = typeof window !== "undefined" && (window.OfflineAudioContext || window.webkitOfflineAudioContext);
+  if (!Offline) return null;
+  const rate = 44100;
+  const ac = new Offline(1, Math.ceil(rate * seconds), rate);
+  const g = buildGraph(ac);
+  g.master.gain.value = settings.muted ? 0 : settings.volume * settings.volume;
+  g.musicBus.gain.value = settings.music ? MUSIC_LEVEL : 0;
+  g.sfxBus.gain.value = settings.sfx ? SFX_LEVEL : 0;
+  if (track) {
+    const def = TRACKS[track];
+    const v = voices(ac, g.noiseBuffer, g.musicBus);
+    const sd = 60 / def.bpm / def.spb;
+    for (let i = 0, t = 0.05; t < seconds - 0.1; i++, t += sd) def.play(i, t, sd, v);
+  }
+  if (name) EFFECTS[name](voices(ac, g.noiseBuffer, g.sfxBus), 0.05);
+  const buffer = await ac.startRendering();
+  return buffer.getChannelData(0);
 }
 
-/** Timer warning, once a second for the last 10; sharper in the last 3. */
-export function playTick(secondsLeft = 10) {
-  const urgent = secondsLeft <= 3;
-  sfx((v, t) => tone(v, t, urgent ? 1900 : 1500, 0.035, { gain: urgent ? 0.07 : 0.045, attack: 0.001 }));
-}
-
-export function playVictory() {
-  sfx((v, t) => [523, 659, 784, 1046].forEach((f, i) => tone(v, t + i * 0.09, f, 0.2, { gain: 0.13 })));
-}
-
-/** Level up: a short fanfare ending on a held chord. */
-export function playLevelUp() {
-  sfx((v, t) => {
-    [523, 659, 784].forEach((f, i) => tone(v, t + i * 0.1, f, 0.16, { type: "triangle", gain: 0.12 }));
-    [1046, 1318, 1568].forEach((f) => tone(v, t + 0.32, f, 0.6, { gain: 0.07 }));
-  });
-}
-
-export function playDefeat() {
-  sfx((v, t) => [392, 349, 293].forEach((f, i) => tone(v, t + i * 0.12, f, 0.25, { type: "triangle", gain: 0.1 })));
+/**
+ * A short phrase of music, so switching Music on (in Profile, where no loop
+ * plays) is heard straight away. Ignored while a game's loop is playing.
+ */
+export function previewMusic() {
+  const s = getAudioSettings();
+  if (trackId || !s.music || s.muted || holds.size > 0) return;
+  const audio = getContext();
+  if (!audio) return;
+  const fade = audio.createGain();
+  fade.connect(musicBus);
+  const def = TRACKS.cipher;
+  const sd = 60 / def.bpm / def.spb;
+  const v = voices(audio, noiseBuffer, fade);
+  for (let i = 0; i < 8; i++) def.play(i, audio.currentTime + 0.05 + i * sd, sd, v);
+  setTimeout(() => fade.disconnect(), 8 * sd * 1000 + 1500);
+  idleSoon();
 }
 
 // Development builds only: a handle for checking the engine from the console.
 if (process.env.NODE_ENV === "development" && typeof window !== "undefined") {
   window.__cipherAudio = {
     state: () => ({ context: ctx?.state || "none", track: trackId, intensity, scheduling: Boolean(timer), step }),
+    // Loudness in dBFS: peak, RMS, and RMS above ~300 Hz (what a phone speaker can play).
+    measure: async (opts) => {
+      const x = await renderOffline(opts);
+      if (!x) return null;
+      const db = (v) => Math.round(20 * Math.log10(Math.max(v, 1e-9)) * 10) / 10;
+      const a = Math.exp((-2 * Math.PI * 300) / 44100);
+      let peak = 0;
+      let sum = 0;
+      let hpSum = 0;
+      let y1 = 0;
+      let x1 = 0;
+      let y2 = 0;
+      let x2 = 0;
+      for (let i = 0; i < x.length; i++) {
+        const s = x[i];
+        peak = Math.max(peak, Math.abs(s));
+        sum += s * s;
+        // two one-pole high-passes in series (12 dB/octave below 300 Hz)
+        const h1 = a * (y1 + s - x1);
+        x1 = s;
+        y1 = h1;
+        const h2 = a * (y2 + h1 - x2);
+        x2 = h1;
+        y2 = h2;
+        hpSum += h2 * h2;
+      }
+      return { peak: db(peak), rms: db(Math.sqrt(sum / x.length)), speakerRms: db(Math.sqrt(hpSum / x.length)) };
+    },
   };
 }
 
@@ -568,6 +657,7 @@ export function _resetSoundEngineForTests() {
   timer = null;
   clearTimeout(idleTimer);
   idleTimer = null;
+  unlocked = false;
   ctx = null;
   master = musicBus = sfxBus = noiseBuffer = null;
   trackId = null;

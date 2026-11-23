@@ -44,6 +44,9 @@ rules on the server side too; the app checks handles itself first.
   two always match. The phone's volume buttons work as usual.
 - Sound stops while the app is in the background or a video ad is playing,
   and comes back afterwards.
+- **iPhone:** game sound plays even with the silent switch on, and mixes with
+  music or podcasts from other apps instead of stopping them. Use the speaker
+  button or the volume buttons to quieten it.
 
 ### Changed
 - **Profile, in four cards:** who you are (handle, level, score, member

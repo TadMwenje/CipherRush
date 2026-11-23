@@ -54,6 +54,9 @@ class FakeAudioContext {
   createGain() {
     return node();
   }
+  createDynamicsCompressor() {
+    return { ...node(), threshold: param(), knee: param(), ratio: param(), attack: param(), release: param() };
+  }
   createBiquadFilter() {
     return { ...node(), type: "", frequency: param() };
   }
@@ -252,6 +255,25 @@ describe("idle", () => {
     setAudioSettings({ muted: true });
     jest.advanceTimersByTime(3100);
     expect(ctx.suspend).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("iOS wake-up", () => {
+  test("after a pause, a tap wakes the audio only while music should play", async () => {
+    const { installAudioUnlock } = require("./soundEngine");
+    installAudioUnlock();
+    document.dispatchEvent(new Event("pointerdown")); // first tap: unlock
+    const ctx = lastCtx;
+    startMusic("cipher");
+    ctx.state = "interrupted"; // iOS after a call or the app switcher
+    document.dispatchEvent(new Event("pointerdown"));
+    expect(ctx.resume).toHaveBeenCalled();
+
+    stopMusic();
+    ctx.resume.mockClear();
+    ctx.state = "suspended";
+    document.dispatchEvent(new Event("pointerdown"));
+    expect(ctx.resume).not.toHaveBeenCalled(); // menus stay asleep
   });
 });
 

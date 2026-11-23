@@ -2,7 +2,16 @@ import React, { useEffect, useId, useRef, useState } from "react";
 import { Speaker, SpeakerOff } from "../glyphs";
 import { useT } from "../i18n";
 import { setAudioSettings, toggleMuted, useAudioSettings } from "../utils/audioSettings";
-import { playTap } from "../utils/soundEngine";
+import { playTap, previewMusic } from "../utils/soundEngine";
+
+// Volume taps while dragging, at most a few per second.
+let lastVolumeTap = 0;
+function volumeTap() {
+  const now = Date.now();
+  if (now - lastVolumeTap < 150) return;
+  lastVolumeTap = now;
+  playTap();
+}
 
 /**
  * Music, sound effects and volume. Used in the in-game speaker popover and in
@@ -20,7 +29,10 @@ export function AudioSettingsFields({ showMute = false }) {
           type="button"
           className={`audio-mute-btn${s.muted ? " muted" : ""}`}
           aria-pressed={s.muted}
-          onClick={() => toggleMuted()}
+          onClick={() => {
+            const { muted } = toggleMuted();
+            if (!muted) playTap(); // hear it come back
+          }}
         >
           {s.muted ? <SpeakerOff size={18} /> : <Speaker size={18} />}
           {s.muted ? t("audio.unmute") : t("audio.mute")}
@@ -34,7 +46,10 @@ export function AudioSettingsFields({ showMute = false }) {
           className="switch"
           checked={s.music}
           aria-checked={s.music}
-          onChange={(e) => setAudioSettings({ music: e.target.checked })}
+          onChange={(e) => {
+            setAudioSettings({ music: e.target.checked });
+            if (e.target.checked) previewMusic();
+          }}
         />
       </label>
       <label className="switch-row">
@@ -61,8 +76,10 @@ export function AudioSettingsFields({ showMute = false }) {
           step="5"
           value={Math.round(s.volume * 100)}
           disabled={s.muted}
-          onChange={(e) => setAudioSettings({ volume: Number(e.target.value) / 100 })}
-          onPointerUp={() => playTap()}
+          onChange={(e) => {
+            setAudioSettings({ volume: Number(e.target.value) / 100 });
+            volumeTap();
+          }}
           aria-valuetext={`${Math.round(s.volume * 100)}%`}
         />
         <span className="audio-volume-value" aria-hidden="true">
