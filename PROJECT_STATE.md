@@ -4,9 +4,9 @@ Single source of truth for what CipherRush is, how it's built, what has been don
 
 | | |
 | --- | --- |
-| **Last updated** | 2026-10-29 |
-| **Branch** | `ios-device-testing`, pushed to GitHub (`TadMwenje/CipherRush`) |
-| **Test status** | 210 backend tests · 163 frontend tests · strict production build clean |
+| **Last updated** | 2026-11-23 |
+| **Branch** | `v1.0.1` (local, not pushed; branched from `ios-device-testing`) |
+| **Test status** | 234 backend tests · 220 frontend tests · strict production build clean (2026-11-23, branch `v1.0.1`) |
 | **Native builds** | iOS 1.0.0 (3): version 1.0 returned under Guideline 2.1 (information needed), reply prepared · Android 1.0.0 (5) live on Play Closed testing - Alpha |
 | **Publisher** | AximoIX. Bundle/package ID `com.aximoix.cipherrush`. Legal terms: [aximoix.com/terms](https://aximoix.com/terms/#cipherrush) and [aximoix.com/privacy](https://aximoix.com/privacy/#cipherrush) |
 
@@ -326,6 +326,25 @@ All links and the joining steps are in `TESTING_LINKS.md`.
   - **iOS: applied and confirmed.** Apple said the app is removed from 140 countries or regions (live within 24 h); China mainland is Processing to Not Available. **8 are Available** (US, CA, UK, AU, NZ, NO, CH, ZW). The **27 EU countries are selected but blocked: "Trader Status Not Provided"** (EU Digital Services Act). Declare trader status in App Store Connect (Business, or App Information, then Digital Services Act) to go live there. Binaries unchanged.
   - **iOS age rating (Location Sharing = No, Dating = No): not done.** The questionnaire is read-only while 1.0 is Ready for Distribution, with all 18 answers disabled. Answer it when creating the next version (deadline 15 Jan 2027).
   - **Play: not applied.** The Production track is locked ("You don't have access to production yet") while the access application is under review. Closed testing - Alpha countries were left alone so as not to disturb the review or the testers. **To do once production is approved:** set the Production countries to the 35 above when creating the first production release.
+
+### 2.14 Version 1.0.1 (2026-11-23, branch `v1.0.1`, local only)
+
+Android 1.0.1 (versionCode 6) and iOS 1.0.1 (build 4). Commits on `v1.0.1` are local; nothing has been pushed, built or uploaded. Details are in `mobile/CHANGELOG.md`.
+- **Home screen:** each of the six modes is a card with an animated SVG preview (`components/GamePreview.js`) and its own ? button. Every mode now has a walkthrough of at least 3 steps. Android edge-to-edge: `--safe-*` takes the larger of `env()` and Capacitor SystemBars' `--safe-area-inset-*`, so the Daily Cipher banner clears the status bar.
+- **Security Quiz hints:** no change needed. The 3 free hints, then a rewarded video, then a graceful "no video" fallback, were already in 1.0.0 (3) and are enforced on the server.
+- **Languages:** en, es, fr, de, pt, it, nl, pl (`frontend/src/i18n/`), with a picker under Profile > Language saved in localStorage. Covers menus, the home screen, mode rules, walkthroughs, profile and ranks. Puzzles, quiz questions, true/false claims, in-game buttons and account forms stay in English. The translations were written by the agent and need a native-speaker check (like O-05).
+- **Handle blocklist:** new terms (hitler, adolf, god (exact), allah, osama, bin laden, lucifer, sex, fruit, nutella, twitter, messiah, jesus, satan), leetspeak readings and an allow list (sussex, grapefruit, callahan, abdallah...). Message: "That username isn't available. Please choose another." The server and app share one JSON list.
+- **Copy:** calmer, skill-focused taglines ("Verify before you trust", "Test your cyber instincts", "Spot the pattern. Decode the signal.").
+- **Low-data startup:**
+  - `frontend/src/cache.js` is a per-account, stale-while-revalidate localStorage cache for `/me/dashboard`, `/daily`, `/me/profile`, the three leaderboards and the last `/auth/me`. It is wiped on logout or a 401, and entries older than a week are ignored. It is display only, so scoring is untouched.
+  - Identical GETs in flight are shared.
+  - The server gzips responses over 1 KB.
+  - Scored quiz and true/false banks are deliberately **not** bundled: their answers would be public. Practice Mode already ships its own offline bank.
+- **Release steps still to do:**
+  - Deploy the server (moderation and gzip; Render deploys from the public repo, so push first).
+  - `yarn build` and `npx cap sync`.
+  - Build and upload Android 6 and iOS 4.
+  - On the iOS 1.0.1 version, answer the age-rating questions (Location Sharing No, Dating No) before 15 Jan 2027.
 
 ### 3.2 Open
 

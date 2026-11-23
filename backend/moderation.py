@@ -24,8 +24,9 @@ profanity.load_censor_words()
 _BLOCKLIST = json.loads((Path(__file__).parent / "content" / "handle_blocklist.json").read_text(encoding="utf-8"))
 
 # Two readings of "1" (i and l), since both show up in bypasses: n1gger, a55ho1e.
-_LEET_I = str.maketrans({"0": "o", "1": "i", "3": "e", "4": "a", "5": "s", "6": "g", "7": "t", "8": "b", "9": "g", "$": "s", "@": "a"})
-_LEET_L = str.maketrans({"0": "o", "1": "l", "3": "e", "4": "a", "5": "s", "6": "g", "7": "t", "8": "b", "9": "g", "$": "s", "@": "a"})
+_LEET = {"0": "o", "3": "e", "4": "a", "5": "s", "6": "g", "7": "t", "8": "b", "9": "g", "$": "s", "@": "a"}
+_LEET_I = str.maketrans({**_LEET, "1": "i"})
+_LEET_L = str.maketrans({**_LEET, "1": "l"})
 
 
 def _stretchy(term: str) -> str:
@@ -64,6 +65,7 @@ def _contains_blocked_word(username: str) -> bool:
         if _ANYWHERE.search(joined) or _HATE_PAIR.search(joined):
             return True
     return False
+
 
 USERNAME_PATTERN = re.compile(r"^[a-zA-Z0-9_]{3,20}$")
 # 8+ chars, at least one lowercase, one uppercase, one digit.

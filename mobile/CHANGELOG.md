@@ -2,6 +2,38 @@
 
 Native app changes (Android and iOS). Server and web changes are in git history.
 
+## Android 1.0.1 (6) and iOS 1.0.1 (4), 23 Nov 2026
+
+Works with the server that is live now. Deploy the matching server (branch
+`v1.0.1`) to get the new handle rules and gzipped responses; the app doesn't
+depend on either.
+
+### Added
+- **Game cards:** every home-screen mode is a card with a small animated
+  preview of its gameplay and its own ? button. Every mode now has a 3-step
+  walkthrough: Security Quiz, True or False, Match-3 and Memory Lock are new,
+  and Rush and Binary/Hex each gained a step.
+- **Languages:** English, Español, Français, Deutsch, Português, Italiano,
+  Nederlands and Polski, picked under Profile > Language. The default follows
+  the phone. It covers menus, the home screen, rules, walkthroughs, profile and
+  ranks. Puzzles and quiz questions stay in English.
+- **Low-data startup:** home stats, the Daily status, ranks and profile show
+  the last copy at once and refresh in the background. A returning player
+  skips the wait on a sleeping server. Duplicate requests are shared, and
+  server responses are gzipped.
+
+### Changed
+- **Handles:** more names are refused, including religious figures,
+  extremists, brands and "sex". Leetspeak is caught. The new message is
+  "That username isn't available. Please choose another."
+- **Copy:** calmer, skill-focused taglines ("Verify before you trust",
+  "Test your cyber instincts", "Spot the pattern. Decode the signal.").
+
+### Fixed
+- **Android status bar:** the Daily Cipher banner no longer sits under the
+  status bar on edge-to-edge Android (Capacitor's inset variables are used
+  when the WebView reports `env()` as 0).
+
 ## Android 1.0.0 (5) and iOS 1.0.0 (3), 29 Oct 2026
 
 Needs the matching server (commit `3de450a`) deployed first.
