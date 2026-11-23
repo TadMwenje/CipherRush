@@ -231,6 +231,30 @@ describe("sound effects", () => {
   });
 });
 
+describe("idle", () => {
+  test("with nothing playing, the audio output sleeps after a few seconds and wakes for the next sound", () => {
+    jest.useFakeTimers();
+    playTap();
+    const ctx = lastCtx;
+    jest.advanceTimersByTime(3100);
+    expect(ctx.suspend).toHaveBeenCalledTimes(1);
+    playTap();
+    expect(ctx.resume).toHaveBeenCalled();
+  });
+
+  test("muting the music lets it sleep too; music keeps it awake", () => {
+    jest.useFakeTimers();
+    playTap();
+    const ctx = lastCtx;
+    startMusic("quiz");
+    jest.advanceTimersByTime(5000);
+    expect(ctx.suspend).not.toHaveBeenCalled();
+    setAudioSettings({ muted: true });
+    jest.advanceTimersByTime(3100);
+    expect(ctx.suspend).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe("background and ads", () => {
   test("audio pauses for each reason and resumes only when all are lifted", async () => {
     playTap();

@@ -4937,3 +4937,25 @@ html.app-paused *::after {
   justify-content: space-between;
   gap: 0.5rem;
 }
+
+/* The game header holds back, title, clock, speaker and "?": let a long title
+   wrap onto two balanced lines instead of cutting it off. */
+.game-header {
+  gap: 0.25rem;
+}
+
+.game-header h1 {
+  white-space: normal;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-height: 1.15;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+  font-size: clamp(1rem, 4.4vw, 1.35rem);
+}
+
+.game-header-side {
+  gap: 0.25rem;
+}

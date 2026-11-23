@@ -26,6 +26,7 @@ const TICK_MS = 25;
 const MUSIC_LEVEL = 0.5; // music sits under the effects
 const FADE_IN_S = 1.2;
 const FADE_OUT_S = 0.35;
+const IDLE_SUSPEND_MS = 3000; // let the audio hardware sleep when nothing's playing
 
 let ctx = null;
 let master = null;
@@ -110,11 +111,11 @@ export function installAudioUnlock() {
   if (unlockInstalled || typeof document === "undefined") return;
   unlockInstalled = true;
   const unlock = () => {
-    getContext();
-    if (ctx && ctx.state === "running") {
-      ["pointerdown", "touchend", "keydown"].forEach((e) => document.removeEventListener(e, unlock, true));
-    }
+    // A resume() made inside the first gesture is all browsers need, so one is enough.
+    if (!getContext()) return;
+    ["pointerdown", "touchend", "keydown"].forEach((e) => document.removeEventListener(e, unlock, true));
     syncScheduler();
+    if (!timer) idleSoon();
   };
   ["pointerdown", "touchend", "keydown"].forEach((e) => document.addEventListener(e, unlock, true));
 }
@@ -136,6 +137,20 @@ export function resumeAudio(reason = "manual") {
       })
       .catch(() => {});
   }
+}
+
+/*
+ * With no music scheduled (muted, music off, or a screen without a loop) and
+ * no effect for a few seconds, suspend the context so the phone's audio
+ * output can power down. The next sound wakes it (getContext).
+ */
+let idleTimer = null;
+function idleSoon() {
+  clearTimeout(idleTimer);
+  idleTimer = setTimeout(() => {
+    idleTimer = null;
+    if (!timer && ctx && ctx.state === "running") ctx.suspend().catch(() => {});
+  }, IDLE_SUSPEND_MS);
 }
 
 export function isAudioHeld() {
@@ -406,10 +421,13 @@ function syncScheduler() {
   const s = getAudioSettings();
   const wanted = Boolean(trackId) && s.music && !s.muted && Boolean(audioClass());
   if (wanted && !timer) {
+    clearTimeout(idleTimer);
+    getContext(); // wake it if it was idling
     timer = setInterval(schedule, TICK_MS);
   } else if (!wanted && timer) {
     clearInterval(timer);
     timer = null;
+    idleSoon();
   }
 }
 
@@ -457,6 +475,7 @@ function sfx(play) {
   } catch (e) {
     // no sound is better than a crash
   }
+  if (!timer) idleSoon();
 }
 
 function tone(v, t, freq, dur, opts) {
@@ -547,6 +566,8 @@ if (process.env.NODE_ENV === "development" && typeof window !== "undefined") {
 export function _resetSoundEngineForTests() {
   if (timer) clearInterval(timer);
   timer = null;
+  clearTimeout(idleTimer);
+  idleTimer = null;
   ctx = null;
   master = musicBus = sfxBus = noiseBuffer = null;
   trackId = null;
