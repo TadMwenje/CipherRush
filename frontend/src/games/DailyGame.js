@@ -13,6 +13,7 @@ import { CaesarWheel, AtbashMirror, KeyLengthView, useCountdown, AnswerInput, It
 import { freeHint, variantLabel } from "./cipherText";
 import { formatNumber, useLanguage, useT } from "../i18n";
 import useModeLabel from "../hooks/useModeLabel";
+import useWarningTicks from "../hooks/useWarningTicks";
 
 // Server time, not the phone's clock - changing the device date can't fake a new day.
 function untilReset(iso, t) {
@@ -137,6 +138,7 @@ function DailyGame() {
 
   const playing = Boolean(round) && !result;
   const timeLeft = useCountdown(round, playing, submit);
+  useWarningTicks(timeLeft, playing);
 
   return (
     <div className="game-screen daily-game">

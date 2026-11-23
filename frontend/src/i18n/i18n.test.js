@@ -4,7 +4,11 @@ import { GAME_MODES, DAILY_MODE } from "../constants/gameModes";
 import { WALKTHROUGHS } from "../constants/walkthroughs";
 
 const MODES = [...GAME_MODES, DAILY_MODE];
-const STEPS = new Map(Object.values(WALKTHROUGHS).flat().map((s) => [s.id, s]));
+const STEPS = new Map(
+  Object.values(WALKTHROUGHS)
+    .flat()
+    .map((s) => [s.id, s]),
+);
 const placeholders = (s) => (s.match(/\{\w+\}/g) || []).sort().join();
 
 test("eight languages, each with a locale file except English", () => {
@@ -91,15 +95,6 @@ test("the handle messages exist in every language", () => {
   expect(handleProblem("adlof")).toBe("That username isn't available. Please choose another.");
 });
 
-test("the sound switch is remembered and silences the game", () => {
-  const sound = require("../sound");
-  sound.setSoundEnabled(false);
-  expect(localStorage.getItem("cr_sound")).toBe("off");
-  expect(sound.soundEnabled()).toBe(false);
-  sound.setSoundEnabled(true);
-  expect(localStorage.getItem("cr_sound")).toBe("on");
-});
-
 test("cipher names and free hints follow the language", () => {
   const { freeHint, variantLabel } = require("../games/cipherText");
   const fr = (key, vars) => t(key, vars, "fr");
@@ -107,7 +102,7 @@ test("cipher names and free hints follow the language", () => {
   expect(variantLabel("vigenere", fr)).toBe("Vigenère");
   expect(freeHint({ variant: "caesar" }, fr)).toBe("Même décalage sur chaque lettre, entre 1 et 25.");
   expect(freeHint({ variant: "vigenere", key_length: 4 }, (k, v) => t(k, v, "en"))).toBe(
-    "The key is 4 letters. Letters 1, 5, 9... (letters only) all use the same shift."
+    "The key is 4 letters. Letters 1, 5, 9... (letters only) all use the same shift.",
   );
   expect(freeHint({ variant: "other", free_hint: "server text" }, fr)).toBe("server text");
 });

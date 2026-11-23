@@ -27,12 +27,31 @@ rules on the server side too; the app checks handles itself first.
 - **Cipher names and hints:** "César", "Cezar" and so on, and the free hint
   under each cipher, follow the app language.
 
+### Added
+- **Music and sound:** every game has its own quiet background loop, made by
+  the app itself (no audio files, about 4 KB): a calm arpeggio with a clock
+  tick for Cipher Puzzles and the Daily Cipher, a driving pulse for Speed
+  Rush that speeds up in the last 15 seconds, digital bleeps for
+  Binary / Hex, a warm pad for the Security Quiz, a game-show pulse for
+  True or False, a marimba tune for Match-3 and Memory Lock, and a duel beat
+  for Versus. Practice uses the matching loop. New effects for taps and key
+  presses, hints, the last 10 seconds of a clock and levelling up; correct
+  answers climb in pitch with a combo or streak, and wrong answers are a
+  softer buzz.
+- **Speaker button** in every game header and in Versus: mute, music on/off,
+  sound effects on/off and volume, without leaving the round. Profile >
+  Preferences has the same Music, Sound effects and Volume controls, and the
+  two always match. The phone's volume buttons work as usual.
+- Sound stops while the app is in the background or a video ad is playing,
+  and comes back afterwards.
+
 ### Changed
 - **Profile, in four cards:** who you are (handle, level, score, member
-  since), Preferences (language, sound, vibration, Daily Cipher reminders),
+  since), Preferences (language, music, sound effects, volume, vibration,
+  Daily Cipher reminders),
   Account and data (sign-in, password, your data, clear saved data, legal),
   and the danger zone (log out, delete account) at the very bottom.
-- **Sound and vibration switches:** new; the choice stays on this phone.
+- **Vibration switch:** new; the choice stays on this phone.
 - **Clear saved data:** removes the offline copies of stats and boards; you
   stay signed in.
 - **Handles:** swapped letters (adlof, htiler, osmaa) and extremist and

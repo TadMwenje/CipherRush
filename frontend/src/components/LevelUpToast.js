@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { Trend } from "../glyphs";
-import { playVictory } from "../sound";
+import { playLevelUp } from "../sound";
 
 const DISPLAY_MS = 2800;
 
@@ -9,7 +9,7 @@ const DISPLAY_MS = 2800;
 function LevelUpToast({ items, onDone }) {
   useEffect(() => {
     if (!items || items.length === 0) return undefined;
-    playVictory();
+    playLevelUp();
     const timer = setTimeout(onDone, DISPLAY_MS);
     return () => clearTimeout(timer);
   }, [items, onDone]);

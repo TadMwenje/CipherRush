@@ -14,8 +14,11 @@ import useGameRewards from "../hooks/useGameRewards";
 import { AnswerInput } from "./CipherGame";
 import { t as translate, useT } from "../i18n";
 import useModeLabel from "../hooks/useModeLabel";
+import useWarningTicks from "../hooks/useWarningTicks";
+import { setMusicIntensity } from "../utils/soundEngine";
 
 const WARNING_SECONDS = 10;
+const FINAL_STRETCH_SECONDS = 15;
 
 function keyLabel(puzzle) {
   return puzzle.kind === "atbash" ? translate("rush.atbash") : translate("rush.rot", { n: puzzle.shift });
@@ -83,7 +86,7 @@ function RushGame() {
       haptic("win");
       applyResult(data.result);
     },
-    [applyResult]
+    [applyResult],
   );
 
   const finish = useCallback(async () => {
@@ -141,7 +144,7 @@ function RushGame() {
     try {
       const { data } = await api.post(`/games/rush/rounds/${round.round_id}/answer`, { answer });
       if (data.correct) {
-        playCorrect();
+        playCorrect(data.combo);
         haptic("success");
         setLastPoints(data.points);
         setAnswer("");
@@ -175,6 +178,12 @@ function RushGame() {
   };
 
   const playing = round && view && !result;
+  useWarningTicks(timeLeft, Boolean(playing), WARNING_SECONDS);
+  // The music picks up for the final stretch.
+  const finalStretch = Boolean(playing) && timeLeft > 0 && timeLeft <= FINAL_STRETCH_SECONDS;
+  useEffect(() => {
+    setMusicIntensity(finalStretch ? 1.15 : 1);
+  }, [finalStretch]);
 
   return (
     <div className="game-screen rush-game">

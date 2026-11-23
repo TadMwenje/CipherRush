@@ -4847,3 +4847,93 @@ html.app-paused *::after {
   font-size: 0.9rem;
   padding: 0.6rem 1rem;
 }
+
+/* --- Audio (v1.0.2): speaker button, popover, shared fields -------------- */
+.audio-control {
+  position: relative;
+}
+
+.audio-btn.muted {
+  color: #6b7b90;
+  border-style: dashed;
+}
+
+.audio-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 60;
+  width: min(280px, calc(100vw - 32px));
+  padding: 0.85rem 1rem;
+  border-radius: 14px;
+  background: #121a2b;
+  border: 1px solid rgba(0, 212, 255, 0.25);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+  text-align: left;
+  animation: fade-in 0.15s ease;
+}
+
+.audio-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.audio-fields .switch-row {
+  min-height: 44px;
+}
+
+.audio-mute-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  margin-bottom: 4px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.05);
+  color: #e6f1ff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.audio-mute-btn.muted {
+  border-color: #00d4ff;
+  background: rgba(0, 212, 255, 0.15);
+  color: #00d4ff;
+}
+
+.audio-volume {
+  display: grid;
+  grid-template-columns: auto 1fr 3ch;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 44px;
+}
+
+.audio-volume input[type="range"] {
+  width: 100%;
+  min-width: 0;
+  accent-color: #00d4ff;
+  height: 28px;
+}
+
+.audio-volume input[type="range"]:disabled {
+  opacity: 0.4;
+}
+
+.audio-volume-value {
+  color: #9fb3c8;
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.page-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}

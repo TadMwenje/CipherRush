@@ -7,7 +7,7 @@ import { installKeyboardManager } from "./mobile/keyboard";
 import { installNetworkMonitor, isOnline, onNetworkChange, refreshNetworkState } from "./mobile/network";
 import { installLifecycle, onAppPause, onAppResume } from "./mobile/lifecycle";
 import { syncServerClock } from "./mobile/clock";
-import { suspendAudio } from "./sound";
+import { installAudioUnlock, pauseAudio, resumeAudio } from "./utils/soundEngine";
 import { installNotifications } from "./notifications";
 
 installKeyboardManager();
@@ -20,7 +20,10 @@ installNotifications();
 // while offline, so a phone with data switched off isn't asked for anything.
 onAppResume(() => refreshNetworkState().then(() => isOnline() && syncServerClock()));
 onNetworkChange((s) => s.online && syncServerClock());
-onAppPause(suspendAudio);
+// Music and effects stop in the background and pick up again on return.
+installAudioUnlock();
+onAppPause(() => pauseAudio("background"));
+onAppResume(() => resumeAudio("background"));
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(

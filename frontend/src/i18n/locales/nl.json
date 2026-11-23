@@ -391,7 +391,13 @@
     "var.caesar": "Caesar",
     "ci.free.caesar": "Elke letter schuift even ver op, ergens tussen 1 en 25.",
     "ci.free.atbash": "Spiegelalfabet. A ruilt met Z, B met Y, enzovoort. Ontcijferen gaat precies zo.",
-    "ci.free.vigenere": "De sleutel heeft {n} letters. Letter 1, {a}, {b}... (alleen letters) schuiven even ver op."
+    "ci.free.vigenere": "De sleutel heeft {n} letters. Letter 1, {a}, {b}... (alleen letters) schuiven even ver op.",
+    "audio.music": "Muziek",
+    "audio.volume": "Volume",
+    "audio.mute": "Dempen",
+    "audio.unmute": "Geluid aan",
+    "audio.settings": "Geluidsinstellingen",
+    "audio.muted": "Gedempt"
   },
   "modes": {
     "daily": {

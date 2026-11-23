@@ -12,6 +12,7 @@ import { getGameMode } from "../constants/gameModes";
 import Match3Board, { useMatch3Animator } from "./Match3Board";
 import { checkCipher, cipherRound, newSeed, seededRng, trueFalseRound } from "../practice/engine";
 import * as match3 from "../practice/match3";
+import useGameMusic from "../hooks/useGameMusic";
 
 // Tabs: Caesar, Match-3, True/False, all in the app's language.
 const MODES = ["caesar", "match3", "truefalse"];
@@ -318,6 +319,8 @@ function PracticeGame() {
   const tabLabel = (key) =>
     key === "caesar" ? t("var.caesar") : key === "truefalse" ? t("pr.tf") : modeText(getGameMode(key), lang).label;
   const [mode, setMode] = useState("caesar");
+  // Same loops as the scored games (Caesar plays the Cipher Puzzles one).
+  useGameMusic(mode === "caesar" ? "cipher" : mode);
   // One seeded generator per visit; every round after that comes from it.
   const rng = useMemo(() => seededRng(newSeed()), []);
   const pickMode = useCallback((key) => {

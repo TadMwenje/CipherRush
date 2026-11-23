@@ -391,7 +391,13 @@
     "var.caesar": "Caesar",
     "ci.free.caesar": "Jeder Buchstabe ist gleich weit verschoben, irgendwo zwischen 1 und 25.",
     "ci.free.atbash": "Spiegelalphabet. A tauscht mit Z, B mit Y und so weiter. Entschlüsseln geht genauso.",
-    "ci.free.vigenere": "Der Schlüssel hat {n} Buchstaben. Buchstabe 1, {a}, {b}... (nur Buchstaben) haben dieselbe Verschiebung."
+    "ci.free.vigenere": "Der Schlüssel hat {n} Buchstaben. Buchstabe 1, {a}, {b}... (nur Buchstaben) haben dieselbe Verschiebung.",
+    "audio.music": "Musik",
+    "audio.volume": "Lautstärke",
+    "audio.mute": "Stumm",
+    "audio.unmute": "Ton an",
+    "audio.settings": "Toneinstellungen",
+    "audio.muted": "Stumm"
   },
   "modes": {
     "daily": {

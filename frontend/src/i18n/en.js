@@ -310,6 +310,12 @@ const EN = {
   "pref.title": "Preferences",
   "pref.sound": "Sound effects",
   "pref.haptics": "Vibration",
+  "audio.music": "Music",
+  "audio.volume": "Volume",
+  "audio.mute": "Mute",
+  "audio.unmute": "Unmute",
+  "audio.settings": "Sound settings",
+  "audio.muted": "Muted",
 
   "data.title": "Account and data",
   "data.clear": "Clear saved data on this phone",

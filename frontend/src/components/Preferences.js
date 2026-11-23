@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useT } from "../i18n";
 import { haptic, hapticsEnabled, setHapticsEnabled } from "../mobile/haptics";
-import { setSoundEnabled, soundEnabled } from "../sound";
+import { AudioSettingsFields } from "./AudioControl";
 import LanguageSettings from "./LanguageSettings";
 import { ReminderSettings } from "./Reminders";
 
@@ -22,12 +22,12 @@ function Toggle({ label, checked, onChange }) {
 }
 
 /**
- * Profile → Preferences: language, sound and vibration, reminders. All of it
+ * Profile → Preferences: language, music / sound effects / volume (the same
+ * settings as the in-game speaker button), vibration, reminders. All of it
  * lives on this device, so the card works offline and before the profile loads.
  */
 function Preferences({ signedIn = true }) {
   const t = useT();
-  const [sound, setSound] = useState(soundEnabled);
   const [buzz, setBuzz] = useState(hapticsEnabled);
 
   return (
@@ -35,14 +35,7 @@ function Preferences({ signedIn = true }) {
       <h2 id="prefs-title">{t("pref.title")}</h2>
       <LanguageSettings />
       <div className="account-row">
-        <Toggle
-          label={t("pref.sound")}
-          checked={sound}
-          onChange={(on) => {
-            setSoundEnabled(on);
-            setSound(on);
-          }}
-        />
+        <AudioSettingsFields />
         <Toggle
           label={t("pref.haptics")}
           checked={buzz}

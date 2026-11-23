@@ -136,6 +136,8 @@ export const Calendar = makeGlyph("calendar", (
   </>
 ));
 export const Signal = makeGlyph("signal", <path d="M4 20v-3M9 20v-7M14 20V9M19 20V4" />);
+export const Speaker = makeGlyph("speaker", <path d="M4 9h4l5-4v14l-5-4H4zM16.5 9a4 4 0 0 1 0 6M19 6.5a7.5 7.5 0 0 1 0 11" />);
+export const SpeakerOff = makeGlyph("speaker-off", <path d="M4 9h4l5-4v14l-5-4H4zM16 9.5l5 5M21 9.5l-5 5" />);
 export const SignalOff = makeGlyph("signal-off", <path d="M4 20v-3M9 20v-7M14 20v-4M19 20v-1M3 3l18 18" />);
 export const Trend = makeGlyph("trend", <path d="M3 17l6-6 4 4 8-8M15 7h6v6" />);
 export const Rotate = makeGlyph("rotate", <path d="M4 4v6h6M20 20v-6h-6M5 15a8 8 0 0 0 14 1M19 9A8 8 0 0 0 5 8" />);

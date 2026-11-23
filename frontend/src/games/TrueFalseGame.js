@@ -45,7 +45,7 @@ function TrueFalseGame() {
       setFeedback({ correct: data.correct, explanation: data.explanation, points: data.points });
       setStreak(data.streak);
       if (data.correct) {
-        playCorrect();
+        playCorrect(data.streak);
         haptic("success");
       } else {
         playWrong();
@@ -107,7 +107,10 @@ function TrueFalseGame() {
             </div>
           </div>
           <div className="progress-bar">
-            <div className="progress-fill" style={{ width: `${((index + (feedback ? 1 : 0)) / statements.length) * 100}%` }} />
+            <div
+              className="progress-fill"
+              style={{ width: `${((index + (feedback ? 1 : 0)) / statements.length) * 100}%` }}
+            />
           </div>
         </>
       )}
@@ -164,7 +167,9 @@ function TrueFalseGame() {
           <div className="match3-result won">
             <h2 className="match3-result-heading">
               {result.perfect ? <Sparkle size={24} /> : <Confetti size={24} />}
-              {result.perfect ? t("tf.perfect") : t("tf.outOf", { n: result.correct_count, total: result.total_questions })}
+              {result.perfect
+                ? t("tf.perfect")
+                : t("tf.outOf", { n: result.correct_count, total: result.total_questions })}
             </h2>
             <div className="final-score">+{result.score}</div>
             <p className="match3-result-copy">

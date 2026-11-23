@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Bulb, CheckOct, CrossOct } from "../glyphs";
 import api, { errorMessage } from "../api";
-import { playCorrect, playWrong } from "../sound";
+import { playCorrect, playHint, playTap, playWrong } from "../sound";
 import { haptic } from "../mobile/haptics";
 import GameLevelBar from "../components/GameLevelBar";
 import GameHeader from "../components/GameHeader";
@@ -47,6 +47,7 @@ function QuizGame() {
     const next = [...answers];
     next[current] = optionIndex;
     setAnswers(next);
+    playTap();
     haptic("select");
   };
 
@@ -89,6 +90,7 @@ function QuizGame() {
         nextAnswers[current] = undefined;
         setAnswers(nextAnswers);
       }
+      playHint();
       haptic("select");
     } catch (err) {
       setError(errorMessage(err, err.message));
@@ -130,9 +132,7 @@ function QuizGame() {
         {question && !result && (
           <div className="question-content">
             <div className="question-header">
-              <div className="question-number">
-                {t("quiz.of", { i: current + 1, n: questions.length })}
-              </div>
+              <div className="question-number">{t("quiz.of", { i: current + 1, n: questions.length })}</div>
               <div className="progress-bar">
                 <div className="progress-fill" style={{ width: `${((current + 1) / questions.length) * 100}%` }} />
               </div>
@@ -143,7 +143,12 @@ function QuizGame() {
             <div className="options">
               {question.options.map((option, index) =>
                 struck.includes(index) ? (
-                  <button key={option} className="option-btn struck" disabled aria-label={t("quiz.ruledOut", { option })}>
+                  <button
+                    key={option}
+                    className="option-btn struck"
+                    disabled
+                    aria-label={t("quiz.ruledOut", { option })}
+                  >
                     {option}
                   </button>
                 ) : (
@@ -155,7 +160,7 @@ function QuizGame() {
                   >
                     {option}
                   </button>
-                )
+                ),
               )}
             </div>
 

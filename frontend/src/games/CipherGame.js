@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Bulb, CheckOct, CrossOct, Minus, Plus, Key } from "../glyphs";
 import api, { errorMessage } from "../api";
-import { playCorrect, playWrong } from "../sound";
+import { playCorrect, playHint, playTap, playWrong } from "../sound";
+import useWarningTicks from "../hooks/useWarningTicks";
 import { haptic } from "../mobile/haptics";
 import { formatClock, shiftAfterDrag } from "../mobile/layout";
 import { monoNow, serverNow } from "../mobile/clock";
@@ -238,7 +239,10 @@ export function AnswerInput({ value, onChange, disabled, placeholder, focusOnMou
       className="answer-input"
       placeholder={placeholder || t("g.answerPlaceholder")}
       value={value}
-      onChange={(e) => onChange(e.target.value.toUpperCase())}
+      onChange={(e) => {
+        if (e.target.value.length > value.length) playTap();
+        onChange(e.target.value.toUpperCase());
+      }}
       disabled={disabled}
       autoCapitalize="characters"
       autoComplete="off"
@@ -302,12 +306,14 @@ function CipherGame() {
 
   const active = Boolean(round) && !result;
   const timeLeft = useCountdown(round, active && !watching, submit, timeAdded);
+  useWarningTicks(timeLeft, active && !watching);
 
   const requestHint = async () => {
     if (!round) return;
     try {
       const res = await api.post(`/games/cipher/rounds/${round.round_id}/hint`);
       setHints((h) => [...h, res.data.hint]);
+      playHint();
       haptic("select");
     } catch (err) {
       setError(errorMessage(err));
@@ -322,6 +328,7 @@ function CipherGame() {
       const res = await api.post(`/games/cipher/rounds/${round.round_id}/hint`, { reward_id: rewardId });
       setHints((h) => [...h, res.data.hint]);
       setTimeAdded((t) => t + (res.data.time_added || 0));
+      playHint();
       haptic("select");
     } catch (err) {
       setError(errorMessage(err, err.message));

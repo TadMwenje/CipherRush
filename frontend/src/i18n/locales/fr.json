@@ -391,7 +391,13 @@
     "var.caesar": "César",
     "ci.free.caesar": "Même décalage sur chaque lettre, entre 1 et 25.",
     "ci.free.atbash": "Alphabet miroir. A s'échange avec Z, B avec Y, et ainsi de suite. Décoder, c'est le même geste.",
-    "ci.free.vigenere": "La clé fait {n} lettres. Les lettres 1, {a}, {b}... (lettres seulement) ont le même décalage."
+    "ci.free.vigenere": "La clé fait {n} lettres. Les lettres 1, {a}, {b}... (lettres seulement) ont le même décalage.",
+    "audio.music": "Musique",
+    "audio.volume": "Volume",
+    "audio.mute": "Couper le son",
+    "audio.unmute": "Remettre le son",
+    "audio.settings": "Réglages du son",
+    "audio.muted": "Son coupé"
   },
   "modes": {
     "daily": {

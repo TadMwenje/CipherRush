@@ -391,7 +391,13 @@
     "var.caesar": "Cesare",
     "ci.free.caesar": "Stesso spostamento su ogni lettera, tra 1 e 25.",
     "ci.free.atbash": "Alfabeto a specchio. A si scambia con Z, B con Y e così via. Decifrare è la stessa mossa.",
-    "ci.free.vigenere": "La chiave ha {n} lettere. Le lettere 1, {a}, {b}... (solo lettere) usano lo stesso spostamento."
+    "ci.free.vigenere": "La chiave ha {n} lettere. Le lettere 1, {a}, {b}... (solo lettere) usano lo stesso spostamento.",
+    "audio.music": "Musica",
+    "audio.volume": "Volume",
+    "audio.mute": "Silenzia",
+    "audio.unmute": "Riattiva audio",
+    "audio.settings": "Impostazioni audio",
+    "audio.muted": "Audio disattivato"
   },
   "modes": {
     "daily": {

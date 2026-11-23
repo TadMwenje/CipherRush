@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { playMatch, playInvalid } from "../sound";
+import { playMatch, playInvalid, playTap } from "../sound";
 import { haptic } from "../mobile/haptics";
 import { swipeDirection } from "../mobile/layout";
 import GameSymbolIcon from "../icons/GameSymbolIcon";
@@ -105,6 +105,7 @@ function Match3Board({ board, locked, finished, syncing, poppingCells, droppingC
     if (!p || p.swiped || locked) return;
     const clicked = { row: p.row, col: p.col };
     haptic("tap");
+    playTap();
     if (!selected) return setSelected(clicked);
     if (selected.row === p.row && selected.col === p.col) return setSelected(null);
     if (!isAdjacent(selected, clicked)) return setSelected(clicked);
@@ -130,7 +131,11 @@ function Match3Board({ board, locked, finished, syncing, poppingCells, droppingC
       onPointerCancel={() => (pointer.current = null)}
       onPointerLeave={() => (pointer.current = null)}
     >
-      {syncing && <div className="board-syncing" role="status">{t("g.syncing")}</div>}
+      {syncing && (
+        <div className="board-syncing" role="status">
+          {t("g.syncing")}
+        </div>
+      )}
       {board.map((rowArr, r) => (
         <div key={r} className="board-row">
           {rowArr.map((symbol, c) => (

@@ -391,7 +391,13 @@
     "var.caesar": "César",
     "ci.free.caesar": "El mismo desplazamiento en cada letra, entre 1 y 25.",
     "ci.free.atbash": "Alfabeto espejo. La A se cambia por la Z, la B por la Y, y así. Descifrar es el mismo paso.",
-    "ci.free.vigenere": "La clave tiene {n} letras. Las letras 1, {a}, {b}... (solo letras) usan el mismo desplazamiento."
+    "ci.free.vigenere": "La clave tiene {n} letras. Las letras 1, {a}, {b}... (solo letras) usan el mismo desplazamiento.",
+    "audio.music": "Música",
+    "audio.volume": "Volumen",
+    "audio.mute": "Silenciar",
+    "audio.unmute": "Activar sonido",
+    "audio.settings": "Ajustes de sonido",
+    "audio.muted": "Silenciado"
   },
   "modes": {
     "daily": {

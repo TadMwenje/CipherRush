@@ -4,8 +4,11 @@ import api from "../api";
 import { useOnline, useRefetchOnReturn } from "../mobile/hooks";
 import { isOnline } from "../mobile/network";
 import { formatNumber, useLanguage, useT } from "../i18n";
+import AudioControl from "../components/AudioControl";
+import useGameMusic from "../hooks/useGameMusic";
 
 function Battle() {
+  useGameMusic("versus");
   const t = useT();
   const lang = useLanguage();
   const online = useOnline();
@@ -39,8 +42,9 @@ function Battle() {
 
   return (
     <div className="page-screen battle-page">
-      <div className="page-header">
+      <div className="page-header page-header-row">
         <h1>{t("nav.versus")}</h1>
+        <AudioControl />
       </div>
 
       <div className="coming-soon-banner">
@@ -69,15 +73,17 @@ function Battle() {
       )}
       {online && !queue && !error && <div className="loading-inline">{t("vs.loading")}</div>}
 
-      {queue && queue.length === 0 && (
-        <div className="empty-state">{t("vs.empty")}</div>
-      )}
+      {queue && queue.length === 0 && <div className="empty-state">{t("vs.empty")}</div>}
 
       {queue && queue.length > 0 && (
         <div className="battle-queue">
           {queue.map((opponent, i) => (
             <div className="battle-row" key={i}>
-              <div className="battle-avatar">{String(opponent.username || "??").slice(0, 2).toUpperCase()}</div>
+              <div className="battle-avatar">
+                {String(opponent.username || "??")
+                  .slice(0, 2)
+                  .toUpperCase()}
+              </div>
               <div className="battle-main">
                 <div className="battle-username">{opponent.username}</div>
                 <div className="battle-meta">

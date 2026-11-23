@@ -4,10 +4,14 @@ import { Back, Help } from "../glyphs";
 import HowToPlayModal from "./HowToPlayModal";
 import { atRoundBreak } from "../ads/pacing";
 import { useT } from "../i18n";
+import AudioControl from "./AudioControl";
+import useGameMusic from "../hooks/useGameMusic";
 
 // Shared game screen header: back to dashboard, title, optional right-side
-// slot (timer/level), and a "?" that opens this mode's rules.
+// slot (timer/level), the speaker button, and a "?" that opens this mode's
+// rules. It also plays the mode's music while the screen is open.
 function GameHeader({ title, modeKey, children }) {
+  useGameMusic(modeKey);
   const navigate = useNavigate();
   const t = useT();
   const [showRules, setShowRules] = useState(false);
@@ -25,6 +29,7 @@ function GameHeader({ title, modeKey, children }) {
         <h1>{title}</h1>
         <div className="game-header-side">
           {children}
+          <AudioControl />
           {modeKey && (
             <button
               className="rules-btn"

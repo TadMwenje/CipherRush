@@ -7,6 +7,7 @@
  * it (EEA, UK, Switzerland). Each show() removes its own listeners afterwards.
  */
 import { LIVE, TEST_DEVICES, adRequest } from "./config";
+import { pauseAudio, resumeAudio } from "../utils/soundEngine";
 
 function plugin() {
   const cap = typeof window !== "undefined" ? window.Capacitor : null;
@@ -105,10 +106,13 @@ export async function showAd(format, extra = {}) {
     });
     const [prepare, show] = LOADERS[format];
     await admob[prepare](adRequest(platformName(), format, extra));
+    // The ad has its own sound: silence ours until it's closed.
+    pauseAudio("ad");
     await admob[show]();
     await closed;
     return { rewarded };
   } finally {
+    resumeAudio("ad");
     cleanup();
   }
 }
