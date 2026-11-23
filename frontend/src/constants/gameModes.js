@@ -49,9 +49,9 @@ export const GAME_MODES = [
     label: "Security Quiz",
     Icon: Speech,
     css: "quiz",
-    tagline: "Five questions from the real world.",
+    tagline: "Five questions. Verify before you trust.",
     rules: [
-      "Pick a topic: phishing, social engineering, crypto, malware or incident response.",
+      "Pick a topic: spotting fakes, people skills, crypto, malware or incident response.",
       "Five questions a round. Get 3 right to clear it. Every answer comes with the why.",
       "Stuck? A hint rules out one wrong answer. Three a round are free; after that, a short video buys another.",
     ],
@@ -62,7 +62,7 @@ export const GAME_MODES = [
     label: "True or False",
     Icon: TrueFalse,
     css: "truefalse",
-    tagline: "Ten claims. Call the bluff.",
+    tagline: "Ten claims. Test your cyber instincts.",
     rules: [
       "Ten statements, half true and half false. Swipe right or tap True; swipe left or tap False.",
       "Streaks pay a little extra. Get 7 right to clear the round.",

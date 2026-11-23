@@ -12,8 +12,8 @@ import useGameRewards from "../hooks/useGameRewards";
 import useRound from "../hooks/useRound";
 
 const CATEGORIES = [
-  ["phishing", "Phishing"],
-  ["social_engineering", "Social Eng."],
+  ["phishing", "Spot the Fake"],
+  ["social_engineering", "People Skills"],
   ["cryptography", "Crypto"],
   ["malware", "Malware"],
   ["incident_response", "Incident Resp."],

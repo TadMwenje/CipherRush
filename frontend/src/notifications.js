@@ -132,7 +132,7 @@ export function planReminders(now, { daily = null, includeComeback = false } = {
     plan.push(note(ID.comeback24, politeTime(new Date(now.getTime() + 24 * HOUR)),
       "Ciphers don't crack themselves", "A fresh round is waiting. Ninety seconds is all it takes.", "/dashboard"));
     plan.push(note(ID.comeback48, politeTime(new Date(now.getTime() + 48 * HOUR)),
-      "Still got it?", "New ciphers, new scams, same clock. Jump back in.", "/dashboard"));
+      "Still got it?", "New ciphers, new patterns, same clock. Jump back in.", "/dashboard"));
   }
 
   nextUtcResets(now, ID.newDaily.length).forEach((reset, i) => {

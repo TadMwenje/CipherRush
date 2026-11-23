@@ -32,7 +32,7 @@ function Welcome() {
       <div className="welcome-content">
         <div className="welcome-header">
           <h1 className="game-title">CipherRush</h1>
-          <p className="game-subtitle">Crack codes. Beat the clock. Don't click the link.</p>
+          <p className="game-subtitle">Crack codes. Beat the clock. Test your cyber instincts.</p>
         </div>
 
         <div className="lock-icon brand-hero">
@@ -51,7 +51,7 @@ function Welcome() {
           </button>
         </div>
 
-        <p className="welcome-footer">Built for people who read the whole URL.</p>
+        <p className="welcome-footer">Spot the pattern. Decode the signal.</p>
         <LegalLinks className="welcome-legal" />
       </div>
 

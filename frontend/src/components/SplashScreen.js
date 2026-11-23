@@ -39,7 +39,7 @@ function SplashScreen({ onFinish }) {
       <div className="splash-content">
         <div className="splash-header">
           <h1 className="splash-title">CipherRush</h1>
-          <p className="splash-subtitle">Ciphers, scams and bytes.</p>
+          <p className="splash-subtitle">Ciphers, patterns and bytes.</p>
         </div>
 
         <div className="splash-center">
