@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React from "react";
 import { useSearchParams } from "react-router-dom";
 import { Medal, Badge, Bolt, Calendar, SignalOff, Rotate } from "../glyphs";
-import api from "../api";
+import { useCachedGet } from "../cache";
 import { useAuth } from "../AuthContext";
 import { haptic } from "../mobile/haptics";
-import { isOnline } from "../mobile/network";
 import { useOnline, useRefetchOnReturn } from "../mobile/hooks";
 
 const MEDAL_CLASSES = ["gold", "silver", "bronze"];
@@ -51,8 +50,6 @@ function Leaderboard() {
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const board = BOARDS[searchParams.get("board")] ? searchParams.get("board") : "overall";
-  const [entries, setEntries] = useState(null);
-  const [error, setError] = useState("");
   const online = useOnline();
 
   const setBoard = (key) => {
@@ -60,31 +57,16 @@ function Leaderboard() {
     setSearchParams(key === "overall" ? {} : { board: key }, { replace: true });
   };
 
-  // Live service: fetched when a board opens and when the player returns to
-  // it. No polling, and nothing at all while offline.
-  const load = useCallback(
-    (fresh = true) => {
-      let cancelled = false;
-      if (fresh) setEntries(null);
-      setError("");
-      api
-        .get(BOARDS[board].path)
-        .then((res) => {
-          if (cancelled) return;
-          const list = res.data?.leaderboard;
-          if (Array.isArray(list)) setEntries(list);
-          else setError("Couldn't load the board.");
-        })
-        .catch(() => !cancelled && setError("Couldn't load the board."));
-      return () => {
-        cancelled = true;
-      };
-    },
-    [board]
-  );
-
-  useEffect(() => (isOnline() ? load() : undefined), [load]);
-  useRefetchOnReturn(() => load(false));
+  // Live service, shown from the last cached copy while it refreshes
+  // (cache.js). Fetched when a board opens and when the player returns to it.
+  // No polling, and nothing at all while offline.
+  const { data, error: loadError, refresh } = useCachedGet(BOARDS[board].path, {
+    accept: (d) => Array.isArray(d?.leaderboard),
+  });
+  const entries = data?.leaderboard ?? null;
+  const error = loadError && !entries ? "Couldn't load the board." : "";
+  const load = refresh;
+  useRefetchOnReturn(() => load());
 
   return (
     <div className="page-screen leaderboard-page">

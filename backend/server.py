@@ -16,6 +16,7 @@ from slowapi import _rate_limit_exceeded_handler  # noqa: E402
 from slowapi.errors import RateLimitExceeded  # noqa: E402
 from slowapi.middleware import SlowAPIMiddleware  # noqa: E402
 from starlette.middleware.cors import CORSMiddleware  # noqa: E402
+from starlette.middleware.gzip import GZipMiddleware  # noqa: E402
 
 from auth import (  # noqa: E402
     CSRF_HEADER,
@@ -350,6 +351,9 @@ app.add_middleware(
 )
 app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(SlowAPIMiddleware)
+# Outermost, so every JSON response over 1 KB goes out gzipped: leaderboards,
+# profiles and quiz rounds shrink to a fraction on slow mobile data.
+app.add_middleware(GZipMiddleware, minimum_size=1024)
 
 
 @app.exception_handler(RequestValidationError)

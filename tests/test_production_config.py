@@ -23,3 +23,10 @@ def test_each_unsafe_setting_is_caught():
                      ("CORS_ORIGINS", "http://localhost:3000,capacitor://localhost")]:
         problems = production_config_problems({**GOOD, key: bad})
         assert len(problems) == 1 and key in problems[0], (key, problems)
+
+
+def test_responses_are_gzipped_for_mobile_data():
+    from starlette.middleware.gzip import GZipMiddleware
+    import server
+
+    assert any(m.cls is GZipMiddleware for m in server.app.user_middleware)

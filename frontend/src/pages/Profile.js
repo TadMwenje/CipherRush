@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Badge, Circuit } from "../glyphs";
-import api from "../api";
+import { useCachedGet } from "../cache";
+import { useAuth } from "../AuthContext";
 import { getGameMode } from "../constants/gameModes";
 import AccountSettings from "../components/AccountSettings";
 import ShareBadgeDialog from "../components/ShareBadge";
@@ -12,27 +13,20 @@ function formatDate(isoString) {
 }
 
 function Profile() {
-  const [profile, setProfile] = useState(null);
-  const [error, setError] = useState("");
+  const { user } = useAuth();
   const [sharing, setSharing] = useState(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    async function load() {
-      try {
-        const response = await api.get("/me/profile");
-        const p = response.data;
-        if (typeof p?.username !== "string") throw new Error("Unexpected /me/profile response");
-        if (!cancelled) setProfile({ ...p, achievements: p.achievements || [], game_history: p.game_history || [] });
-      } catch (err) {
-        if (!cancelled) setError(err.response ? "Couldn't load your profile." : "Couldn't load your profile. Check your signal.");
-      }
-    }
-    load();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  // Last copy first, then the server's (cache.js).
+  const { data, error: loadError } = useCachedGet("/me/profile", {
+    scope: user?.id,
+    accept: (p) => typeof p?.username === "string",
+  });
+  const profile = data ? { ...data, achievements: data.achievements || [], game_history: data.game_history || [] } : null;
+  const error =
+    loadError && !profile
+      ? loadError.response
+        ? "Couldn't load your profile."
+        : "Couldn't load your profile. Check your signal."
+      : "";
 
   return (
     <div className="page-screen profile-page">

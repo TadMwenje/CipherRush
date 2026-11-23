@@ -74,6 +74,20 @@ const api = axios.create({
   adapter: deadlineAdapter,
 });
 
+// Identical GETs in flight at the same moment share one request: on startup
+// the home screen, the reminders and the clock sync can all ask for the same
+// thing at once, and on a slow connection each duplicate costs real data.
+const inflightGets = new Map();
+const plainGet = api.get.bind(api);
+api.get = (url, config) => {
+  if (config?.signal) return plainGet(url, config); // cancellable calls stay separate
+  const key = `${url}?${JSON.stringify(config?.params || {})}`;
+  if (inflightGets.has(key)) return inflightGets.get(key);
+  const request = plainGet(url, config).finally(() => inflightGets.delete(key));
+  inflightGets.set(key, request);
+  return request;
+};
+
 function requestId() {
   if (window.crypto?.randomUUID) return window.crypto.randomUUID();
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;

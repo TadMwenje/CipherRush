@@ -3,7 +3,7 @@
  * so without this a request cut off by backgrounding hung for minutes.
  */
 import { AxiosError } from "axios";
-import { withDeadline } from "./api";
+import api, { withDeadline } from "./api";
 
 const never = () => new Promise(() => {});
 
@@ -74,4 +74,16 @@ describe("errorMessage", () => {
   test("the server's own message wins", () => {
     expect(errorMessage({ response: { data: { detail: "That handle's taken." } } })).toBe("That handle's taken.");
   });
+});
+
+test("identical GETs in flight share one request", async () => {
+  const adapter = jest.fn(async (config) => ({ data: { ok: true }, status: 200, statusText: "OK", headers: {}, config }));
+  const first = api.get("/dedupe-check", { adapter });
+  const second = api.get("/dedupe-check", { adapter });
+  expect(second).toBe(first);
+  await first;
+  expect(adapter).toHaveBeenCalledTimes(1);
+  // Once settled, the next call goes to the network again.
+  await api.get("/dedupe-check", { adapter });
+  expect(adapter).toHaveBeenCalledTimes(2);
 });

@@ -1,13 +1,12 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Help, Flame, CheckOct, SignalOff } from "../glyphs";
-import api from "../api";
+import { useCachedGet } from "../cache";
 import { useAuth } from "../AuthContext";
 import { GAME_MODES, DAILY_MODE } from "../constants/gameModes";
 import HowToPlayModal from "../components/HowToPlayModal";
 import GamePreview from "../components/GamePreview";
 import { haptic } from "../mobile/haptics";
-import { isOnline } from "../mobile/network";
 import { useOnline, useRefetchOnReturn } from "../mobile/hooks";
 import { syncDailyReminders } from "../notifications";
 import { ReminderPrompt } from "../components/Reminders";
@@ -44,30 +43,27 @@ function DailyCard({ daily, onOpen }) {
 function Dashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [stats, setStats] = useState(null);
-  const [daily, setDaily] = useState(null);
+  // Cached copies render at once; the server's answer replaces them (cache.js).
+  const { data: stats, refresh: refreshStats } = useCachedGet("/me/dashboard", { scope: user?.id });
+  const { data: daily, stale: dailyStale, refresh: refreshDaily } = useCachedGet("/daily", { scope: user?.id });
   const [showHowTo, setShowHowTo] = useState(false);
   const [howToKey, setHowToKey] = useState(null);
   const [boostFor, setBoostFor] = useState(null);
   const online = useOnline();
 
   const load = useCallback(() => {
-    let cancelled = false;
-    api.get("/me/dashboard").then((res) => !cancelled && setStats(res.data)).catch(() => {});
-    api
-      .get("/daily")
-      .then((res) => {
-        if (cancelled) return;
-        setDaily(res.data);
-        syncDailyReminders(res.data);
-      })
-      .catch(() => {});
+    const stopStats = refreshStats();
+    const stopDaily = refreshDaily();
     return () => {
-      cancelled = true;
+      stopStats();
+      stopDaily();
     };
-  }, []);
+  }, [refreshStats, refreshDaily]);
 
-  useEffect(() => (isOnline() ? load() : undefined), [load]);
+  // Reminders follow the server's answer, never a cached copy of it.
+  useEffect(() => {
+    if (daily && !dailyStale) syncDailyReminders(daily);
+  }, [daily, dailyStale]);
   useEffect(() => {
     initAds();
   }, []);
