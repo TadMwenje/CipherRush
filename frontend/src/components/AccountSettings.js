@@ -2,10 +2,11 @@ import React, { useEffect, useState } from "react";
 import api, { errorMessage } from "../api";
 import { useAuth } from "../AuthContext";
 import { LegalLinks, ExternalLink, DataNotice } from "./LegalLinks";
-import { handleProblem } from "../moderation/handle";
+import { handleProblemKey } from "../moderation/handle";
 import { LEGAL_URLS } from "../legal";
 import { haptic } from "../mobile/haptics";
-import { ReminderSettings } from "./Reminders";
+import { clearCache } from "../cache";
+import { useT } from "../i18n";
 import VerifyEmailCard from "./VerifyEmail";
 import { privacyOptionsRequired, showPrivacyOptions } from "../ads/admob";
 
@@ -13,6 +14,7 @@ const PROVIDER_LABEL = { google: "Google", apple: "Apple" };
 
 // Where the law asks for ad consent (EEA, UK, Switzerland), a way to change it.
 function AdPrivacyButton() {
+  const t = useT();
   const [shown, setShown] = useState(false);
   useEffect(() => {
     let cancelled = false;
@@ -24,12 +26,13 @@ function AdPrivacyButton() {
   if (!shown) return null;
   return (
     <button type="button" className="btn-secondary" onClick={() => showPrivacyOptions().catch(() => {})}>
-      Ad privacy choices
+      {t("acc.adPrivacy")}
     </button>
   );
 }
 
 function DeleteAccountDialog({ onClose, onDeleted }) {
+  const t = useT();
   const [confirm, setConfirm] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -43,7 +46,7 @@ function DeleteAccountDialog({ onClose, onDeleted }) {
       haptic("success");
       onDeleted();
     } catch (err) {
-      setError(errorMessage(err, "Couldn't delete the account. Try again."));
+      setError(errorMessage(err, t("acc.delFail")));
       setBusy(false);
     }
   };
@@ -51,17 +54,16 @@ function DeleteAccountDialog({ onClose, onDeleted }) {
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="auth-modal danger-dialog" role="dialog" aria-modal="true" aria-labelledby="delete-title" onClick={(e) => e.stopPropagation()}>
-        <h2 id="delete-title">Delete your account?</h2>
+        <h2 id="delete-title">{t("acc.delTitle")}</h2>
         <p>
-          This permanently removes your account, scores, levels, badges and leaderboard places. It can't be undone.
-          If you signed in with Apple, we'll also revoke CipherRush's access to your Apple ID.
+          {t("acc.delBody")} {t("acc.delApple")}
         </p>
         <p className="legal-consent">
-          Details: <ExternalLink href={LEGAL_URLS.accountDeletion}>what gets deleted</ExternalLink>
+          {t("acc.delDetails")} <ExternalLink href={LEGAL_URLS.accountDeletion}>{t("acc.delWhat")}</ExternalLink>
         </p>
         <form onSubmit={remove} className="answer-section">
           <label htmlFor="delete-confirm" className="danger-label">
-            Type DELETE to confirm
+            {t("acc.delType")}
           </label>
           <input
             id="delete-confirm"
@@ -76,10 +78,10 @@ function DeleteAccountDialog({ onClose, onDeleted }) {
           {error && <p className="error">{error}</p>}
           <div className="answer-actions">
             <button type="button" className="hint-btn" onClick={onClose} disabled={busy}>
-              Keep it
+              {t("acc.delKeep")}
             </button>
             <button type="submit" className="danger-btn" disabled={busy || confirm.trim().toUpperCase() !== "DELETE"}>
-              {busy ? "Deleting" : "Delete forever"}
+              {busy ? t("acc.deleting") : t("acc.delForever")}
             </button>
           </div>
         </form>
@@ -92,6 +94,7 @@ const strongEnough = (pw) => pw.length >= 8 && /[a-z]/.test(pw) && /[A-Z]/.test(
 
 /** Change password - for accounts that have one (not Google / Apple only). */
 function PasswordChange() {
+  const t = useT();
   const [form, setForm] = useState({ current: "", next: "", confirm: "" });
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
@@ -99,9 +102,9 @@ function PasswordChange() {
   const set = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.value }));
   const problem =
     form.next && !strongEnough(form.next)
-      ? "8+ characters with upper and lower case and a number."
+      ? t("acc.pwRule")
       : form.confirm && form.confirm !== form.next
-        ? "The new passwords don't match."
+        ? t("acc.pwNewMismatch")
         : "";
   const ready = form.current && strongEnough(form.next) && form.next === form.confirm && !busy;
 
@@ -113,10 +116,10 @@ function PasswordChange() {
     try {
       await api.post("/me/password", { current_password: form.current, new_password: form.next });
       setForm({ current: "", next: "", confirm: "" });
-      setMessage("Password changed. Other devices have been signed out.");
+      setMessage(t("acc.pwChanged"));
       haptic("success");
     } catch (err) {
-      setMessage(errorMessage(err, "Couldn't change the password. Try again."));
+      setMessage(errorMessage(err, t("acc.pwFail")));
     } finally {
       setBusy(false);
     }
@@ -124,12 +127,12 @@ function PasswordChange() {
 
   return (
     <form className="account-row" onSubmit={save}>
-      <span className="account-label">Change password</span>
+      <span className="account-label">{t("acc.changePw")}</span>
       <input
         className="answer-input"
         type="password"
-        placeholder="Current password"
-        aria-label="Current password"
+        placeholder={t("acc.currentPw")}
+        aria-label={t("acc.currentPw")}
         autoComplete="current-password"
         value={form.current}
         onChange={set("current")}
@@ -137,8 +140,8 @@ function PasswordChange() {
       <input
         className="answer-input"
         type="password"
-        placeholder="New password"
-        aria-label="New password"
+        placeholder={t("acc.newPw")}
+        aria-label={t("acc.newPw")}
         autoComplete="new-password"
         value={form.next}
         onChange={set("next")}
@@ -146,15 +149,15 @@ function PasswordChange() {
       <input
         className="answer-input"
         type="password"
-        placeholder="Repeat new password"
-        aria-label="Repeat new password"
+        placeholder={t("acc.repeatNewPw")}
+        aria-label={t("acc.repeatNewPw")}
         autoComplete="new-password"
         value={form.confirm}
         onChange={set("confirm")}
       />
       {problem && <p className="account-message invalid">{problem}</p>}
       <button type="submit" className="submit-btn" disabled={!ready}>
-        {busy ? "Saving" : "Change password"}
+        {busy ? t("acc.saving") : t("acc.changePw")}
       </button>
       {message && <p className="account-message">{message}</p>}
     </form>
@@ -166,18 +169,20 @@ function PasswordChange() {
  * also log in with them. The server then emails a code to confirm the address.
  */
 function LinkPassword({ currentHandle, onLinked }) {
+  const t = useT();
   const [form, setForm] = useState({ handle: currentHandle, password: "", confirm: "" });
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
 
   const set = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.value }));
-  const handleIssue = handleProblem(form.handle);
+  const handleIssueKey = handleProblemKey(form.handle);
+  const handleIssue = handleIssueKey ? t(handleIssueKey) : "";
   const problem =
     handleIssue ||
     (form.password && !strongEnough(form.password)
-      ? "8+ characters with upper and lower case and a number."
+      ? t("acc.pwRule")
       : form.confirm && form.confirm !== form.password
-        ? "The passwords don't match."
+        ? t("acc.pwMismatch")
         : "");
   const ready = !handleIssue && strongEnough(form.password) && form.password === form.confirm && !busy;
 
@@ -191,22 +196,19 @@ function LinkPassword({ currentHandle, onLinked }) {
       haptic("success");
       onLinked(data.user, data.verification_sent);
     } catch (err) {
-      setMessage(errorMessage(err, "Couldn't save that. Try again."));
+      setMessage(errorMessage(err, t("acc.saveFail")));
       setBusy(false);
     }
   };
 
   return (
     <form className="account-row" onSubmit={save}>
-      <span className="account-label">Add a handle and password</span>
-      <span className="account-note">
-        Log in with these on any device, as well as with your current sign-in. We'll email you a code to confirm
-        your address.
-      </span>
+      <span className="account-label">{t("acc.linkTitle")}</span>
+      <span className="account-note">{t("acc.linkNote")}</span>
       <input
         className="answer-input"
-        placeholder="Handle"
-        aria-label="Handle"
+        placeholder={t("acc.handlePh")}
+        aria-label={t("acc.handlePh")}
         autoComplete="username"
         autoCapitalize="none"
         autoCorrect="off"
@@ -218,8 +220,8 @@ function LinkPassword({ currentHandle, onLinked }) {
       <input
         className="answer-input"
         type="password"
-        placeholder="Password"
-        aria-label="Password"
+        placeholder={t("acc.password")}
+        aria-label={t("acc.password")}
         autoComplete="new-password"
         value={form.password}
         onChange={set("password")}
@@ -227,53 +229,67 @@ function LinkPassword({ currentHandle, onLinked }) {
       <input
         className="answer-input"
         type="password"
-        placeholder="Repeat password"
-        aria-label="Repeat password"
+        placeholder={t("acc.repeatPw")}
+        aria-label={t("acc.repeatPw")}
         autoComplete="new-password"
         value={form.confirm}
         onChange={set("confirm")}
       />
       {problem && <p className="account-message invalid">{problem}</p>}
       <button type="submit" className="submit-btn" disabled={!ready}>
-        {busy ? "Saving" : "Save handle and password"}
+        {busy ? t("acc.saving") : t("acc.saveLink")}
       </button>
       {message && <p className="account-message invalid">{message}</p>}
     </form>
   );
 }
 
-/** Profile → Account: handle, sign-in methods, legal links, log out, delete. */
-function AccountSettings() {
-  const { logout, updateUser, clearSession } = useAuth();
+/** The signed-in account (/me/account), shared by the handle form and the account card. */
+export function useAccount() {
   const [account, setAccount] = useState(null);
-  const [handle, setHandle] = useState("");
-  const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState("");
-  const [showDelete, setShowDelete] = useState(false);
-
   useEffect(() => {
+    let cancelled = false;
     api
       .get("/me/account")
-      .then((res) => {
-        setAccount(res.data);
-        setHandle(res.data.username);
-      })
+      .then((res) => !cancelled && setAccount(res.data))
       .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
   }, []);
+  return [account, setAccount];
+}
 
-  const changed = account && handle.trim() !== account.username;
-  const problem = changed ? handleProblem(handle) : "";
+/**
+ * Profile → identity card: the handle, full width with Save underneath, so a
+ * 20-character handle is never cut off.
+ */
+export function HandleForm({ account, setAccount }) {
+  const t = useT();
+  const { updateUser } = useAuth();
+  const [handle, setHandle] = useState(account?.username || "");
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState("");
+
+  // Follow the account when it loads or changes elsewhere (LinkPassword).
+  useEffect(() => {
+    if (account?.username) setHandle(account.username);
+  }, [account?.username]);
+
+  if (!account) return null;
+  const changed = handle.trim() !== account.username;
+  const problemKey = changed ? handleProblemKey(handle) : "";
 
   const saveHandle = async (e) => {
     e.preventDefault();
-    if (problem) return;
+    if (problemKey) return;
     setSaving(true);
     setMessage("");
     try {
       const { data } = await api.post("/me/username", { username: handle });
       updateUser({ username: data.user.username });
       setAccount((a) => ({ ...a, username: data.user.username }));
-      setMessage("Handle updated.");
+      setMessage(t("acc.handleUpdated"));
       haptic("success");
     } catch (err) {
       setMessage(errorMessage(err));
@@ -282,83 +298,114 @@ function AccountSettings() {
     }
   };
 
+  return (
+    <form className="handle-form" onSubmit={saveHandle}>
+      <label htmlFor="handle-input" className="account-label">
+        {t("acc.handle")}
+      </label>
+      <input
+        id="handle-input"
+        className="answer-input handle-input"
+        value={handle}
+        onChange={(e) => setHandle(e.target.value)}
+        autoCapitalize="none"
+        autoCorrect="off"
+        spellCheck={false}
+        maxLength={20}
+      />
+      {changed && (
+        <button type="submit" className="submit-btn handle-save" disabled={saving || !!problemKey}>
+          {saving ? t("acc.saving") : t("acc.save")}
+        </button>
+      )}
+      {problemKey && <p className="account-message invalid">{t(problemKey)}</p>}
+      {message && <p className="account-message">{message}</p>}
+    </form>
+  );
+}
+
+/**
+ * Profile → "Account and data" (sign-in, password, data, legal) and, last of
+ * all and on its own, the danger zone: log out and delete.
+ */
+function AccountSettings({ account, setAccount }) {
+  const t = useT();
+  const { logout, updateUser, clearSession } = useAuth();
+  const [showDelete, setShowDelete] = useState(false);
+  const [note, setNote] = useState("");
+  const [cleared, setCleared] = useState(false);
+
   const methods = account
-    ? [...(account.has_password ? ["Password"] : []), ...account.providers.map((p) => PROVIDER_LABEL[p] || p)]
+    ? [...(account.has_password ? [t("acc.methodPassword")] : []), ...account.providers.map((p) => PROVIDER_LABEL[p] || p)]
     : [];
 
   return (
-    <section className="profile-section account-settings">
-      <h2>Account</h2>
+    <>
+      <section className="profile-section profile-group" aria-labelledby="account-title">
+        <h2 id="account-title">{t("data.title")}</h2>
 
-      {account && (
-        <form className="account-row" onSubmit={saveHandle}>
-          <label htmlFor="handle-input">Handle (shown on leaderboards)</label>
-          <div className="answer-actions">
-            <input
-              id="handle-input"
-              className="answer-input"
-              value={handle}
-              onChange={(e) => setHandle(e.target.value)}
-              autoCapitalize="none"
-              autoCorrect="off"
-              spellCheck={false}
-              maxLength={20}
-            />
-            <button type="submit" className="submit-btn" disabled={saving || !changed || !!problem}>
-              Save
-            </button>
+        {account && (
+          <div className="account-row">
+            <span className="account-label">{t("acc.signsIn")}</span>
+            <span>{methods.join(" · ") || "—"}</span>
+            {account.email && <span className="account-email">{account.email}</span>}
           </div>
-          {problem && <p className="account-message invalid">{problem}</p>}
-          {message && <p className="account-message">{message}</p>}
-        </form>
-      )}
+        )}
 
-      {account && (
+        <VerifyEmailCard />
+
+        {account?.has_password && <PasswordChange />}
+        {account && !account.has_password && (
+          <LinkPassword
+            currentHandle={account.username}
+            onLinked={(linked, sent) => {
+              updateUser({ username: linked.username, is_verified: linked.is_verified });
+              setAccount((a) => ({ ...a, username: linked.username, has_password: true }));
+              setNote(sent ? t("acc.savedEmail") : t("acc.savedHandle"));
+            }}
+          />
+        )}
+        {note && <p className="account-message">{note}</p>}
+
         <div className="account-row">
-          <span className="account-label">Signs in with</span>
-          <span>{methods.join(" · ") || "—"}</span>
-          {account.email && <span className="account-email">{account.email}</span>}
+          <span className="account-label">{t("acc.yourData")}</span>
+          <DataNotice />
+          <AdPrivacyButton />
+          <button
+            type="button"
+            className="btn-secondary"
+            onClick={() => {
+              clearCache();
+              updateUser({}); // keep this phone's sign-in, so the app still opens offline
+              setCleared(true);
+              haptic("success");
+            }}
+            disabled={cleared}
+          >
+            {t("data.clear")}
+          </button>
+          <span className="account-note">{cleared ? t("data.cleared") : t("data.clearNote")}</span>
         </div>
-      )}
 
-      <VerifyEmailCard />
+        <div className="account-row">
+          <span className="account-label">{t("acc.legal")}</span>
+          <LegalLinks />
+          <span className="account-note">{t("acc.madeBy")}</span>
+        </div>
+      </section>
 
-      {account?.has_password && <PasswordChange />}
-      {account && !account.has_password && (
-        <LinkPassword
-          currentHandle={account.username}
-          onLinked={(linked, sent) => {
-            updateUser({ username: linked.username, is_verified: linked.is_verified });
-            setAccount((a) => ({ ...a, username: linked.username, has_password: true }));
-            setHandle(linked.username);
-            setMessage(sent ? "Saved. Check your email for the code." : "Saved. You can now log in with your handle.");
-          }}
-        />
-      )}
-
-      <ReminderSettings />
-
-      <div className="account-row">
-        <span className="account-label">Your data</span>
-        <DataNotice />
-        <AdPrivacyButton />
-      </div>
-
-      <div className="account-row">
-        <span className="account-label">Legal</span>
-        <LegalLinks />
-        <span className="account-note">CipherRush is made and run by AximoIX.</span>
-      </div>
-
-      <button className="btn-secondary logout-btn" onClick={logout}>
-        Log out
-      </button>
-      <button className="danger-link" onClick={() => setShowDelete(true)}>
-        Delete account
-      </button>
+      <section className="profile-section danger-zone" aria-labelledby="danger-title">
+        <h2 id="danger-title">{t("danger.title")}</h2>
+        <button className="btn-secondary logout-btn" onClick={logout}>
+          {t("acc.logout")}
+        </button>
+        <button className="danger-link" onClick={() => setShowDelete(true)}>
+          {t("acc.delete")}
+        </button>
+      </section>
 
       {showDelete && <DeleteAccountDialog onClose={() => setShowDelete(false)} onDeleted={clearSession} />}
-    </section>
+    </>
   );
 }
 

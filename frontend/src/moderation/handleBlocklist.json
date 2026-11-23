@@ -1,5 +1,5 @@
 {
-  "_about": "Handle moderation (backend/moderation.py, mirrored in frontend/src/moderation/handle.js). Matched on the lowercased handle after leetspeak is undone and underscores are removed; every letter may repeat (fuuuck). 'anywhere' terms match inside longer handles; 'whole' terms collide with ordinary words (spicy, raccoon), so they only match a whole handle or one underscore-separated part. 'targets' x 'insults' catches hateful pairs in either order (whitepig, pig_white). 'allow' words are blanked out first, so grapefruit or therapist pass. Keep the frontend copy identical: tests/test_moderation.py checks it. 'allow' is applied longest-first, so grapefruit wins over grape. Religious figures, extremists and brand names (god, allah, jesus, satan, osama, hitler, twitter, nutella...) were added in v1.0.1 at the owner's request; 'exact' terms match a whole handle or one underscore part exactly, with no repeated letters (g+o+d+ would also hit good).",
+  "_about": "Handle moderation (backend/moderation.py, mirrored in frontend/src/moderation/handle.js). Matched on the lowercased handle after leetspeak is undone and underscores are removed; every letter may repeat (fuuuck). 'anywhere' terms match inside longer handles; 'whole' terms collide with ordinary words (spicy, raccoon), so they only match a whole handle or one underscore-separated part. 'targets' x 'insults' catches hateful pairs in either order (whitepig, pig_white). 'allow' words are blanked out first, so grapefruit or therapist pass. Keep the frontend copy identical: tests/test_moderation.py checks it. 'allow' is applied longest-first, so grapefruit wins over grape. Religious figures, extremists and brand names (god, allah, jesus, satan, osama, hitler, twitter, nutella...) were added in v1.0.1 at the owner's request; 'exact' terms match a whole handle or one underscore part exactly, with no repeated letters (g+o+d+ would also hit good). v1.0.2: terrorist and extremist names and groups added (al qaeda, isis/isil, boko haram, al shabaab, hamas, hezbollah, taliban, unabomber, mcveigh, breivik, tarrant, ku klux, gestapo, auschwitz). 'transpose' terms also block every one-swap typo of themselves (adlof, htiler, osmaa): swaps of terms 6+ letters long match anywhere, shorter ones only a whole handle or one underscore part, so 'astan' (a satan swap) doesn't catch astana. isil and tarrant are 'whole' because they hide inside missile-like words and a common surname.",
   "anywhere": [
     "fuck",
     "shit",
@@ -80,7 +80,23 @@
     "jesuschrist",
     "satan",
     "sex",
-    "fruit"
+    "fruit",
+    "alqaeda",
+    "alqaida",
+    "bokoharam",
+    "alshabaab",
+    "alshabab",
+    "hamas",
+    "hezbollah",
+    "hizbollah",
+    "hizballah",
+    "taliban",
+    "unabomber",
+    "mcveigh",
+    "breivik",
+    "kuklux",
+    "gestapo",
+    "auschwitz"
   ],
   "whole": [
     "fag",
@@ -105,7 +121,9 @@
     "negroes",
     "homo",
     "jew",
-    "jews"
+    "jews",
+    "isil",
+    "tarrant"
   ],
   "targets": [
     "white",
@@ -199,10 +217,38 @@
     "dragonfruit",
     "callahan",
     "challah",
-    "abdallah"
+    "abdallah",
+    "bahamas",
+    "missile",
+    "philter",
+    "chiltern",
+    "whilter",
+    "tailband",
+    "hamsa"
   ],
   "exact": [
     "god",
     "gods"
+  ],
+  "transpose": [
+    "hitler",
+    "adolf",
+    "osama",
+    "binladen",
+    "satan",
+    "lucifer",
+    "allah",
+    "jesus",
+    "messiah",
+    "nazi",
+    "isis",
+    "alqaeda",
+    "taliban",
+    "hamas",
+    "hezbollah",
+    "bokoharam",
+    "holocaust",
+    "auschwitz",
+    "gestapo"
   ]
 }

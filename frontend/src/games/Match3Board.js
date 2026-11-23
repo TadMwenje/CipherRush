@@ -4,6 +4,7 @@ import { haptic } from "../mobile/haptics";
 import { swipeDirection } from "../mobile/layout";
 import GameSymbolIcon from "../icons/GameSymbolIcon";
 import { findValidMove } from "../practice/match3";
+import { useT } from "../i18n";
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const HINT_DELAY_MS = 7000;
@@ -64,6 +65,7 @@ export function useMatch3Animator() {
  * a quiet spell one legal swap glows. Calls onSwap(a, b) with {row, col} cells.
  */
 function Match3Board({ board, locked, finished, syncing, poppingCells, droppingColumns, invalidCells, onSwap }) {
+  const t = useT();
   const [selected, setSelected] = useState(null);
   const [hint, setHint] = useState(null);
   const pointer = useRef(null);
@@ -128,7 +130,7 @@ function Match3Board({ board, locked, finished, syncing, poppingCells, droppingC
       onPointerCancel={() => (pointer.current = null)}
       onPointerLeave={() => (pointer.current = null)}
     >
-      {syncing && <div className="board-syncing" role="status">Syncing</div>}
+      {syncing && <div className="board-syncing" role="status">{t("g.syncing")}</div>}
       {board.map((rowArr, r) => (
         <div key={r} className="board-row">
           {rowArr.map((symbol, c) => (

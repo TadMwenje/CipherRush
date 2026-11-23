@@ -36,10 +36,12 @@ function RankCell({ rank }) {
   );
 }
 
-function entryMeta(board, entry) {
-  if (board === "rush") return `${entry.runs} run${entry.runs === 1 ? "" : "s"}`;
-  if (board === "daily") return `+${entry.score} pts`;
-  return `Level ${entry.level ?? 1} · ${entry.games_played ?? 0} games`;
+function entryMeta(board, entry, t) {
+  if (board === "rush") return entry.runs === 1 ? t("ranks.runOne") : t("ranks.runs", { n: entry.runs });
+  if (board === "daily") return `+${t("g.pts", { n: entry.score })}`;
+  const games = entry.games_played ?? 0;
+  const level = entry.level ?? 1;
+  return games === 1 ? t("ranks.metaOne", { n: level }) : t("ranks.meta", { n: level, games });
 }
 
 function entryValue(board, entry, lang) {
@@ -123,7 +125,7 @@ function Leaderboard() {
                     {entry.username}
                     {isYou && <span className="lb-you-tag">{t("ranks.you")}</span>}
                   </div>
-                  <div className="lb-meta">{entryMeta(board, entry)}</div>
+                  <div className="lb-meta">{entryMeta(board, entry, t)}</div>
                 </div>
                 <div className="lb-side">
                   <div className="lb-score">{entryValue(board, entry, lang)}</div>

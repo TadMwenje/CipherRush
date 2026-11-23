@@ -2,6 +2,42 @@
 
 Native app changes (Android and iOS). Server and web changes are in git history.
 
+## Android 1.0.2 (7) and iOS 1.0.2 (5), not yet released
+
+Fixes from the 1.0.1 phone check. Works with the server that is live now.
+Deploy the matching server (branch `v1.0.2`) to get the stricter handle
+rules on the server side too; the app checks handles itself first.
+
+### Fixed
+- **Translations everywhere:** all eight games, Practice, Versus, the account
+  section, sign-in, the reminder card, toasts, the share sheet and the
+  leaderboard rows ("Level 3 · 12 games") now follow the app language. No
+  more English in a French app. Puzzles, quiz questions and messages written
+  by the server are still in English.
+- **Offline banner:** sits below the status bar and pushes the screen down,
+  so it no longer covers titles or the back button. It says "Offline.
+  Showing your saved stats." on menus and "Offline. Your round will sync when
+  you're back." only during a round.
+- **Tutorial sheet:** keeps the same height on every step instead of jumping,
+  and the last button ("Recommencer", "Von vorn") no longer gets cut off.
+- **Numbers and dates:** scores use the app language's number format
+  everywhere, and dates read "23 Nov 2026".
+- **Handle field:** full width with Save underneath, so a 20-character handle
+  shows in full.
+
+### Changed
+- **Profile, in four cards:** who you are (handle, level, score, member
+  since), Preferences (language, sound, vibration, Daily Cipher reminders),
+  Account and data (sign-in, password, your data, clear saved data, legal),
+  and the danger zone (log out, delete account) at the very bottom.
+- **Sound and vibration switches:** new; the choice stays on this phone.
+- **Clear saved data:** removes the offline copies of stats and boards; you
+  stay signed in.
+- **Handles:** swapped letters (adlof, htiler, osmaa) and extremist and
+  terror names are refused, and `_ . -` no longer hide a word. Ordinary words
+  like godot, sussex, callahan, abdallah and grapefruit still work.
+- **Copy:** shorter and plainer wording across all eight languages.
+
 ## Android 1.0.1 (6) and iOS 1.0.1 (4), 23 Nov 2026
 
 Works with the server that is live now. Deploy the matching server (branch

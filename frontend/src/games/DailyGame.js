@@ -9,20 +9,23 @@ import { syncDailyReminders, noteDailySolved } from "../notifications";
 import { primeKeyboard } from "../mobile/keyboard";
 import GameHeader from "../components/GameHeader";
 import useGameRewards from "../hooks/useGameRewards";
-import { CaesarWheel, AtbashMirror, KeyLengthView, useCountdown, AnswerInput } from "./CipherGame";
+import { CaesarWheel, AtbashMirror, KeyLengthView, useCountdown, AnswerInput, ItSaid } from "./CipherGame";
+import { formatNumber, useLanguage, useT } from "../i18n";
+import useModeLabel from "../hooks/useModeLabel";
 
 const VARIANT_LABEL = { caesar: "Caesar", atbash: "Atbash", vigenere: "Vigenère" };
 
 // Server time, not the phone's clock - changing the device date can't fake a new day.
-function untilReset(iso) {
+function untilReset(iso, t) {
   const ms = new Date(iso).getTime() - serverNow();
-  if (ms <= 0) return "any second now";
+  if (ms <= 0) return t("dg.soon");
   const h = Math.floor(ms / 3600000);
   const m = Math.floor((ms % 3600000) / 60000);
   return h > 0 ? `${h}h ${m}m` : `${m}m`;
 }
 
 function TodayBoard() {
+  const t = useT();
   const [rows, setRows] = useState(null);
   useEffect(() => {
     api.get("/leaderboard/daily").then((res) => setRows(res.data.leaderboard)).catch(() => setRows([]));
@@ -30,9 +33,9 @@ function TodayBoard() {
   if (!rows) return null;
   return (
     <div className="daily-board">
-      <h3>Fastest today</h3>
+      <h3>{t("dg.fastest")}</h3>
       {rows.length === 0 ? (
-        <p className="empty-state">Nobody's cracked it yet.</p>
+        <p className="empty-state">{t("dg.nobody")}</p>
       ) : (
         <ol>
           {rows.slice(0, 5).map((r) => (
@@ -49,7 +52,10 @@ function TodayBoard() {
 }
 
 function DailyGame() {
-  const { applyResult, toasts } = useGameRewards("daily", "Daily Cipher");
+  const { applyResult, toasts } = useGameRewards("daily");
+  const t = useT();
+  const lang = useLanguage();
+  const title = useModeLabel("daily");
   const [status, setStatus] = useState(null);
   const [round, setRound] = useState(null);
   const [answer, setAnswer] = useState("");
@@ -133,7 +139,7 @@ function DailyGame() {
   return (
     <div className="game-screen daily-game">
       {toasts}
-      <GameHeader title="Daily Cipher" modeKey="daily">
+      <GameHeader title={title} modeKey="daily">
         {playing && <div className={`timer${timeLeft <= 20 ? " warning" : ""}`}>{formatClock(timeLeft)}</div>}
       </GameHeader>
 
@@ -146,35 +152,35 @@ function DailyGame() {
               <Calendar size={16} /> {status.day} · {VARIANT_LABEL[status.variant]}
             </span>
             <span className={status.streak > 0 ? "daily-streak hot" : "daily-streak"}>
-              <Flame size={16} /> {status.streak}-day streak
+              <Flame size={16} /> {t("daily.streak", { n: status.streak })}
             </span>
           </>
         )}
       </div>
 
       <div className="game-stage">
-        {!status && !error && <div className="loading-inline">Loading today's cipher</div>}
+        {!status && !error && <div className="loading-inline">{t("dg.loading")}</div>}
 
         {status && !round && !result && (
           <div className="rush-intro">
             {status.played ? (
               <>
                 <div className="rush-intro-icon">{status.solved ? <CheckOct size={34} /> : <CrossOct size={34} />}</div>
-                <h2>{status.solved ? `Cracked in ${formatClock(status.seconds)}.` : "Today got away from you."}</h2>
-                <p>Next cipher in {untilReset(status.resets_at)}.</p>
+                <h2>{status.solved ? t("dg.crackedIn", { t: formatClock(status.seconds) }) : t("dg.gotAway")}</h2>
+                <p>{t("dg.nextIn", { t: untilReset(status.resets_at, t) })}</p>
               </>
             ) : (
               <>
                 <div className="rush-intro-icon">
                   <Calendar size={34} />
                 </div>
-                <h2>One shot. Same cipher for everyone.</h2>
+                <h2>{t("dg.oneShot")}</h2>
                 <p>
-                  Today's a {VARIANT_LABEL[status.variant]}. You get three minutes and one answer.
-                  {status.solvers_today > 0 && ` ${status.solvers_today} cracked it so far.`}
+                  {t("dg.today", { v: VARIANT_LABEL[status.variant] })}
+                  {status.solvers_today > 0 && ` ${t("dg.solvers", { n: formatNumber(status.solvers_today, lang) })}`}
                 </p>
                 <button className="btn-primary" onClick={start} disabled={busy}>
-                  Start the clock
+                  {t("dg.start")}
                 </button>
               </>
             )}
@@ -205,7 +211,7 @@ function DailyGame() {
               >
                 <AnswerInput value={answer} onChange={setAnswer} disabled={!playing || busy} focusOnMount />
                 <button type="submit" className="submit-btn" disabled={!playing || busy || !answer.trim()}>
-                  Lock it in
+                  {t("dg.lockIn")}
                 </button>
               </form>
             )}
@@ -214,20 +220,21 @@ function DailyGame() {
               <div className={`result ${result.correct ? "correct" : "wrong"}`} role="status">
                 <div className="result-status">
                   {result.correct ? <CheckOct size={20} color="#4ade80" /> : <CrossOct size={20} color="#f87171" />}
-                  {result.correct ? `Cracked in ${formatClock(result.seconds)}.` : result.timed_out ? "Out of time." : "Not it."}
+                  {result.correct
+                    ? t("dg.crackedIn", { t: formatClock(result.seconds) })
+                    : result.timed_out
+                      ? t("g.outOfTime")
+                      : t("g.notIt")}
                 </div>
                 <div className="result-score">+{result.score}</div>
                 {result.correct && (
                   <div className="result-breakdown">
-                    Speed +{result.time_bonus}
-                    {result.streak_bonus > 0 && ` · streak +${result.streak_bonus}`} · {result.streak}-day streak
+                    {t("g.speed", { n: result.time_bonus })}
+                    {result.streak_bonus > 0 && ` · ${t("g.streakBonus", { n: result.streak_bonus })}`} ·{" "}
+                    {t("daily.streak", { n: result.streak })}
                   </div>
                 )}
-                <div className="result-explanation">
-                  It said <strong>{result.plaintext}</strong>
-                  {result.shift != null && ` (ROT-${result.shift})`}
-                  {result.key && ` (key: ${result.key})`}.
-                </div>
+                <ItSaid plaintext={result.plaintext} shift={result.shift} cipherKey={result.key} />
                 <TodayBoard />
               </div>
             )}

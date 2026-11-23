@@ -93,9 +93,9 @@ function AppRoutes() {
         }
       >
         <Route path="/dashboard" element={<Screen><Dashboard /></Screen>} />
-        <Route path="/battle" element={<Screen title="Versus didn't load"><Battle /></Screen>} />
-        <Route path="/leaderboard" element={<Screen title="Ranks didn't load"><Leaderboard /></Screen>} />
-        <Route path="/profile" element={<Screen title="Profile didn't load"><Profile /></Screen>} />
+        <Route path="/battle" element={<Screen><Battle /></Screen>} />
+        <Route path="/leaderboard" element={<Screen><Leaderboard /></Screen>} />
+        <Route path="/profile" element={<Screen><Profile /></Screen>} />
       </Route>
       {GAME_ROUTES.map(([path, Game]) => (
         <Route
@@ -132,8 +132,8 @@ function App() {
     <AuthProvider>
       <div className="App">
         {showSplash && <SplashScreen onFinish={finishSplash} />}
-        <ConnectionBanner />
         <BrowserRouter>
+          <ConnectionBanner />
           <Backdrop />
           <NotificationRouter />
           {/* Routes mount only after the splash, so no game clock starts underneath it. */}

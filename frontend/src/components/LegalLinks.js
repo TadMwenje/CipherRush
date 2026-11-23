@@ -1,6 +1,7 @@
 import React from "react";
 import { LEGAL_URLS, openExternal } from "../legal";
 import { adsAvailable } from "../ads/admob";
+import { rich, useLanguage, useT } from "../i18n";
 
 function ExternalLink({ href, children }) {
   return (
@@ -20,37 +21,42 @@ function ExternalLink({ href, children }) {
 
 /** "Terms · Privacy" - for footers and settings. */
 export function LegalLinks({ className = "" }) {
+  const t = useT();
   return (
-    <nav className={`legal-links ${className}`} aria-label="Legal">
-      <ExternalLink href={LEGAL_URLS.terms}>Terms</ExternalLink>
+    <nav className={`legal-links ${className}`} aria-label={t("acc.legal")}>
+      <ExternalLink href={LEGAL_URLS.terms}>{t("legal.terms")}</ExternalLink>
       <span aria-hidden="true">·</span>
-      <ExternalLink href={LEGAL_URLS.privacy}>Privacy</ExternalLink>
+      <ExternalLink href={LEGAL_URLS.privacy}>{t("legal.privacy")}</ExternalLink>
     </nav>
   );
 }
 
 /** The consent line under sign-up / sign-in buttons. */
 export function LegalConsent() {
+  const t = useT();
+  const lang = useLanguage();
   return (
     <p className="legal-consent">
-      By continuing you agree to the <ExternalLink href={LEGAL_URLS.terms}>Terms</ExternalLink> and{" "}
-      <ExternalLink href={LEGAL_URLS.privacy}>Privacy Policy</ExternalLink>. CipherRush is run by AximoIX.
+      {rich(
+        "legal.consent",
+        {
+          terms: <ExternalLink href={LEGAL_URLS.terms}>{t("legal.terms")}</ExternalLink>,
+          privacy: <ExternalLink href={LEGAL_URLS.privacy}>{t("legal.privacyPolicy")}</ExternalLink>,
+        },
+        lang
+      )}
     </p>
   );
 }
 
 /** What an account sends and why - shown at sign-up and in Profile → Account. */
 export function DataNotice() {
+  const t = useT();
   // The web version has no ads; the apps show Google AdMob ads.
   const ads = adsAvailable();
   return (
     <p className="legal-consent data-notice">
-      Your handle, email and game results are sent over an encrypted connection to CipherRush's server
-      (api.aximoix.com) to run your account and the leaderboards. Your IP address is used for security and rate
-      limits. We only email you to confirm your address or reset your password.{" "}
-      {ads
-        ? "The app shows ads from Google AdMob. They're never personalised, but Google receives your device's advertising ID and IP address to serve them and to stop fraud."
-        : "No ads, no trackers."}
+      {t("legal.data")} {ads ? t("legal.ads") : t("legal.noAds")}
     </p>
   );
 }

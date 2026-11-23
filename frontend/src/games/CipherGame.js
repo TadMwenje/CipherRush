@@ -14,6 +14,8 @@ import useRound from "../hooks/useRound";
 import { adsAvailable } from "../ads/admob";
 import { earnReward } from "../ads/rewards";
 import { afterBreak } from "../ads/pacing";
+import { rich, useLanguage, useT } from "../i18n";
+import useModeLabel from "../hooks/useModeLabel";
 
 const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 const WARNING_SECONDS = 20;
@@ -26,6 +28,7 @@ const VARIANTS = [
 
 // Caesar wheel: drag the strip sideways (or use the buttons) to line up a shift.
 export function CaesarWheel() {
+  const t = useT();
   const [shift, setShift] = useState(3);
   const drag = useRef(null);
   const stripRef = useRef(null);
@@ -54,15 +57,15 @@ export function CaesarWheel() {
   return (
     <div className="cipher-tool">
       <div className="cipher-tool-head">
-        <span>Cipher wheel</span>
+        <span>{t("ci.wheel")}</span>
         <div className="cipher-tool-controls">
-          <button type="button" onClick={() => change(-1)} aria-label="Shift down one">
+          <button type="button" onClick={() => change(-1)} aria-label={t("ci.down")}>
             <Minus size={16} />
           </button>
           <span className="cipher-tool-value" aria-live="polite">
             ROT-{shift}
           </span>
-          <button type="button" onClick={() => change(1)} aria-label="Shift up one">
+          <button type="button" onClick={() => change(1)} aria-label={t("ci.up")}>
             <Plus size={16} />
           </button>
         </div>
@@ -75,7 +78,7 @@ export function CaesarWheel() {
         onPointerUp={endDrag}
         onPointerCancel={endDrag}
         role="slider"
-        aria-label="Cipher wheel shift"
+        aria-label={t("ci.wheelShift")}
         aria-valuemin={0}
         aria-valuemax={25}
         aria-valuenow={shift}
@@ -92,16 +95,17 @@ export function CaesarWheel() {
           </div>
         ))}
       </div>
-      <div className="cipher-tool-legend">Drag the strip. Top row is what you see, bottom is what it means.</div>
+      <div className="cipher-tool-legend">{t("ci.wheelLegend")}</div>
     </div>
   );
 }
 
 export function AtbashMirror() {
+  const t = useT();
   return (
     <div className="cipher-tool">
       <div className="cipher-tool-head">
-        <span>Mirror alphabet</span>
+        <span>{t("ci.mirror")}</span>
       </div>
       <div className="alphabet-strip">
         {ALPHABET.split("").map((ch, i) => (
@@ -111,18 +115,19 @@ export function AtbashMirror() {
           </div>
         ))}
       </div>
-      <div className="cipher-tool-legend">Same move both ways. Encode and decode are identical.</div>
+      <div className="cipher-tool-legend">{t("ci.mirrorLegend")}</div>
     </div>
   );
 }
 
 export function KeyLengthView({ ciphertext, keyLength }) {
+  const t = useT();
   let letterIndex = 0;
   return (
     <div className="cipher-tool">
       <div className="cipher-tool-head">
         <span>
-          <Key size={14} /> Key length {keyLength}
+          <Key size={14} /> {t("ci.keyLength", { n: keyLength })}
         </span>
       </div>
       <div className="keylength-view">
@@ -138,10 +143,24 @@ export function KeyLengthView({ ciphertext, keyLength }) {
         })}
       </div>
       <div className="cipher-tool-legend">
-        Same number, same key letter. Crack each numbered group like its own Caesar.
+        {t("ci.keyLegend")}
       </div>
     </div>
   );
+}
+
+/** "It said HELLO (ROT-3)." under a finished cipher, in the app's language. */
+export function ItSaid({ plaintext, shift, cipherKey }) {
+  const lang = useLanguage();
+  const t = useT();
+  const notes = [shift != null && `ROT-${shift}`, cipherKey && t("g.keyNote", { k: cipherKey })].filter(Boolean);
+  const word = (
+    <span>
+      <strong>{plaintext}</strong>
+      {notes.length > 0 && ` (${notes.join(", ")})`}
+    </span>
+  );
+  return <div className="result-explanation">{rich("g.itSaid", { word }, lang)}</div>;
 }
 
 /** Ciphertext + answer box + timer, shared by Cipher Puzzles and the Daily Cipher. */
@@ -208,7 +227,8 @@ export function useCountdown(round, active, onExpire, addedSeconds = 0) {
  * so the keyboard stays up on iOS. Scrolling above the keyboard is handled
  * globally (mobile/keyboard.js).
  */
-export function AnswerInput({ value, onChange, disabled, placeholder = "Type the plaintext", focusOnMount = false, inputRef }) {
+export function AnswerInput({ value, onChange, disabled, placeholder, focusOnMount = false, inputRef }) {
+  const t = useT();
   const ref = useRef(null);
   useEffect(() => {
     if (inputRef) inputRef.current = ref.current;
@@ -221,7 +241,7 @@ export function AnswerInput({ value, onChange, disabled, placeholder = "Type the
       ref={ref}
       type="text"
       className="answer-input"
-      placeholder={placeholder}
+      placeholder={placeholder || t("g.answerPlaceholder")}
       value={value}
       onChange={(e) => onChange(e.target.value.toUpperCase())}
       disabled={disabled}
@@ -230,13 +250,15 @@ export function AnswerInput({ value, onChange, disabled, placeholder = "Type the
       autoCorrect="off"
       spellCheck={false}
       enterKeyHint="go"
-      aria-label="Your answer"
+      aria-label={t("g.answerLabel")}
     />
   );
 }
 
 function CipherGame() {
-  const { gameProgress, applyResult, toasts } = useGameRewards("cipher", "Cipher Puzzles");
+  const { gameProgress, applyResult, toasts } = useGameRewards("cipher");
+  const t = useT();
+  const title = useModeLabel("cipher");
   const { round, loading, error, setError, startNew } = useRound("cipher", { variant: "caesar" });
   const [answer, setAnswer] = useState("");
   const [hints, setHints] = useState([]);
@@ -325,11 +347,11 @@ function CipherGame() {
   return (
     <div className="game-screen cipher-game">
       {toasts}
-      <GameHeader title="Cipher Puzzles" modeKey="cipher">
+      <GameHeader title={title} modeKey="cipher">
         {round && <div className={`timer${warning ? " warning" : ""}`}>{formatClock(timeLeft)}</div>}
       </GameHeader>
 
-      <div className="segmented" role="tablist" aria-label="Cipher type">
+      <div className="segmented" role="tablist" aria-label={t("ci.type")}>
         {VARIANTS.map((v) => (
           <button
             key={v.key}
@@ -349,10 +371,10 @@ function CipherGame() {
       {error && <p className="error">{error}</p>}
 
       <div className="game-stage">
-        {!round && !error && <div className="loading-inline">Loading cipher</div>}
+        {!round && !error && <div className="loading-inline">{t("ci.loading")}</div>}
         {round && (
           <div className="puzzle-content">
-            <div className="encrypted-text" aria-label="Ciphertext">
+            <div className="encrypted-text" aria-label={t("ci.ciphertext")}>
               {round.ciphertext}
             </div>
 
@@ -386,16 +408,16 @@ function CipherGame() {
                 {adsAvailable() && hintsLeft > 0 && (
                   <button type="button" className="free-hint-btn" onClick={freeHint} disabled={!active || busy || watching}>
                     <Bulb size={16} />
-                    {watching ? "Loading video. The clock is paused." : "Free hint: watch a short video"}
+                    {watching ? t("ci.videoPaused") : t("ci.videoHint")}
                   </button>
                 )}
                 <div className="answer-actions">
                   <button type="button" className="hint-btn" onClick={requestHint} disabled={!active || busy || watching || hintsLeft <= 0}>
                     <Bulb size={16} />
-                    {hintsLeft > 0 ? `Hint −${round.hint_penalty_pct}%` : "No hints left"}
+                    {hintsLeft > 0 ? t("ci.hintCost", { n: round.hint_penalty_pct }) : t("ci.noHints")}
                   </button>
                   <button type="submit" className="submit-btn" disabled={!active || busy || !answer.trim()}>
-                    Crack it
+                    {t("g.crackIt")}
                   </button>
                 </div>
               </form>
@@ -405,20 +427,16 @@ function CipherGame() {
               <div className={`result ${result.correct ? "correct" : "wrong"}`} role="status">
                 <div className="result-status">
                   {result.correct ? <CheckOct size={20} color="#4ade80" /> : <CrossOct size={20} color="#f87171" />}
-                  {result.correct ? "Cracked." : result.timed_out ? "Out of time." : "Not it."}
+                  {result.correct ? t("g.crackedResult") : result.timed_out ? t("g.outOfTime") : t("g.notIt")}
                 </div>
                 <div className="result-score">+{result.score}</div>
                 {result.correct && (
                   <div className="result-breakdown">
-                    Speed +{result.time_bonus}
-                    {result.hint_penalty > 0 && ` · hints −${result.hint_penalty}`}
+                    {t("g.speed", { n: result.time_bonus })}
+                    {result.hint_penalty > 0 && ` · ${t("g.hintPenalty", { n: result.hint_penalty })}`}
                   </div>
                 )}
-                <div className="result-explanation">
-                  It said <strong>{result.plaintext}</strong>
-                  {result.shift != null && ` (ROT-${result.shift})`}
-                  {result.key && ` (key: ${result.key})`}.
-                </div>
+                <ItSaid plaintext={result.plaintext} shift={result.shift} cipherKey={result.key} />
                 <button
                   className="next-btn"
                   onClick={() => {
@@ -427,7 +445,7 @@ function CipherGame() {
                     afterBreak(() => startNew({ variant }))();
                   }}
                 >
-                  Next cipher
+                  {t("g.nextCipher")}
                 </button>
               </div>
             )}

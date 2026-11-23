@@ -12,16 +12,20 @@ import GameHeader from "../components/GameHeader";
 import { afterBreak } from "../ads/pacing";
 import useGameRewards from "../hooks/useGameRewards";
 import { AnswerInput } from "./CipherGame";
+import { t as translate, useT } from "../i18n";
+import useModeLabel from "../hooks/useModeLabel";
 
 const WARNING_SECONDS = 10;
 
 function keyLabel(puzzle) {
-  return puzzle.kind === "atbash" ? "Atbash · mirror it" : `ROT-${puzzle.shift} · shift back ${puzzle.shift}`;
+  return puzzle.kind === "atbash" ? translate("rush.atbash") : translate("rush.rot", { n: puzzle.shift });
 }
 
 function RushGame() {
   const navigate = useNavigate();
-  const { gameProgress, applyResult, toasts } = useGameRewards("rush", "Speed Cipher Rush");
+  const { gameProgress, applyResult, toasts } = useGameRewards("rush");
+  const t = useT();
+  const title = useModeLabel("rush");
   const [round, setRound] = useState(null);
   const [view, setView] = useState(null);
   const [answer, setAnswer] = useState("");
@@ -175,7 +179,7 @@ function RushGame() {
   return (
     <div className="game-screen rush-game">
       {toasts}
-      <GameHeader title="Speed Rush" modeKey="rush">
+      <GameHeader title={title} modeKey="rush">
         {playing && <div className={`timer${timeLeft <= WARNING_SECONDS ? " warning" : ""}`}>{timeLeft}s</div>}
       </GameHeader>
       <GameLevelBar progress={gameProgress} />
@@ -184,13 +188,13 @@ function RushGame() {
       {playing && (
         <div className="game-stats">
           <div className="stat">
-            <span className="stat-label">Score</span> {view.score}
+            <span className="stat-label">{t("g.score")}</span> {view.score}
           </div>
           <div className={`stat${view.combo >= 2 ? " stat-hot" : ""}`}>
             <Flame size={16} /> x{view.multiplier}
           </div>
           <div className="stat">
-            <span className="stat-label">Cracked</span> {view.solved}
+            <span className="stat-label">{t("g.cracked")}</span> {view.solved}
           </div>
         </div>
       )}
@@ -201,10 +205,10 @@ function RushGame() {
             <div className="rush-intro-icon">
               <Bolt size={34} />
             </div>
-            <h2>90 seconds. Go.</h2>
-            <p>Every word shows its key. Crack them back to back and the combo climbs.</p>
+            <h2>{t("rush.go")}</h2>
+            <p>{t("rush.intro")}</p>
             <button className="btn-primary" onClick={start}>
-              Start
+              {t("rush.start")}
             </button>
           </div>
         )}
@@ -214,16 +218,16 @@ function RushGame() {
             <div className="rush-key">{keyLabel(view.puzzle)}</div>
             <div className="encrypted-text rush-cipher">{view.puzzle.ciphertext}</div>
             <div className="rush-points" aria-live="polite">
-              {lastPoints && flash === "correct" ? `+${lastPoints}` : `next: ${view.next_points} pts`}
+              {lastPoints && flash === "correct" ? `+${lastPoints}` : t("rush.next", { n: view.next_points })}
             </div>
             <form ref={formRef} className="answer-section" onSubmit={submit}>
-              <AnswerInput value={answer} onChange={setAnswer} placeholder="Decoded word" />
+              <AnswerInput value={answer} onChange={setAnswer} placeholder={t("rush.placeholder")} />
               <div className="answer-actions">
                 <button type="button" className="hint-btn" onClick={skip} disabled={busy}>
-                  <Skip size={16} /> Skip
+                  <Skip size={16} /> {t("rush.skip")}
                 </button>
                 <button type="submit" className="submit-btn" disabled={busy || !answer.trim()}>
-                  Crack
+                  {t("rush.crack")}
                 </button>
               </div>
             </form>
@@ -233,12 +237,12 @@ function RushGame() {
         {result && (
           <div className="match3-result won">
             <h2 className="match3-result-heading">
-              <Bolt size={24} /> Time.
+              <Bolt size={24} /> {t("rush.time")}
             </h2>
             <div className="final-score">+{result.score}</div>
             <p className="match3-result-copy">
-              {result.solved} cracked · best combo {result.best_combo}
-              {!result.passed && ` · ${result.pass_threshold} needed to count toward your level`}
+              {t("rush.summary", { n: result.solved, c: result.best_combo })}
+              {!result.passed && ` · ${t("g.needed", { n: result.pass_threshold })}`}
             </p>
             <div className="match3-result-actions">
               <button
@@ -248,10 +252,10 @@ function RushGame() {
                   afterBreak(start)();
                 }}
               >
-                Run it back
+                {t("rush.again")}
               </button>
               <button className="submit-btn" onClick={() => navigate("/leaderboard?board=rush")}>
-                <Trophy size={16} /> Board
+                <Trophy size={16} /> {t("rush.board")}
               </button>
             </div>
           </div>

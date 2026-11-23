@@ -1,11 +1,14 @@
 import React from "react";
 import { Users } from "../glyphs";
 import { GAME_MODES } from "../constants/gameModes";
+import { formatNumber, modeText, useLanguage, useT } from "../i18n";
 
 // Compact per-game level/XP readout shown in each game's header. Distinct
 // from the account-wide level shown on the dashboard - every game levels up
 // independently from its own XP.
 function GameLevelBar({ progress }) {
+  const t = useT();
+  const lang = useLanguage();
   if (!progress) return null;
 
   const {
@@ -32,25 +35,27 @@ function GameLevelBar({ progress }) {
   let statusMessage = null;
   if (xpForNext > 0) {
     if (!xpReady) {
-      statusMessage = `${completions}/${needed} rounds cleared at this level`;
+      statusMessage = t("lvl.rounds", { done: completions, need: needed });
     } else if (!completionsReady) {
-      const remaining = needed - completions;
-      statusMessage = `XP is there. Clear ${remaining} more round${remaining === 1 ? "" : "s"} to level up.`;
+      statusMessage = t("lvl.roundsLeft", { n: needed - completions });
     } else if (!crossGameReady) {
-      const remaining = otherNeeded - (otherGames ?? 0);
       const otherLabels = GAME_MODES.filter((m) => m.key !== gameType)
         .slice(0, 3)
-        .map((m) => m.label)
+        .map((m) => modeText(m, lang).label)
         .join(", ");
-      statusMessage = `Level ${level + 1} is locked until you try ${remaining} more mode${remaining === 1 ? "" : "s"} - ${otherLabels}.`;
+      statusMessage = t("lvl.locked", { next: level + 1, modes: otherLabels });
     }
   }
 
   return (
     <div className="game-level-bar">
       <div className="game-level-bar-row">
-        <span>Level {level}</span>
-        <span>{xpForNext > 0 ? `${displayedXp.toLocaleString()} / ${xpForNext.toLocaleString()} XP` : "Max level"}</span>
+        <span>{t("dash.level", { n: level })}</span>
+        <span>
+          {xpForNext > 0
+            ? t("lvl.xp", { have: formatNumber(displayedXp, lang), need: formatNumber(xpForNext, lang) })
+            : t("lvl.max")}
+        </span>
       </div>
       <div className="progress-bar game-level-progress">
         <div className="progress-fill" style={{ width: `${percent}%` }} />
@@ -61,7 +66,7 @@ function GameLevelBar({ progress }) {
       {crossGateActive && (
         <div className={`game-level-crossgame${crossGameReady ? " ready" : ""}`}>
           <Users size={12} aria-hidden="true" />
-          {(otherGames ?? 0)}/{otherNeeded} other modes tried
+          {t("lvl.otherModes", { have: otherGames ?? 0, need: otherNeeded })}
         </div>
       )}
     </div>

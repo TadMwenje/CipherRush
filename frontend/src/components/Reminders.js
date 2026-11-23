@@ -10,11 +10,12 @@ import {
 } from "../notifications";
 import { onAppResume } from "../mobile/lifecycle";
 import { haptic } from "../mobile/haptics";
+import { useT } from "../i18n";
 
-const BLOCKED_COPY = "Notifications are off for CipherRush in your phone's Settings. Turn them on there first.";
 
 /** One-time card on the dashboard. Nothing is asked of the OS until "Turn on" is tapped. */
 export function ReminderPrompt() {
+  const t = useT();
   const [visible, setVisible] = useState(() => notificationsSupported() && notificationPreference() === null);
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
@@ -30,7 +31,7 @@ export function ReminderPrompt() {
       setVisible(false);
     } else {
       declineNotifications();
-      setMessage(BLOCKED_COPY);
+      setMessage(t("rem.blocked"));
     }
   };
 
@@ -41,22 +42,22 @@ export function ReminderPrompt() {
   };
 
   return (
-    <div className="reminder-prompt" role="region" aria-label="Reminders">
+    <div className="reminder-prompt" role="region" aria-label={t("rem.label")}>
       <div className="reminder-prompt-icon">
         <Calendar size={22} />
       </div>
       <div className="reminder-prompt-body">
-        <div className="reminder-prompt-title">Want a heads-up when the new Daily Cipher drops?</div>
+        <div className="reminder-prompt-title">{t("rem.title")}</div>
         <div className="reminder-prompt-copy">
-          {message || "New-cipher alerts and the odd nudge to come back. Never at night. Change it any time in Profile."}
+          {message || t("rem.copy")}
         </div>
         {!message && (
           <div className="reminder-prompt-actions">
             <button className="btn-primary" onClick={turnOn} disabled={busy}>
-              Turn on
+              {t("rem.turnOn")}
             </button>
             <button className="btn-secondary" onClick={notNow} disabled={busy}>
-              Not now
+              {t("rem.notNow")}
             </button>
           </div>
         )}
@@ -67,6 +68,7 @@ export function ReminderPrompt() {
 
 /** Profile → Account row. Reflects the OS permission live, including a revoke in Settings. */
 export function ReminderSettings() {
+  const t = useT();
   const [pref, setPref] = useState(notificationPreference);
   const [permission, setPermission] = useState("prompt");
   const [busy, setBusy] = useState(false);
@@ -98,9 +100,9 @@ export function ReminderSettings() {
 
   return (
     <div className="account-row">
-      <span className="account-label">Reminders</span>
+      <span className="account-label">{t("rem.label")}</span>
       <label className="switch-row">
-        <span>Daily Cipher and come-back nudges</span>
+        <span>{t("rem.switch")}</span>
         <input
           type="checkbox"
           role="switch"
@@ -111,7 +113,7 @@ export function ReminderSettings() {
           aria-checked={on}
         />
       </label>
-      {blocked && <span className="account-note">{BLOCKED_COPY}</span>}
+      {blocked && <span className="account-note">{t("rem.blocked")}</span>}
     </div>
   );
 }

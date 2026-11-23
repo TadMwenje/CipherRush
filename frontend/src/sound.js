@@ -3,6 +3,29 @@
 
 let ctx = null;
 
+// Player's choice in Profile → Preferences, kept on this device.
+const SOUND_KEY = "cr_sound";
+let soundOn = (() => {
+  try {
+    return window.localStorage.getItem(SOUND_KEY) !== "off";
+  } catch (e) {
+    return true;
+  }
+})();
+
+export function soundEnabled() {
+  return soundOn;
+}
+
+export function setSoundEnabled(value) {
+  soundOn = Boolean(value);
+  try {
+    window.localStorage.setItem(SOUND_KEY, soundOn ? "on" : "off");
+  } catch (e) {
+    // not saved, but still applies until the app closes
+  }
+}
+
 function getContext() {
   if (typeof window === "undefined") return null;
   const AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -23,6 +46,7 @@ export function suspendAudio() {
 }
 
 function tone(freq, startOffset, duration, { type = "sine", gain = 0.15 } = {}) {
+  if (!soundOn) return;
   const audioCtx = getContext();
   if (!audioCtx) return;
 

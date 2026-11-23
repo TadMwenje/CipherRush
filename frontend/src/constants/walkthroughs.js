@@ -49,7 +49,7 @@ const VIGENERE = {
 const CLOCK = {
   id: "clock",
   title: "Beat the clock",
-  body: "Type the plaintext and tap Crack it. Faster solves pay more. Point-cost hints take 20% each; a hint paid for with a short video costs nothing and pauses the clock.",
+  body: "Type the plaintext and tap Crack it. Faster solves pay more. Each hint costs 20%, but a video hint is free and pauses the clock.",
   tip: "Wrong guesses don't end the round. Keep trying until the clock runs out.",
 };
 

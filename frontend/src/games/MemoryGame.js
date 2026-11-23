@@ -11,13 +11,17 @@ import GameHeader from "../components/GameHeader";
 import { afterBreak } from "../ads/pacing";
 import useGameRewards from "../hooks/useGameRewards";
 import useRound from "../hooks/useRound";
+import { useT } from "../i18n";
+import useModeLabel from "../hooks/useModeLabel";
 
 const MISMATCH_SHOW_MS = 850;
 const GRID_GAP = 8;
 const pause = (ms) => new Promise((r) => setTimeout(r, ms));
 
 function MemoryGame() {
-  const { gameProgress, applyResult, toasts } = useGameRewards("memory", "Memory Lock");
+  const { gameProgress, applyResult, toasts } = useGameRewards("memory");
+  const t = useT();
+  const title = useModeLabel("memory");
   const { round, error, setError, startNew } = useRound("memory");
   const [faces, setFaces] = useState({});
   const [faceUp, setFaceUp] = useState([]);
@@ -92,19 +96,19 @@ function MemoryGame() {
   return (
     <div className="game-screen memory-game">
       {toasts}
-      <GameHeader title="Memory Lock" modeKey="memory" />
+      <GameHeader title={title} modeKey="memory" />
       <GameLevelBar progress={gameProgress} />
       {error && <p className="error">{error}</p>}
 
       {round && (
         <div className="game-stats">
           <div className="stat">
-            <span className="stat-label">Pairs</span> {matched.size / 2}/{round.pairs}
+            <span className="stat-label">{t("g.pairs")}</span> {matched.size / 2}/{round.pairs}
           </div>
           <div className={`stat${resetting ? " stat-warning" : ""}`} aria-live="polite">
-            {resetting ? "No match" : (
+            {resetting ? t("mem.noMatch") : (
               <>
-                <span className="stat-label">Moves</span> {moves}
+                <span className="stat-label">{t("g.moves")}</span> {moves}
               </>
             )}
           </div>
@@ -112,7 +116,7 @@ function MemoryGame() {
       )}
 
       <div className="game-stage memory-stage" ref={stageRef}>
-        {!round && !error && <div className="loading-inline">Loading cards</div>}
+        {!round && !error && <div className="loading-inline">{t("mem.loading")}</div>}
         {round && grid && grid.size > 0 && (
           <div
             className={`memory-grid${resetting ? " is-busy" : ""}`}
@@ -132,7 +136,7 @@ function MemoryGame() {
                   className={`memory-card${isFaceUp ? " flipped" : ""}${isMatched ? " matched" : ""}${wrongPair.includes(index) ? " wrong" : ""}`}
                   onClick={() => flip(index)}
                   disabled={isFaceUp || !!result}
-                  aria-label={isFaceUp && symbol ? `Card: ${symbol}` : `Card ${index + 1}, face down`}
+                  aria-label={isFaceUp && symbol ? t("mem.cardUp", { s: symbol }) : t("mem.cardDown", { n: index + 1 })}
                 >
                   <div className="memory-card-inner">
                     <div className="memory-card-face memory-card-back">
@@ -152,16 +156,16 @@ function MemoryGame() {
           <div className="match3-result won">
             <h2 className="match3-result-heading">
               {result.perfect ? <Sparkle size={24} /> : <Confetti size={24} />}
-              {result.perfect ? "Perfect recall." : "Board cleared."}
+              {result.perfect ? t("mem.perfect") : t("g.boardCleared")}
             </h2>
             <div className="final-score">+{result.score}</div>
             <p className="match3-result-copy">
-              {result.moves} moves · {result.misses} miss{result.misses === 1 ? "" : "es"}
-              {!result.passed && " · too many misses to count toward your level"}
+              {t("mem.summary", { moves: result.moves, misses: result.misses })}
+              {!result.passed && ` · ${t("mem.tooMany")}`}
             </p>
             <div className="match3-result-actions">
               <button className="restart-btn" onClick={afterBreak(() => startNew())}>
-                {result.game_progress?.leveled_up ? `Play level ${result.game_progress.level}` : "Deal again"}
+                {result.game_progress?.leveled_up ? t("g.playLevel", { n: result.game_progress.level }) : t("mem.dealAgain")}
               </button>
             </div>
           </div>

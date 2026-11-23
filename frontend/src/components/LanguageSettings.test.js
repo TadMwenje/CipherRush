@@ -41,7 +41,7 @@ test("picking a language relabels the app at once and is remembered", () => {
   expect(container.querySelector(".bottom-nav").textContent).toContain("Accueil");
   expect(french.getAttribute("aria-checked")).toBe("true");
   expect(localStorage.getItem("cr_lang")).toBe("fr");
-  expect(container.querySelector(".language-settings h2").textContent).toBe("Langue");
+  expect(container.querySelector("#language-title").textContent).toBe("Langue");
 });
 
 test("the walkthrough reads in the chosen language", () => {

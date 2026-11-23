@@ -97,3 +97,6 @@ frontend/build/
 /frontend/src/protect temp/
 client_secret_*.json
 *.apps.googleusercontent.com.plist
+
+# Phone QA screenshots (local only; some show account details)
+mobile/store/qa-screenshots/

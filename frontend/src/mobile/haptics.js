@@ -21,10 +21,27 @@ const NATIVE = {
   win: ["notification", { type: "SUCCESS" }],
 };
 
-let enabled = true;
+// Player's choice in Profile → Preferences, kept on this device.
+const HAPTICS_KEY = "cr_haptics";
+let enabled = (() => {
+  try {
+    return typeof window === "undefined" || window.localStorage.getItem(HAPTICS_KEY) !== "off";
+  } catch (e) {
+    return true;
+  }
+})();
+
+export function hapticsEnabled() {
+  return enabled;
+}
 
 export function setHapticsEnabled(value) {
-  enabled = value;
+  enabled = Boolean(value);
+  try {
+    window.localStorage.setItem(HAPTICS_KEY, enabled ? "on" : "off");
+  } catch (e) {
+    // not saved, but still applies until the app closes
+  }
 }
 
 function nativeHaptics() {

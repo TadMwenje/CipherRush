@@ -5,9 +5,9 @@ Single source of truth for what CipherRush is, how it's built, what has been don
 | | |
 | --- | --- |
 | **Last updated** | 2026-11-23 |
-| **Branch** | `v1.0.1`, pushed; `ios-device-testing` fast-forwarded to it (Render deploys `ios-device-testing`) |
-| **Test status** | 234 backend tests · 220 frontend tests · strict production build clean (2026-11-23, branch `v1.0.1`) |
-| **Native builds** | iOS 1.0 (3) Ready for Distribution; iOS 1.0.1 (4) Waiting for Review (2026-11-23) · Android 1.0.0 (5) live on Closed testing - Alpha; 1.0.1 (6) in review on Alpha; production access application under review |
+| **Branch** | `v1.0.2` (local only, not pushed; branched from `v1.0.1`). `v1.0.1` is pushed and is what Render deploys via `ios-device-testing` |
+| **Test status** | 276 backend tests · 266 frontend tests · strict production build clean (2026-11-23, branch `v1.0.2`) |
+| **Native builds** | iOS 1.0 (3) Ready for Distribution; iOS 1.0.1 (4) Waiting for Review (2026-11-23) · Android 1.0.0 (5) live on Closed testing - Alpha; 1.0.1 (6) live on Alpha; 1.0.2 (7) / iOS 1.0.2 (5) prepared locally, not built or uploaded; production access application under review |
 | **Publisher** | AximoIX. Bundle/package ID `com.aximoix.cipherrush`. Legal terms: [aximoix.com/terms](https://aximoix.com/terms/#cipherrush) and [aximoix.com/privacy](https://aximoix.com/privacy/#cipherrush) |
 
 ---
@@ -359,6 +359,18 @@ Android 1.0.1 (versionCode 6) and iOS 1.0.1 (build 4). Commits on `v1.0.1` are l
     - Android can't be linked until the app is in production: Play search doesn't list closed-testing apps.
     - Ad unit IDs are unchanged; both apps still show "Limited ad serving".
   - **Apple DSA: paused until 24 Nov** (Apple rate-limited the verification codes). Then: Business > Complete Compliance Requirements > trader > the owner's contact details > email code > phone code. Afterwards, check Pricing and Availability for the 27 EU countries.
+
+### 2.15 Version 1.0.2 (2026-11-23, branch `v1.0.2`, local only)
+
+Android 1.0.2 (versionCode 7) and iOS 1.0.2 (build 5). Fixes from the phone QA of 1.0.1 (Samsung, Play Alpha build 6). Commits are local; nothing has been pushed, built or uploaded, and Render was not touched. Details are in `mobile/CHANGELOG.md`.
+
+- **i18n:** about 300 new keys in `frontend/src/i18n/en.js` and all seven locale files. Every game, Practice, Versus, sign-in, account, reminders, toasts, sharing and leaderboard rows now translate. New helpers in `i18n/index.js`: `formatNumber`, `formatDate` (English shows en-GB, "23 Nov 2026") and `rich()` for sentences with links or bold words. Mode titles come from `hooks/useModeLabel.js`. Still English: puzzle and quiz content, and `detail` messages written by the server.
+- **Offline banner:** sits below the safe area and reserves its height through `--banner-space`. It uses round-specific copy only on `/game/*` routes.
+- **Tutorial:** all steps share one grid cell (`.walkthrough-stage`), so the sheet height is fixed. Nav buttons don't wrap or shrink.
+- **Profile:** four cards in order: identity (handle form full width, stats); Preferences (`components/Preferences.js`: language, sound, vibration, reminders); Account and data; danger zone (log out, delete). Sound (`cr_sound`) and haptics (`cr_haptics`) choices are saved on the device. "Clear saved data" empties the offline cache but keeps the session. There is no data-export endpoint yet; account deletion and the privacy policy cover data requests for now.
+- **Moderation:** new `transpose` list (one adjacent swap of high-severity names; swaps of 6+ letters match anywhere, shorter ones only as a whole handle or part); `_ . -` separators; terror and extremist names. Both blocklist JSON copies are identical. A dictionary scan (`/usr/share/dict/words`) found one newly blocked word (gestapo, intended) and no regressions. The refusal message is unchanged.
+- **QA screenshots** from 1.0.0 and 1.0.1 are in `mobile/store/qa-screenshots/` (gitignored). Shots showing the account email were left out.
+- **Next:** review on a device (a local debug build is enough), then push `v1.0.2`, deploy the server, and build and upload Android 7 and iOS 5.
 
 ### 3.2 Open
 

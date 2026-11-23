@@ -49,6 +49,27 @@ _HATE_PAIR = re.compile(rf"(?:{_TARGET}).{{0,3}}(?:{_INSULT})|(?:{_INSULT}).{{0,
 _ALLOW = re.compile("|".join(re.escape(w) for w in sorted(set(_BLOCKLIST["allow"]), key=len, reverse=True)))
 
 
+def _swaps(term: str):
+    """Every one-swap typo of `term` (adolf -> daolf, aodlf, adlof, adofl)."""
+    out = set()
+    for i in range(len(term) - 1):
+        if term[i] != term[i + 1]:
+            out.add(term[:i] + term[i + 1] + term[i] + term[i + 2:])
+    return out - {term}
+
+
+# Swapped spellings of the worst names. Long ones are matched anywhere; short
+# ones (adlof, osmaa) only as a whole handle or part, where they can't be the
+# middle of an ordinary word ("astan" is a swap of satan, and inside astana).
+_SWAPS_LONG, _SWAPS_SHORT = set(), set()
+for _term in _BLOCKLIST.get("transpose", []):
+    for _swap in _swaps(_term) - set(_BLOCKLIST["allow"]):
+        (_SWAPS_LONG if len(_swap) >= 6 else _SWAPS_SHORT).add(_swap)
+_SWAPPED = re.compile(_alternation(_SWAPS_LONG)) if _SWAPS_LONG else None
+# Dots and dashes can't pass USERNAME_PATTERN, but other text checks may use these rules.
+_SEPARATORS = re.compile(r"[_.\-]+")
+
+
 def _readings(text: str):
     return {text.translate(_LEET_I), text.translate(_LEET_L)}
 
@@ -58,11 +79,13 @@ def _contains_blocked_word(username: str) -> bool:
     if profanity.contains_profanity(lowered) or profanity.contains_profanity(lowered.translate(_LEET_I)):
         return True
     for reading in _readings(lowered):
-        parts = [p for p in reading.split("_") if p]
-        if any(_WHOLE.match(p) or p in _EXACT for p in parts + ["".join(parts)]):
+        parts = [p for p in _SEPARATORS.split(reading) if p]
+        if any(_WHOLE.match(p) or p in _EXACT or p in _SWAPS_SHORT for p in parts + ["".join(parts)]):
             return True
         joined = _ALLOW.sub("#", "".join(parts))
         if _ANYWHERE.search(joined) or _HATE_PAIR.search(joined):
+            return True
+        if _SWAPPED and _SWAPPED.search(joined):
             return True
     return False
 

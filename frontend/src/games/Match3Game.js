@@ -12,11 +12,15 @@ import { findMatches, swapped } from "../practice/match3";
 import { adsAvailable } from "../ads/admob";
 import { earnReward } from "../ads/rewards";
 import { afterBreak } from "../ads/pacing";
+import { useT } from "../i18n";
+import useModeLabel from "../hooks/useModeLabel";
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 function Match3Game() {
-  const { gameProgress, applyResult, toasts } = useGameRewards("match3", "Match-3");
+  const { gameProgress, applyResult, toasts } = useGameRewards("match3");
+  const t = useT();
+  const title = useModeLabel("match3");
   const { round, loading, error, setError, startNew } = useRound("match3");
   const { board, setBoard, reset, rejectSwap, playSteps, poppingCells, droppingColumns, invalidCells, cascade } =
     useMatch3Animator();
@@ -36,7 +40,7 @@ function Match3Game() {
     if (!Array.isArray(round.board) || round.board.length === 0) {
       // Never sit on a loading state: say so and offer a way out.
       reset(null);
-      setError("The board didn't come through.");
+      setError(t("m3.noBoard"));
       return;
     }
     setError("");
@@ -143,8 +147,8 @@ function Match3Game() {
   return (
     <div className="game-screen match3-game">
       {toasts}
-      <GameHeader title="Match-3" modeKey="match3">
-        {round && <div className="level-badge">Lv {round.level}</div>}
+      <GameHeader title={title} modeKey="match3">
+        {round && <div className="level-badge">{t("m3.lv", { n: round.level })}</div>}
       </GameHeader>
 
       <GameLevelBar progress={gameProgress} />
@@ -153,13 +157,13 @@ function Match3Game() {
         <>
           <div className="game-stats">
             <div className="stat">
-              <span className="stat-label">Score</span> {score}
+              <span className="stat-label">{t("g.score")}</span> {score}
             </div>
             <div className={`stat${movesLeft <= 3 && !result ? " stat-warning" : ""}`}>
-              <span className="stat-label">Moves</span> {movesLeft}
+              <span className="stat-label">{t("g.moves")}</span> {movesLeft}
             </div>
             <div className="stat">
-              <span className="stat-label">Target</span> {target}
+              <span className="stat-label">{t("g.target")}</span> {target}
             </div>
           </div>
           <div className="progress-bar match3-target-bar">
@@ -173,24 +177,24 @@ function Match3Game() {
           <p className="error">{error}</p>
           {!board && (
             <button className="retry-btn" onClick={() => startNew()}>
-              Deal a new board
+              {t("m3.newBoard")}
             </button>
           )}
         </div>
       )}
       {cascade && (
         <div className="cascade-banner">
-          <Flame size={18} /> Chain x{cascade}
+          <Flame size={18} /> {t("g.chain", { n: cascade })}
         </div>
       )}
       {reshuffled && (
         <div className="cascade-banner reshuffle-banner">
-          <Shuffle size={18} /> Dead board. Reshuffling.
+          <Shuffle size={18} /> {t("g.reshuffle")}
         </div>
       )}
 
       <div className="game-stage match3-stage">
-        {(loading || !board) && !error && <div className="loading-inline">Loading board</div>}
+        {(loading || !board) && !error && <div className="loading-inline">{t("m3.loading")}</div>}
         {board && (
           <Match3Board
             board={board}
@@ -205,20 +209,20 @@ function Match3Game() {
         )}
 
         {outOfMoves && !result && (
-          <div className="match3-result lost" role="dialog" aria-label="Out of moves">
+          <div className="match3-result lost" role="dialog" aria-label={t("m3.outLabel")}>
             <h2 className="match3-result-heading">
-              <Hourglass size={24} /> Out of moves.
+              <Hourglass size={24} /> {t("g.outOfMoves")}
             </h2>
             <p className="match3-result-copy">
-              {Math.max(target - score, 0)} short. Watch a short video for {outOfMoves.moves} more moves?
+              {t("m3.offer", { n: Math.max(target - score, 0), m: outOfMoves.moves })}
             </p>
             {outOfMoves.message && <p className="error">{outOfMoves.message}</p>}
             <div className="match3-result-actions">
               <button className="restart-btn" onClick={watchForMoves} disabled={watching}>
-                {watching ? "Loading video" : `Watch for +${outOfMoves.moves} moves`}
+                {watching ? t("g.loadingVideo") : t("m3.watch", { m: outOfMoves.moves })}
               </button>
               <button className="hint-btn" onClick={endRound} disabled={watching}>
-                End round
+                {t("m3.end")}
               </button>
             </div>
           </div>
@@ -228,19 +232,23 @@ function Match3Game() {
           <div className={`match3-result ${result.won ? "won" : "lost"}`}>
             <h2 className="match3-result-heading">
               {result.won ? <Confetti size={24} /> : <Hourglass size={24} />}
-              {result.won ? "Board cleared." : "Out of moves."}
+              {result.won ? t("g.boardCleared") : t("g.outOfMoves")}
             </h2>
             <div className="final-score">+{result.final_score}</div>
             <p className="match3-result-copy">
               {result.won
                 ? result.efficiency_bonus > 0
-                  ? `${result.moves_left} moves to spare, +${result.efficiency_bonus}.`
-                  : "Right down to the wire."
-                : `${Math.max(target - score, 0)} short. Doesn't count toward your level.`}
+                  ? t("m3.spare", { n: result.moves_left, b: result.efficiency_bonus })
+                  : t("m3.wire")
+                : t("m3.short", { n: Math.max(target - score, 0) })}
             </p>
             <div className="match3-result-actions">
               <button className="restart-btn" onClick={afterBreak(() => startNew())}>
-                {result.game_progress?.leveled_up ? `Play level ${result.game_progress.level}` : result.won ? "Again" : "Retry"}
+                {result.game_progress?.leveled_up
+                  ? t("g.playLevel", { n: result.game_progress.level })
+                  : result.won
+                    ? t("m3.again")
+                    : t("m3.retry")}
               </button>
             </div>
           </div>

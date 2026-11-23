@@ -1,6 +1,7 @@
 import axios, { AxiosError } from "axios";
 import { isOnline, whenOnline } from "./mobile/network";
 import { onAppResume } from "./mobile/lifecycle";
+import { t } from "./i18n";
 
 export const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 export const API_BASE = `${BACKEND_URL}/api`;
@@ -186,10 +187,10 @@ onAppResume(({ awayMs }) => {
   });
 });
 
-export function errorMessage(err, fallback = "That didn't go through. Try again.") {
+export function errorMessage(err, fallback = t("auth.failed")) {
   // Only a request that got no answer is a signal problem; anything else that
   // failed before reaching us (a native sign-in plugin, say) gets the fallback.
-  if (!err?.response) return axios.isAxiosError(err) ? "Can't reach the server. Check your signal." : fallback;
+  if (!err?.response) return axios.isAxiosError(err) ? t("net.unreachable") : fallback;
   const detail = err.response.data?.detail;
   return typeof detail === "string" ? detail : fallback;
 }

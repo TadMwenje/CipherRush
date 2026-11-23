@@ -14,7 +14,7 @@ export const GAME_MODES = [
     rules: [
       "Caesar shifts every letter the same amount. Atbash flips the alphabet. Vigenère uses a keyword, so each letter can shift differently.",
       "One answer per puzzle. Faster solves pay more, and Vigenère pays 1.5x.",
-      "Drag the cipher wheel to test shifts. Extra hints exist, but each one costs 20% of the base score.",
+      "Drag the cipher wheel to test shifts. Need more help? Each extra hint costs 20% of the base score.",
     ],
   },
   {
@@ -62,7 +62,7 @@ export const GAME_MODES = [
     label: "True or False",
     Icon: TrueFalse,
     css: "truefalse",
-    tagline: "Ten claims. Test your cyber instincts.",
+    tagline: "Ten claims. Call the bluff.",
     rules: [
       "Ten statements, half true and half false. Swipe right or tap True; swipe left or tap False.",
       "Streaks pay a little extra. Get 7 right to clear the round.",

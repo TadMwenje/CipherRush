@@ -8,12 +8,20 @@ const BLOCKED = [
   // v1.0.1 additions, with leetspeak and repeats
   "h1tler", "adolf_99", "s4tan", "nute11a", "god", "god_mode", "allah", "osama_bin_laden", "lucifer",
   "sexy_coder", "fruit", "twitter_guy", "messiah", "jesus_christ", "jesus", "the_satan",
+  // v1.0.2: leetspeak, one-letter swaps, terrorist and extremist names
+  "ad0lf", "0sama", "s4t4n", "h1tl3r_fan", "adlof", "htiler", "hilter_99", "osmaa", "staan", "lucifre",
+  "bin_laden", "al_qaeda", "alqaeda", "isis", "isil", "boko_haram", "al_shabaab", "hamas", "hezbollah",
+  "taliban", "unabomber", "mcveigh", "breivik", "tarrant", "ku_klux", "kkk", "nazi", "gestapo",
+  "auschwitz", "holocaust", "the_taliabn",
 ];
 const ALLOWED = [
   "tadiwa_mwenje", "grapefruit", "therapist_tom", "spicy_cipher", "raccoon", "crisis_ops", "torpedo",
   "black_cat", "white_hat", "red_team", "snow_white", "coonhound_fan", "pakistan_fan", "jewel",
   "homeland", "scunthorpe", "blackhat_42", "shiitake", "assassin",
   "good_game", "goodluck", "sussex_fan", "essex", "breadfruit", "callahan", "godot",
+  // v1.0.2: near-misses that must still pass
+  "abdallah", "bahamas_trip", "missile_cmd", "astana", "philter", "chiltern", "tailband", "hamsa",
+  "stan_the_man", "jessie", "salsa_dancer",
 ];
 
 test.each(BLOCKED)("refuses %s", (handle) => {

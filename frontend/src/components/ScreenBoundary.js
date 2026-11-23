@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Rotate } from "../glyphs";
+import { t } from "../i18n";
 
 /**
  * Catches a crash inside one screen so the rest of the app stays alive.
@@ -42,14 +43,14 @@ class ScreenBoundary extends React.Component {
     return (
       <div className="page-screen screen-error" role="alert">
         <div className="screen-error-card">
-          <h1>{this.props.title || "This screen hit a snag"}</h1>
-          <p>Something broke while loading it. Your progress is saved on the server.</p>
+          <h1>{this.props.title || t("boundary.title")}</h1>
+          <p>{t("boundary.body")}</p>
           <div className="screen-error-actions">
             <button className="btn-primary" onClick={this.retry}>
-              <Rotate size={18} /> Try again
+              <Rotate size={18} /> {t("boundary.retry")}
             </button>
             <Link className="btn-secondary" to="/dashboard" onClick={this.retry}>
-              Home
+              {t("nav.home")}
             </Link>
           </div>
         </div>

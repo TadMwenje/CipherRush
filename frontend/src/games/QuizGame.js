@@ -10,17 +10,16 @@ import { afterBreak } from "../ads/pacing";
 import { earnReward } from "../ads/rewards";
 import useGameRewards from "../hooks/useGameRewards";
 import useRound from "../hooks/useRound";
+import { useT } from "../i18n";
+import useModeLabel from "../hooks/useModeLabel";
 
-const CATEGORIES = [
-  ["phishing", "Spot the Fake"],
-  ["social_engineering", "People Skills"],
-  ["cryptography", "Crypto"],
-  ["malware", "Malware"],
-  ["incident_response", "Incident Resp."],
-];
+// Topic chips; labels are quiz.cat.<key> in the i18n files.
+const CATEGORIES = ["phishing", "social_engineering", "cryptography", "malware", "incident_response"];
 
 function QuizGame() {
-  const { gameProgress, applyResult, toasts } = useGameRewards("quiz", "Security Quiz");
+  const { gameProgress, applyResult, toasts } = useGameRewards("quiz");
+  const t = useT();
+  const title = useModeLabel("quiz");
   const { round, loading, error, setError, startNew } = useRound("quiz", { category: "phishing" });
   const [current, setCurrent] = useState(0);
   const [answers, setAnswers] = useState([]);
@@ -103,11 +102,11 @@ function QuizGame() {
   return (
     <div className="game-screen quiz-game">
       {toasts}
-      <GameHeader title="Security Quiz" modeKey="quiz" />
+      <GameHeader title={title} modeKey="quiz" />
       <GameLevelBar progress={gameProgress} />
 
-      <div className="chip-row" role="tablist" aria-label="Topic">
-        {CATEGORIES.map(([key, label]) => (
+      <div className="chip-row" role="tablist" aria-label={t("quiz.topic")}>
+        {CATEGORIES.map((key) => (
           <button
             key={key}
             role="tab"
@@ -118,7 +117,7 @@ function QuizGame() {
             }}
             disabled={busy || loading}
           >
-            {label}
+            {t(`quiz.cat.${key}`)}
           </button>
         ))}
       </div>
@@ -126,13 +125,13 @@ function QuizGame() {
       {error && <p className="error">{error}</p>}
 
       <div className="game-stage">
-        {!round && !error && <div className="loading-inline">Loading questions</div>}
+        {!round && !error && <div className="loading-inline">{t("quiz.loading")}</div>}
 
         {question && !result && (
           <div className="question-content">
             <div className="question-header">
               <div className="question-number">
-                {current + 1} of {questions.length}
+                {t("quiz.of", { i: current + 1, n: questions.length })}
               </div>
               <div className="progress-bar">
                 <div className="progress-fill" style={{ width: `${((current + 1) / questions.length) * 100}%` }} />
@@ -144,7 +143,7 @@ function QuizGame() {
             <div className="options">
               {question.options.map((option, index) =>
                 struck.includes(index) ? (
-                  <button key={option} className="option-btn struck" disabled aria-label={`${option} (ruled out)`}>
+                  <button key={option} className="option-btn struck" disabled aria-label={t("quiz.ruledOut", { option })}>
                     {option}
                   </button>
                 ) : (
@@ -163,24 +162,24 @@ function QuizGame() {
             {canHint && freeLeft > 0 && (
               <button type="button" className="hint-btn quiz-hint-btn" onClick={hint} disabled={busy}>
                 <Bulb size={16} />
-                Hint: rule one out ({freeLeft} free left)
+                {t("quiz.freeHint", { n: freeLeft })}
               </button>
             )}
             {canHint && freeLeft <= 0 && adsAvailable() && (
               <button type="button" className="free-hint-btn" onClick={hint} disabled={busy || watching}>
                 <Bulb size={16} />
-                {watching ? "Loading video" : "Another hint: watch a short video"}
+                {watching ? t("g.loadingVideo") : t("quiz.videoHint")}
               </button>
             )}
             {canHint && freeLeft <= 0 && !adsAvailable() && (
               <button type="button" className="hint-btn quiz-hint-btn" disabled>
                 <Bulb size={16} />
-                No free hints left this round
+                {t("quiz.noHints")}
               </button>
             )}
 
             <button className="next-btn" onClick={next} disabled={answers[current] === undefined || busy}>
-              {current < questions.length - 1 ? "Next" : "Lock in answers"}
+              {current < questions.length - 1 ? t("g.next") : t("quiz.lockIn")}
             </button>
           </div>
         )}
@@ -192,7 +191,8 @@ function QuizGame() {
                 {result.correct_count}/{result.total_questions}
               </div>
               <div className="result-stats">
-                +{result.score} pts{result.passed ? "" : " · 3 needed to clear"}
+                +{t("g.pts", { n: result.score })}
+                {result.passed ? "" : ` · ${t("quiz.toClear")}`}
               </div>
             </div>
 
@@ -207,9 +207,9 @@ function QuizGame() {
                     </div>
                     {!r.correct && (
                       <div className="quiz-review-answer">
-                        You said: {q.options[r.your_answer]}
+                        {t("quiz.youSaid")} {q.options[r.your_answer]}
                         <br />
-                        Answer: <strong>{q.options[r.correct_answer]}</strong>
+                        {t("quiz.answer")} <strong>{q.options[r.correct_answer]}</strong>
                       </div>
                     )}
                     <div className="quiz-review-explanation">{r.explanation}</div>
@@ -219,7 +219,7 @@ function QuizGame() {
             </ol>
 
             <button className="retry-btn" onClick={afterBreak(() => startNew({ category }))}>
-              Five more
+              {t("g.fiveMore")}
             </button>
           </div>
         )}

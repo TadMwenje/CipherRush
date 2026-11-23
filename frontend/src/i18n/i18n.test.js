@@ -64,3 +64,38 @@ test("lookups follow the chosen language and fall back to English", () => {
   expect(modeText(GAME_MODES[0]).label).toBe(GAME_MODES[0].label);
   setLanguage(before);
 });
+
+test("dates read day month year, and numbers follow the language", () => {
+  const { formatDate, formatNumber } = require("./index");
+  expect(formatDate("2026-11-23T10:00:00Z", "en")).toBe("23 Nov 2026");
+  expect(formatDate("", "en")).toBe("");
+  expect(formatNumber(1234567, "en")).toBe("1,234,567");
+  expect(formatNumber(1234567, "de")).toBe("1.234.567");
+  expect(formatNumber(undefined, "en")).toBe("0");
+});
+
+test("rich() puts elements into a translated sentence", () => {
+  const React = require("react");
+  const { rich } = require("./index");
+  const parts = rich("g.itSaid", { word: React.createElement("strong", null, "HELLO") }, "en");
+  expect(parts[0]).toBe("It said ");
+  expect(parts[1].type).toBe("strong");
+  expect(parts[2]).toBe(".");
+});
+
+test("the handle messages exist in every language", () => {
+  const { handleProblemKey, handleProblem } = require("../moderation/handle");
+  expect(handleProblemKey("ad")).toBe("handle.shape");
+  expect(handleProblemKey("ad0lf")).toBe("handle.taken");
+  expect(handleProblemKey("godot")).toBe("");
+  expect(handleProblem("adlof")).toBe("That username isn't available. Please choose another.");
+});
+
+test("the sound switch is remembered and silences the game", () => {
+  const sound = require("../sound");
+  sound.setSoundEnabled(false);
+  expect(localStorage.getItem("cr_sound")).toBe("off");
+  expect(sound.soundEnabled()).toBe(false);
+  sound.setSoundEnabled(true);
+  expect(localStorage.getItem("cr_sound")).toBe("on");
+});

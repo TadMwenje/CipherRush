@@ -3,12 +3,15 @@ import { LANGUAGES, setLanguage, useLanguage, useT } from "../i18n";
 import { haptic } from "../mobile/haptics";
 
 // Interface language, saved on this device (i18n/index.js). Works offline.
+// Shown as a row in Profile → Preferences; names are in their own language.
 function LanguageSettings() {
   const t = useT();
   const lang = useLanguage();
   return (
-    <section className="profile-section language-settings">
-      <h2 id="language-title">{t("settings.language")}</h2>
+    <div className="account-row language-settings">
+      <span className="account-label" id="language-title">
+        {t("settings.language")}
+      </span>
       <div className="language-grid" role="radiogroup" aria-labelledby="language-title">
         {LANGUAGES.map(({ code, name }) => (
           <button
@@ -28,7 +31,7 @@ function LanguageSettings() {
         ))}
       </div>
       <p className="language-hint">{t("settings.languageHint")}</p>
-    </section>
+    </div>
   );
 }
 

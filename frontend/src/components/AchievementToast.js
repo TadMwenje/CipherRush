@@ -2,11 +2,13 @@ import React, { useState, useEffect } from "react";
 import { Badge } from "../glyphs";
 import { playVictory } from "../sound";
 import ShareBadgeDialog from "./ShareBadge";
+import { useT } from "../i18n";
 
 const DISPLAY_MS = 3200;
 
 // Cycles through newly-unlocked achievements one at a time as a toast card.
 function AchievementToast({ achievements, onDone }) {
+  const t = useT();
   const [index, setIndex] = useState(0);
   const [sharing, setSharing] = useState(null);
 
@@ -39,12 +41,12 @@ function AchievementToast({ achievements, onDone }) {
         <Badge size={22} />
       </div>
       <div className="achievement-toast-body">
-        <div className="achievement-toast-label">Badge unlocked</div>
+        <div className="achievement-toast-label">{t("toast.badge")}</div>
         <div className="achievement-toast-name">{current.badge_name}</div>
         <div className="achievement-toast-desc">{current.description}</div>
       </div>
       <button type="button" className="achievement-share-btn" onClick={() => setSharing(current.badge_name)}>
-        Share
+        {t("profile.share")}
       </button>
     </div>
   );

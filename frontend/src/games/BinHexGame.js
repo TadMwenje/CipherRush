@@ -10,7 +10,10 @@ import { afterBreak } from "../ads/pacing";
 import useGameRewards from "../hooks/useGameRewards";
 import useRound from "../hooks/useRound";
 import { AnswerInput } from "./CipherGame";
+import { useT } from "../i18n";
+import useModeLabel from "../hooks/useModeLabel";
 
+const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 const PLACE_VALUES = [128, 64, 32, 16, 8, 4, 2, 1];
 const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
@@ -20,13 +23,14 @@ export function bareDigits(code) {
 }
 
 function ByteExplainer({ code, base }) {
+  const t = useT();
   const digits = bareDigits(code);
   if (base === 2) {
     const bits = digits.padStart(8, "0");
     const value = parseInt(bits, 2);
     return (
       <div className="byte-explainer">
-        {digits.length < 8 && <div className="byte-note">Only {digits.length} bits - pad the front with zeros.</div>}
+        {digits.length < 8 && <div className="byte-note">{t("bh.pad", { n: digits.length })}</div>}
         <div className="bit-row">
           {bits.split("").map((bit, i) => (
             <div key={i} className={`bit-cell${bit === "1" ? " on" : ""}`}>
@@ -45,7 +49,7 @@ function ByteExplainer({ code, base }) {
     const [hi, lo] = digits.toUpperCase().split("");
     return (
       <div className="byte-explainer">
-        {code !== digits && <div className="byte-note">Ignore the prefix - the hex is {digits.toUpperCase()}.</div>}
+        {code !== digits && <div className="byte-note">{t("bh.prefix", { hex: digits.toUpperCase() })}</div>}
         <div className="byte-sum">
           {hi}×16 + {lo} = {parseInt(hi, 16) * 16} + {parseInt(lo, 16)} = {parseInt(digits, 16)}
         </div>
@@ -55,14 +59,15 @@ function ByteExplainer({ code, base }) {
   }
   return (
     <div className="byte-explainer">
-      <div className="byte-sum">{digits} - straight into the ASCII table</div>
+      <div className="byte-sum">{t("bh.decimal", { n: digits })}</div>
     </div>
   );
 }
 
 function AsciiTable() {
+  const t = useT();
   return (
-    <div className="ascii-table" role="table" aria-label="ASCII reference">
+    <div className="ascii-table" role="table" aria-label={t("bh.asciiRef")}>
       {LETTERS.map((ch) => {
         const code = ch.charCodeAt(0);
         return (
@@ -78,7 +83,9 @@ function AsciiTable() {
 }
 
 function BinHexGame() {
-  const { gameProgress, applyResult, toasts } = useGameRewards("binhex", "Binary / Hex");
+  const { gameProgress, applyResult, toasts } = useGameRewards("binhex");
+  const t = useT();
+  const title = useModeLabel("binhex");
   const { round, error, setError, startNew } = useRound("binhex");
   const [index, setIndex] = useState(0);
   const [answer, setAnswer] = useState("");
@@ -138,28 +145,28 @@ function BinHexGame() {
   return (
     <div className="game-screen binhex-game">
       {toasts}
-      <GameHeader title="Binary / Hex" modeKey="binhex" />
+      <GameHeader title={title} modeKey="binhex" />
       <GameLevelBar progress={gameProgress} />
       {error && <p className="error">{error}</p>}
 
       {showingWord && (
         <div className="game-stats">
           <div className="stat">
-            <span className="stat-label">Word</span> {index + 1}/{round.items.length}
+            <span className="stat-label">{t("g.word")}</span> {index + 1}/{round.items.length}
           </div>
           <div className="stat stat-format">{item.label}</div>
         </div>
       )}
 
       <div className="game-stage">
-        {!round && !error && <div className="loading-inline">Loading bytes</div>}
+        {!round && !error && <div className="loading-inline">{t("bh.loading")}</div>}
 
         {showingWord && (
           <div className="binhex-card">
-            <div className="binhex-raw" aria-label="Encoded word">
+            <div className="binhex-raw" aria-label={t("bh.encoded")}>
               {item.display}
             </div>
-            <p className="binhex-instructions">One byte per letter. Tap a byte to see the maths.</p>
+            <p className="binhex-instructions">{t("bh.instructions")}</p>
             <div className="byte-list">
               {item.codes.map((code, i) => (
                 <button
@@ -179,7 +186,7 @@ function BinHexGame() {
             {expanded !== null && <ByteExplainer code={item.codes[expanded]} base={item.base} />}
 
             <button type="button" className="howto-link" onClick={() => setShowTable((s) => !s)}>
-              <Table size={16} /> {showTable ? "Hide" : "Show"} ASCII table
+              <Table size={16} /> {showTable ? t("bh.hideTable") : t("bh.showTable")}
             </button>
             {showTable && <AsciiTable />}
 
@@ -188,18 +195,18 @@ function BinHexGame() {
                 <AnswerInput
                   value={answer}
                   onChange={setAnswer}
-                  placeholder={`${item.codes.length}-letter word`}
+                  placeholder={t("bh.placeholder", { n: item.codes.length })}
                   focusOnMount={index > 0}
                 />
                 <button type="submit" className="submit-btn" disabled={busy || !answer.trim()}>
-                  Decode
+                  {t("bh.decode")}
                 </button>
               </form>
             ) : (
               <div className={`binary-feedback ${feedback.correct ? "correct" : "wrong"}`} role="status">
                 <div className="binary-feedback-badge">
                   {feedback.correct ? <Check size={20} color="#4ade80" /> : <Close size={20} color="#f87171" />}
-                  {feedback.correct ? `Decoded. +${feedback.points}` : `It was ${feedback.word}.`}
+                  {feedback.correct ? t("bh.decoded", { n: feedback.points }) : t("bh.itWas", { word: feedback.word })}
                 </div>
                 <div className="binhex-breakdown">
                   {feedback.breakdown.map((b, i) => (
@@ -209,7 +216,7 @@ function BinHexGame() {
                   ))}
                 </div>
                 <button className="next-btn" onClick={feedback.finished ? () => setFeedback(null) : nextItem}>
-                  {feedback.finished ? "See results" : "Next word"}
+                  {feedback.finished ? t("bh.seeResults") : t("bh.nextWord")}
                 </button>
               </div>
             )}
@@ -220,13 +227,13 @@ function BinHexGame() {
           <div className="match3-result won">
             <h2 className="match3-result-heading">
               {result.perfect ? <Sparkle size={24} /> : <Confetti size={24} />}
-              {result.perfect ? "Every byte, decoded." : `${result.correct_count} of ${result.total_questions}.`}
+              {result.perfect ? t("bh.perfect") : t("bh.outOf", { n: result.correct_count, total: result.total_questions })}
             </h2>
             <div className="final-score">+{result.score}</div>
-            {!result.passed && <p className="match3-result-copy">3 needed to count toward your level.</p>}
+            {!result.passed && <p className="match3-result-copy">{capitalize(t("g.needed", { n: 3 }))}.</p>}
             <div className="match3-result-actions">
               <button className="restart-btn" onClick={afterBreak(() => startNew())}>
-                Five more
+                {t("g.fiveMore")}
               </button>
             </div>
           </div>

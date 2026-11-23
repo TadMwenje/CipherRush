@@ -8,8 +8,6 @@ function Walkthrough({ steps }) {
   const [index, setIndex] = useState(0);
   const t = useT();
   const lang = useLanguage();
-  const step = steps[index];
-  const text = stepText(step, lang);
   // Tile labels like "ROT-13" or "URL" read the same everywhere and have no key.
   const demoLabel = (label) => (t(`demo.${label}`) === `demo.${label}` ? label : t(`demo.${label}`));
   const last = index === steps.length - 1;
@@ -17,32 +15,47 @@ function Walkthrough({ steps }) {
   return (
     <section className="walkthrough" aria-roledescription="tutorial">
       <div className="walkthrough-count">{t("walk.step", { i: index + 1, n: steps.length })}</div>
-      <h3 className="walkthrough-title">{text.title}</h3>
-      <p className="walkthrough-body">{text.body}</p>
+      {/* Every step sits in the same grid cell, so the sheet is always as tall
+          as its tallest step (in this language) and never jumps between steps. */}
+      <div className="walkthrough-stage">
+        {steps.map((step, i) => {
+          const text = stepText(step, lang);
+          const active = i === index;
+          return (
+            <div key={step.id} className={`walkthrough-step${active ? " active" : ""}`} aria-hidden={!active}>
+              <h3 className="walkthrough-title">{text.title}</h3>
+              <p className="walkthrough-body">{text.body}</p>
 
-      {step.demo && (
-        // Keyed by step so the tiles replay their reveal on every step.
-        <div className="walkthrough-demo" key={index} aria-hidden="true">
-          {step.demo.rows.map((row) => (
-            <div key={row.label} className={`walkthrough-row ${row.dim ? "dim" : ""} ${row.accent ? "accent" : ""}`}>
-              <span className="walkthrough-label">{demoLabel(row.label)}</span>
-              <span className={`walkthrough-cells ${step.demo.bytes ? "bytes" : ""}`}>
-                {[...(Array.isArray(row.cells) ? row.cells : row.cells.split(""))].map((cell, i) => (
-                  <span key={i} className="walkthrough-cell" style={{ animationDelay: `${i * 70}ms` }}>
-                    {cell}
-                  </span>
-                ))}
-              </span>
+              {step.demo && (
+                // Re-keyed on entry so the tiles replay their reveal every time.
+                <div className="walkthrough-demo" key={active ? `on-${index}` : "off"} aria-hidden="true">
+                  {step.demo.rows.map((row) => (
+                    <div
+                      key={row.label}
+                      className={`walkthrough-row ${row.dim ? "dim" : ""} ${row.accent ? "accent" : ""}`}
+                    >
+                      <span className="walkthrough-label">{demoLabel(row.label)}</span>
+                      <span className={`walkthrough-cells ${step.demo.bytes ? "bytes" : ""}`}>
+                        {[...(Array.isArray(row.cells) ? row.cells : row.cells.split(""))].map((cell, c) => (
+                          <span key={c} className="walkthrough-cell" style={{ animationDelay: `${c * 70}ms` }}>
+                            {cell}
+                          </span>
+                        ))}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {text.tip && (
+                <p className="walkthrough-tip">
+                  <Bulb size={14} /> {text.tip}
+                </p>
+              )}
             </div>
-          ))}
-        </div>
-      )}
-
-      {text.tip && (
-        <p className="walkthrough-tip">
-          <Bulb size={14} /> {text.tip}
-        </p>
-      )}
+          );
+        })}
+      </div>
 
       <div className="walkthrough-nav">
         <button type="button" className="walkthrough-btn" onClick={() => setIndex(index - 1)} disabled={index === 0}>

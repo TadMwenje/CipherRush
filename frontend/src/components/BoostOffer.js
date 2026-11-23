@@ -3,10 +3,12 @@ import { Bolt } from "../glyphs";
 import { errorMessage } from "../api";
 import { haptic } from "../mobile/haptics";
 import { earnReward } from "../ads/rewards";
+import { useT } from "../i18n";
 
 // Opt-in double points (a rewarded interstitial), offered now and then as a
 // scored game starts. Whatever happens, the player goes on to their game.
 function BoostOffer({ label, onDone }) {
+  const t = useT();
   const [watching, setWatching] = useState(false);
   const [note, setNote] = useState("");
 
@@ -21,7 +23,7 @@ function BoostOffer({ label, onDone }) {
       setWatching(false);
       setNote(
         err.response?.status === 429
-          ? "That's today's three double-point rounds. Back tomorrow."
+          ? t("boost.limit")
           : errorMessage(err, err.message),
       );
     }
@@ -38,11 +40,11 @@ function BoostOffer({ label, onDone }) {
       >
         <div className="share-dialog-badge">
           <Bolt size={22} aria-hidden="true" />
-          <span>Double points</span>
+          <span>{t("boost.tag")}</span>
         </div>
-        <h2 id="boost-title">Double your next {label} round?</h2>
+        <h2 id="boost-title">{t("boost.title", { mode: label })}</h2>
         <p className="account-note">
-          Watch a short ad and the points from your next round count twice. Up to three a day.
+          {t("boost.body")}
         </p>
         {note && (
           <p className="account-note" role="status">
@@ -51,10 +53,10 @@ function BoostOffer({ label, onDone }) {
         )}
         <div className="share-targets">
           <button type="button" className="btn-primary" onClick={watch} disabled={watching}>
-            {watching ? "Loading the ad" : "Watch ad"}
+            {watching ? t("boost.loading") : t("boost.watch")}
           </button>
           <button type="button" className="btn-secondary" onClick={onDone} disabled={watching}>
-            {note ? "Play without it" : "No thanks"}
+            {note ? t("boost.without") : t("boost.noThanks")}
           </button>
         </div>
       </div>

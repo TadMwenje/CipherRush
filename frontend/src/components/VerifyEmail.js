@@ -3,6 +3,7 @@ import api, { errorMessage } from "../api";
 import { useAuth } from "../AuthContext";
 import { Mail } from "../glyphs";
 import { haptic } from "../mobile/haptics";
+import { useT } from "../i18n";
 
 /**
  * "Confirm your email" card for password sign-ups that haven't entered their
@@ -10,6 +11,7 @@ import { haptic } from "../mobile/haptics";
  * Renders nothing once the account is verified (or for Google / Apple accounts).
  */
 function VerifyEmailCard() {
+  const t = useT();
   const { user, updateUser } = useAuth();
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
@@ -33,7 +35,7 @@ function VerifyEmailCard() {
       updateUser({ is_verified: data.user.is_verified });
     } catch (err) {
       haptic("error");
-      say(errorMessage(err, "Couldn't check that code. Try again."), true);
+      say(errorMessage(err, t("verify.checkFail")), true);
     } finally {
       setBusy(false);
     }
@@ -44,9 +46,9 @@ function VerifyEmailCard() {
     try {
       await api.post("/me/verify-email/resend");
       setCode("");
-      say("New code sent. Check your inbox (and spam).");
+      say(t("verify.sent"));
     } catch (err) {
-      say(errorMessage(err, "Couldn't send a new code. Try again."), true);
+      say(errorMessage(err, t("verify.sendFail")), true);
     } finally {
       setBusy(false);
     }
@@ -56,10 +58,10 @@ function VerifyEmailCard() {
     <form className="verify-card" onSubmit={verify}>
       <div className="verify-card-head">
         <Mail size={18} aria-hidden="true" />
-        <span>Confirm your email</span>
+        <span>{t("verify.title")}</span>
       </div>
       <p className="account-note">
-        We sent a 6-digit code to your email. Enter it to appear on the leaderboards.
+        {t("verify.body")}
       </p>
       <div className="answer-actions">
         <input
@@ -69,15 +71,15 @@ function VerifyEmailCard() {
           inputMode="numeric"
           autoComplete="one-time-code"
           placeholder="123456"
-          aria-label="6-digit code"
+          aria-label={t("verify.codeLabel")}
         />
         <button type="submit" className="submit-btn" disabled={busy || code.length !== 6}>
-          Confirm
+          {t("verify.confirm")}
         </button>
       </div>
       {message && <p className={`account-message${failed ? " invalid" : ""}`} role="status">{message}</p>}
       <button type="button" className="text-link-btn" onClick={resend} disabled={busy}>
-        Send a new code
+        {t("verify.resend")}
       </button>
     </form>
   );

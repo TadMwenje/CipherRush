@@ -9,6 +9,7 @@ import {
   signInWithApple,
   signInWithGoogleNative,
 } from "../auth/socialAuth";
+import { useT } from "../i18n";
 
 // Brand marks as required by Google's and Apple's sign-in button guidelines.
 function GoogleMark() {
@@ -35,6 +36,7 @@ function AppleMark() {
  * providers are switched on, so nothing broken ever shows.
  */
 function SocialButtons({ onSignedIn, onError, disabled = false }) {
+  const t = useT();
   const [providers, setProviders] = useState(null);
   const [busy, setBusy] = useState(null);
   const googleWebRef = useRef(null);
@@ -54,8 +56,8 @@ function SocialButtons({ onSignedIn, onError, disabled = false }) {
     renderGoogleWebButton(googleWebRef.current, {
       width,
       onSuccess: (data) => onSignedIn(data),
-      onError: (err) => onError(errorMessage(err, "Google sign-in didn't go through.")),
-    }).catch(() => onError("Couldn't load Google sign-in."));
+      onError: (err) => onError(errorMessage(err, t("social.googleFail"))),
+    }).catch(() => onError(t("social.googleLoad")));
   }, [web, providers, onSignedIn, onError]);
 
   if (!providers || (!providers.google && !providers.apple)) return null;
@@ -66,7 +68,7 @@ function SocialButtons({ onSignedIn, onError, disabled = false }) {
     try {
       onSignedIn(await fn());
     } catch (err) {
-      if (!isCancel(err)) onError(errorMessage(err, `${kind} sign-in didn't go through.`));
+      if (!isCancel(err)) onError(errorMessage(err, t("social.fail", { provider: kind })));
     } finally {
       setBusy(null);
     }
@@ -81,7 +83,7 @@ function SocialButtons({ onSignedIn, onError, disabled = false }) {
           onClick={() => run("Apple", signInWithApple)}
           disabled={disabled || Boolean(busy)}
         >
-          <AppleMark /> {busy === "Apple" ? "Signing in" : "Continue with Apple"}
+          <AppleMark /> {busy === "Apple" ? t("social.signingIn") : t("social.apple")}
         </button>
       )}
       {providers.google &&
@@ -94,11 +96,11 @@ function SocialButtons({ onSignedIn, onError, disabled = false }) {
             onClick={() => run("Google", signInWithGoogleNative)}
             disabled={disabled || Boolean(busy)}
           >
-            <GoogleMark /> {busy === "Google" ? "Signing in" : "Continue with Google"}
+            <GoogleMark /> {busy === "Google" ? t("social.signingIn") : t("social.google")}
           </button>
         ))}
       <div className="social-divider" role="separator">
-        <span>or use a handle</span>
+        <span>{t("social.or")}</span>
       </div>
     </div>
   );

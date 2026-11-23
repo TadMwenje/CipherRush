@@ -8,12 +8,16 @@ import GameHeader from "../components/GameHeader";
 import { afterBreak } from "../ads/pacing";
 import useGameRewards from "../hooks/useGameRewards";
 import useRound from "../hooks/useRound";
+import { useT } from "../i18n";
+import useModeLabel from "../hooks/useModeLabel";
 
 const FEEDBACK_MS = 1500;
 const SWIPE_COMMIT_PX = 90;
 
 function TrueFalseGame() {
-  const { gameProgress, applyResult, toasts } = useGameRewards("truefalse", "True or False");
+  const { gameProgress, applyResult, toasts } = useGameRewards("truefalse");
+  const t = useT();
+  const title = useModeLabel("truefalse");
   const { round, error, setError, startNew } = useRound("truefalse");
   const [index, setIndex] = useState(0);
   const [feedback, setFeedback] = useState(null);
@@ -88,7 +92,7 @@ function TrueFalseGame() {
   return (
     <div className="game-screen binary-game">
       {toasts}
-      <GameHeader title="True or False" modeKey="truefalse" />
+      <GameHeader title={title} modeKey="truefalse" />
       <GameLevelBar progress={gameProgress} />
       {error && <p className="error">{error}</p>}
 
@@ -96,7 +100,7 @@ function TrueFalseGame() {
         <>
           <div className="game-stats">
             <div className="stat">
-              <span className="stat-label">Claim</span> {index + 1}/{statements.length}
+              <span className="stat-label">{t("g.claim")}</span> {index + 1}/{statements.length}
             </div>
             <div className={`stat${streak >= 3 ? " stat-hot" : ""}`}>
               <Flame size={16} /> {streak}
@@ -109,7 +113,7 @@ function TrueFalseGame() {
       )}
 
       <div className="game-stage">
-        {!round && !error && <div className="loading-inline">Loading statements</div>}
+        {!round && !error && <div className="loading-inline">{t("tf.loading")}</div>}
         {statement && !result && (
           <>
             <div
@@ -125,7 +129,7 @@ function TrueFalseGame() {
             >
               {statement.statement}
               <span className="swipe-hint" aria-hidden="true">
-                ← false · true →
+                {t("g.swipeHint")}
               </span>
             </div>
 
@@ -135,20 +139,20 @@ function TrueFalseGame() {
                   <span className="binary-choice-icon">
                     <Close size={28} color="#f87171" />
                   </span>
-                  False
+                  {t("g.false")}
                 </button>
                 <button className="binary-choice true" onClick={() => answer(true)} disabled={locked}>
                   <span className="binary-choice-icon">
                     <Check size={28} color="#4ade80" />
                   </span>
-                  True
+                  {t("g.true")}
                 </button>
               </div>
             ) : (
               <div className={`binary-feedback ${feedback.correct ? "correct" : "wrong"}`} role="status">
                 <div className="binary-feedback-badge">
                   {feedback.correct ? <Check size={20} color="#4ade80" /> : <Close size={20} color="#f87171" />}
-                  {feedback.correct ? `Right. +${feedback.points}` : "Wrong."}
+                  {feedback.correct ? t("g.rightPts", { n: feedback.points }) : t("g.wrong")}
                 </div>
                 <p>{feedback.explanation}</p>
               </div>
@@ -160,16 +164,16 @@ function TrueFalseGame() {
           <div className="match3-result won">
             <h2 className="match3-result-heading">
               {result.perfect ? <Sparkle size={24} /> : <Confetti size={24} />}
-              {result.perfect ? "Ten for ten." : `${result.correct_count} out of ${result.total_questions}.`}
+              {result.perfect ? t("tf.perfect") : t("tf.outOf", { n: result.correct_count, total: result.total_questions })}
             </h2>
             <div className="final-score">+{result.score}</div>
             <p className="match3-result-copy">
-              Best streak {result.best_streak}
-              {!result.passed && " · 7 needed to count toward your level"}
+              {t("tf.bestStreak", { n: result.best_streak })}
+              {!result.passed && ` · ${t("g.needed", { n: 7 })}`}
             </p>
             <div className="match3-result-actions">
               <button className="restart-btn" onClick={afterBreak(() => startNew())}>
-                Ten more
+                {t("g.tenMore")}
               </button>
             </div>
           </div>

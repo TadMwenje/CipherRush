@@ -3,8 +3,11 @@ import { Versus, SignalOff, Rotate } from "../glyphs";
 import api from "../api";
 import { useOnline, useRefetchOnReturn } from "../mobile/hooks";
 import { isOnline } from "../mobile/network";
+import { formatNumber, useLanguage, useT } from "../i18n";
 
 function Battle() {
+  const t = useT();
+  const lang = useLanguage();
   const online = useOnline();
   const [queue, setQueue] = useState(null);
   const [error, setError] = useState("");
@@ -21,7 +24,7 @@ function Battle() {
       if (!Array.isArray(list)) throw new Error("Unexpected /battle/queue response");
       setQueue(list);
     } catch (err) {
-      if (mounted.current) setError("Couldn't reach Versus.");
+      if (mounted.current) setError("unreachable");
     }
   }, []);
 
@@ -37,7 +40,7 @@ function Battle() {
   return (
     <div className="page-screen battle-page">
       <div className="page-header">
-        <h1>Versus</h1>
+        <h1>{t("nav.versus")}</h1>
       </div>
 
       <div className="coming-soon-banner">
@@ -45,32 +48,29 @@ function Battle() {
           <Versus size={26} aria-hidden="true" />
         </div>
         <div>
-          <div className="coming-soon-title">Head-to-head isn't live yet</div>
-          <div className="coming-soon-copy">
-            We're building real-time 1v1 cipher races. Until then, here's who'd be across the table
-            from you right now.
-          </div>
+          <div className="coming-soon-title">{t("vs.soonTitle")}</div>
+          <div className="coming-soon-copy">{t("vs.soonBody")}</div>
         </div>
       </div>
 
       {!online && !queue && (
         <div className="empty-state offline-state">
           <SignalOff size={22} />
-          <div>Versus needs a connection. It'll load as soon as you're back online.</div>
+          <div>{t("vs.offline")}</div>
         </div>
       )}
       {online && error && (
         <div className="empty-state offline-state">
-          <div>{error}</div>
+          <div>{t("vs.error")}</div>
           <button className="btn-secondary" onClick={load}>
-            <Rotate size={16} /> Try again
+            <Rotate size={16} /> {t("ranks.tryAgain")}
           </button>
         </div>
       )}
-      {online && !queue && !error && <div className="loading-inline">Loading players</div>}
+      {online && !queue && !error && <div className="loading-inline">{t("vs.loading")}</div>}
 
       {queue && queue.length === 0 && (
-        <div className="empty-state">Nobody else here yet. Tell a friend.</div>
+        <div className="empty-state">{t("vs.empty")}</div>
       )}
 
       {queue && queue.length > 0 && (
@@ -81,11 +81,11 @@ function Battle() {
               <div className="battle-main">
                 <div className="battle-username">{opponent.username}</div>
                 <div className="battle-meta">
-                  Level {opponent.level ?? 1} · {Number(opponent.score || 0).toLocaleString()} pts
+                  {t("vs.meta", { n: opponent.level ?? 1, pts: formatNumber(opponent.score, lang) })}
                 </div>
               </div>
-              <button className="challenge-btn" disabled title="Not live yet">
-                Soon
+              <button className="challenge-btn" disabled title={t("vs.notLive")}>
+                {t("vs.soon")}
               </button>
             </div>
           ))}

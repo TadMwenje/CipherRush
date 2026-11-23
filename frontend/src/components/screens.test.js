@@ -93,7 +93,7 @@ test("Practice works offline, says it's unscored, and never calls the API", asyn
   setNetworkState(false);
   act(() => root.render(<PracticeGame />));
   await flush();
-  expect(container.textContent).toContain("Practice Mode (Offline) — Scores and XP are disabled while offline.");
+  expect(container.textContent).toContain("Practice Mode, offline. Scores and XP are off until you're back online.");
   expect(container.querySelector(".encrypted-text").textContent).toMatch(/^[A-Z ]+$/);
 
   const [, , tfTab] = container.querySelectorAll(".segmented-btn");
@@ -107,7 +107,7 @@ test("Practice works offline, says it's unscored, and never calls the API", asyn
 
 test("Practice online still says it's unscored", () => {
   act(() => root.render(<PracticeGame />));
-  expect(container.textContent).toContain("Practice Mode — unscored");
+  expect(container.textContent).toContain("Practice Mode: nothing's scored.");
 });
 
 test("Practice offers Caesar, Match-3 and True/False, and Match-3 deals a playable board", () => {

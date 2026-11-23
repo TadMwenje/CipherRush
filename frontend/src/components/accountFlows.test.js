@@ -8,7 +8,13 @@ import api from "../api";
 import * as AuthContext from "../AuthContext";
 import VerifyEmailCard from "./VerifyEmail";
 import AuthModal from "./AuthModal";
-import AccountSettings from "./AccountSettings";
+import AccountSettings, { useAccount } from "./AccountSettings";
+
+// Profile loads the account once and hands it to the card (pages/Profile.js).
+function AccountCard() {
+  const [account, setAccount] = useAccount();
+  return <AccountSettings account={account} setAccount={setAccount} />;
+}
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -106,7 +112,7 @@ test("a Google account can add a handle and password, which asks for the email c
   const post = jest.spyOn(api, "post").mockResolvedValue({
     data: { user: { username: "new_handle", is_verified: false }, verification_sent: true },
   });
-  act(() => root.render(<AccountSettings />));
+  act(() => root.render(<AccountCard />));
   await flush();
   expect(container.textContent).toContain("Add a handle and password");
   expect(container.textContent).not.toContain("Change password");
@@ -127,7 +133,7 @@ test("the link form refuses a blocked handle before sending anything", async () 
     data: { username: "g_user", email: null, has_password: false, providers: ["google"], is_verified: true },
   });
   const post = jest.spyOn(api, "post");
-  act(() => root.render(<AccountSettings />));
+  act(() => root.render(<AccountCard />));
   await flush();
   type(container.querySelector('input[aria-label="Handle"]'), "fuuuck_you");
   type(container.querySelector('input[aria-label="Password"]'), "Linked1234abc");

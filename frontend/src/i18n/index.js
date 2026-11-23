@@ -3,11 +3,11 @@
  * localStorage, defaulting to the phone's language when it's one of ours),
  * and lookups that fall back to English for anything not yet translated.
  *
- * Translated: menus, the home screen, game names, rules and walkthroughs,
- * profile, ranks and settings. Puzzles, quiz questions and true/false claims
- * come from the server in English and stay that way for now.
+ * Translated: every screen, game, dialog and message the app writes itself.
+ * Puzzles, quiz questions, true/false claims, badge names and the server's own
+ * error messages come from the server in English and stay that way for now.
  */
-import { useSyncExternalStore } from "react";
+import { cloneElement, isValidElement, useSyncExternalStore } from "react";
 import EN from "./en";
 import es from "./locales/es.json";
 import fr from "./locales/fr.json";
@@ -104,6 +104,37 @@ export function stepText(step, lang = current) {
     body: tr?.body || step.body,
     tip: step.tip ? tr?.tip || step.tip : undefined,
   };
+}
+
+// English shows dates the British way (23 Nov 2026), like the rest of the copy.
+const dateLocale = (lang) => (lang === "en" ? "en-GB" : lang);
+
+/** 14,022 in English, 14 022 in French: the app's language, never the phone's. */
+export function formatNumber(n, lang = current) {
+  return Number(n || 0).toLocaleString(lang);
+}
+
+/** 23 Nov 2026, in the app's language. */
+export function formatDate(iso, lang = current) {
+  if (!iso) return "";
+  return new Date(iso).toLocaleDateString(dateLocale(lang), { day: "numeric", month: "short", year: "numeric" });
+}
+
+/**
+ * A translated sentence with elements dropped into its {placeholders}, so
+ * word order stays the translator's: rich("legal.consent", { terms: <a/> }).
+ * Returns an array for JSX; text-only placeholders can be passed as strings.
+ */
+export function rich(key, parts, lang = current) {
+  const text = t(key, undefined, lang);
+  return text.split(/(\{\w+\})/).map((piece, i) => {
+    const name = piece.match(/^\{(\w+)\}$/)?.[1];
+    if (name && name in parts) {
+      const part = parts[name];
+      return isValidElement(part) ? cloneElement(part, { key: `${name}-${i}` }) : String(part);
+    }
+    return piece;
+  });
 }
 
 /** Hook form: components call useT() and get a t() that tracks the language. */
