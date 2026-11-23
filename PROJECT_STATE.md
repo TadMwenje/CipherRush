@@ -352,11 +352,13 @@ Android 1.0.1 (versionCode 6) and iOS 1.0.1 (build 4). Commits on `v1.0.1` are l
 - **2026-11-23 compliance and AdMob (in progress):**
   - **Play release 6 (1.0.1):** review passed and **published on Closed testing - Alpha** on 23 Nov. The production access application is still under review and was not touched.
   - **Apple DSA (individual trader): not finished.** "I'm a trader" was chosen, with the owner's personal contact details (kept out of git). The email code expired, and Apple then locked further attempts after repeated requests. Retry on 24 Nov: Business, then Complete Compliance Requirements, then the email code, then the phone code. The 27 EU countries stay "Trader Status Not Provided" until then.
-  - **Play trader status: not finished.** "This is a trader account" was chosen. The legal name and address come from the Google payments profile; the phone number is entered, but no SMS code has been requested yet. After that, App content has "App-level trader status and Terms of Service" to complete, with ToS `https://aximoix.com/terms/#cipherrush`. Due 1 Feb 2027.
+  - **Play trader status: done (account level), app level in review.** The account is declared as a **Trader**. The developer email and phone shown publicly were already verified, so no SMS code was needed. The legal name and address come from the Google payments profile. App content > "App-level trader status and Terms of Service" is set to "Yes, my trader status applies to this app", with ToS `https://aximoix.com/terms/#cipherrush` (live, HTTP 200). It was sent for review on 23 Nov as the only change; the production access application was not touched.
   - **AdMob:**
-    - The iOS app is **linked to the App Store listing** (found by store URL; searching by ID found nothing). app-ads.txt verification failed because the listing has no Marketing URL, so AdMob can't find `aximoix.com/app-ads.txt`. That file itself is correct. Fix: set the Marketing URL to `https://aximoix.com` on a version, then use AdMob's "Check for updates".
+    - The iOS app is **linked to the App Store listing** (found by store URL; searching by ID found nothing).
+    - app-ads.txt is not yet verified. AdMob reads the developer website from the listing's Marketing URL, which version 1.0 doesn't have. **The Marketing URL `https://aximoix.com` is saved on iOS 1.0.1** (metadata only; build 4 is still Waiting for Review). "Check for updates" on 23 Nov still failed, as expected, because the public listing is still 1.0. Once 1.0.1 is approved, run AdMob > CipherRush (iOS) > App settings > Verify app > Check for updates. `aximoix.com/app-ads.txt` itself is correct.
     - Android can't be linked until the app is in production: Play search doesn't list closed-testing apps.
     - Ad unit IDs are unchanged; both apps still show "Limited ad serving".
+  - **Apple DSA: paused until 24 Nov** (Apple rate-limited the verification codes). Then: Business > Complete Compliance Requirements > trader > the owner's contact details > email code > phone code. Afterwards, check Pricing and Availability for the 27 EU countries.
 
 ### 3.2 Open
 
