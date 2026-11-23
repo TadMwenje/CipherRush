@@ -2,6 +2,7 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import { act } from "react";
 import { WALKTHROUGHS } from "./walkthroughs";
+import { GAME_MODES } from "./gameModes";
 import HowToPlayModal from "../components/HowToPlayModal";
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
@@ -52,11 +53,18 @@ test("a game's ? opens its walkthrough, and Next steps through it", () => {
   act(() => root.unmount());
 });
 
-test("modes without a walkthrough keep the plain rules sheet", () => {
+test("every mode on the home screen has a walkthrough of at least 3 steps", () => {
+  for (const { key } of GAME_MODES) {
+    expect(WALKTHROUGHS[key]?.length).toBeGreaterThanOrEqual(3);
+  }
+});
+
+test("the Memory Lock ? opens its walkthrough above the quick rules", () => {
   const container = document.createElement("div");
   const root = createRoot(container);
   act(() => root.render(<HowToPlayModal focusKey="memory" onClose={() => {}} />));
-  expect(container.querySelector(".walkthrough")).toBeNull();
-  expect(container.textContent).toContain("Memory Lock");
+  expect(container.querySelector(".walkthrough")).not.toBeNull();
+  expect(container.textContent).toContain("Step 1 of 3");
+  expect(container.textContent).toContain("Quick rules");
   act(() => root.unmount());
 });

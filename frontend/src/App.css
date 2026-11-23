@@ -3204,10 +3204,14 @@ body {
 :root {
   --tap: 48px;
   --gutter: 16px;
-  --safe-top: env(safe-area-inset-top, 0px);
-  --safe-right: env(safe-area-inset-right, 0px);
-  --safe-bottom: env(safe-area-inset-bottom, 0px);
-  --safe-left: env(safe-area-inset-left, 0px);
+  /* iOS reports the notch through env(). Android 15+ draws edge-to-edge and
+     older WebViews report env() as 0 there, so Capacitor's SystemBars plugin
+     injects --safe-area-inset-* instead. Take whichever is larger, so nothing
+     ever sits under the status bar or the gesture bar. */
+  --safe-top: max(env(safe-area-inset-top, 0px), var(--safe-area-inset-top, 0px));
+  --safe-right: max(env(safe-area-inset-right, 0px), var(--safe-area-inset-right, 0px));
+  --safe-bottom: max(env(safe-area-inset-bottom, 0px), var(--safe-area-inset-bottom, 0px));
+  --safe-left: max(env(safe-area-inset-left, 0px), var(--safe-area-inset-left, 0px));
   --nav-height: 72px; /* 52px buttons + 12px padding + border, rounded up */
 }
 
@@ -4583,4 +4587,131 @@ html.app-paused *::after {
 .auth-forgot-link {
   display: block;
   margin: 0.5rem auto 0;
+}
+
+/* --- home screen game cards with drawn previews (v1.0.1) --------------------- */
+.game-card {
+  position: relative;
+  display: flex;
+}
+
+.game-card-main {
+  flex: 1;
+  width: 100%;
+  padding: 0.75rem;
+  padding-right: calc(var(--tap) + 8px); /* room for the ? button */
+  gap: 0.85rem;
+  text-align: left;
+}
+
+.game-card-title {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.game-card-title .game-icon {
+  flex: none;
+}
+
+.game-card.cipher .game-icon { color: #ff6b6b; }
+.game-card.rush .game-icon { color: #fde047; }
+.game-card.binhex .game-icon { color: #34d399; }
+.game-card.quiz .game-icon { color: #4ecdc4; }
+.game-card.truefalse .game-icon { color: #60a5fa; }
+.game-card.match3 .game-icon { color: #ffe66d; }
+.game-card.memory .game-icon { color: #a78bfa; }
+
+.game-card-help {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  transform: translateY(-50%);
+  min-width: var(--tap);
+  min-height: var(--tap);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: #9fb3c8;
+  cursor: pointer;
+}
+
+.game-card-help:active {
+  background: rgba(0, 212, 255, 0.12);
+  color: #00d4ff;
+}
+
+/* The SVG previews (components/GamePreview.js). --gp is the mode colour. */
+.game-preview {
+  flex: none;
+  width: 104px;
+  height: 72px;
+  overflow: visible;
+}
+
+.gp-bg { fill: rgba(255, 255, 255, 0.04); stroke: rgba(255, 255, 255, 0.08); }
+.gp-line { fill: none; stroke: var(--gp); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.gp-thick { stroke-width: 3; }
+.gp-faint { opacity: 0.3; }
+.gp-fill { fill: var(--gp); }
+.gp-pick { fill: var(--gp); opacity: 0.95; }
+.gp-strike { stroke: #f87171; stroke-width: 2; stroke-linecap: round; }
+.gp-letter { fill: #e2e8f0; font: 700 7px 'JetBrains Mono', ui-monospace, monospace; text-anchor: middle; }
+.gp-small { font-size: 6px; fill: var(--gp); }
+.gp-num { fill: #f8fafc; font: 800 15px 'JetBrains Mono', ui-monospace, monospace; text-anchor: middle; }
+.gp-left { text-anchor: start; fill: var(--gp); }
+.gp-small-num { font-size: 10px; fill: #0a0e1a; }
+.gp-combo { fill: var(--gp); font: 800 14px 'JetBrains Mono', ui-monospace, monospace; text-anchor: middle; }
+.gp-mono { fill: var(--gp); font: 600 8.5px 'JetBrains Mono', ui-monospace, monospace; }
+.gp-arrow { fill: #9fb3c8; font: 700 12px sans-serif; }
+.gp-card { fill: rgba(255, 255, 255, 0.08); stroke: rgba(255, 255, 255, 0.25); stroke-width: 1; }
+.gp-card-on { fill: var(--gp); stroke: var(--gp); }
+
+.gp-spin { transform-origin: 52px 36px; animation: gp-spin 12s linear infinite; }
+.gp-drain { animation: gp-drain 6s linear infinite; }
+.gp-grow { transform-origin: 66px 42px; animation: gp-grow 3s ease-in-out infinite; }
+.gp-blink { animation: gp-blink 2.4s ease-in-out infinite; }
+.gp-d1 { animation-delay: 0.3s; } .gp-d2 { animation-delay: 0.6s; } .gp-d3 { animation-delay: 0.9s; }
+.gp-d4 { animation-delay: 1.2s; } .gp-d5 { animation-delay: 1.5s; }
+.gp-tick { stroke-dasharray: 30; animation: gp-tick 3s ease-in-out infinite; }
+.gp-swipe-left { animation: gp-left 4s ease-in-out infinite; }
+.gp-swipe-right { animation: gp-right 4s ease-in-out infinite; }
+.gp-pop { transform-box: fill-box; transform-origin: center; animation: gp-pop 2.4s ease-in-out infinite; }
+.gp-flip { transform-box: fill-box; transform-origin: center; animation: gp-flip 3.2s ease-in-out infinite; }
+
+@keyframes gp-spin { to { transform: rotate(360deg); } }
+@keyframes gp-drain { from { stroke-dashoffset: 0; } to { stroke-dashoffset: 150.8; } }
+@keyframes gp-grow { 0%, 100% { transform: scaleX(0.25); } 60% { transform: scaleX(1); } }
+@keyframes gp-blink { 0%, 100% { opacity: 0.45; } 50% { opacity: 1; } }
+@keyframes gp-tick { 0%, 20% { stroke-dashoffset: 30; } 60%, 100% { stroke-dashoffset: 0; } }
+@keyframes gp-left { 0%, 60%, 100% { transform: translateX(0); } 75% { transform: translateX(-4px); } }
+@keyframes gp-right { 0%, 20%, 50%, 100% { transform: translateX(0); } 35% { transform: translateX(4px); } }
+@keyframes gp-pop { 0%, 55%, 100% { transform: scale(1); opacity: 1; } 70% { transform: scale(1.35); opacity: 0.4; } }
+@keyframes gp-flip { 0%, 40%, 100% { transform: scaleX(1); } 50% { transform: scaleX(0.1); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .gp-spin, .gp-drain, .gp-grow, .gp-blink, .gp-tick, .gp-swipe-left, .gp-swipe-right, .gp-pop, .gp-flip {
+    animation: none;
+  }
+}
+
+/* Very narrow phones: shrink the art rather than squeeze the text. */
+@media (max-width: 359px) {
+  .game-preview {
+    width: 80px;
+    height: 56px;
+  }
+}
+
+/* Phone landscape: two card columns, so the art steps down a size. */
+@media (orientation: landscape) and (max-height: 540px) {
+  .game-preview {
+    width: 72px;
+    height: 50px;
+  }
 }

@@ -5,6 +5,7 @@ import api from "../api";
 import { useAuth } from "../AuthContext";
 import { GAME_MODES, DAILY_MODE } from "../constants/gameModes";
 import HowToPlayModal from "../components/HowToPlayModal";
+import GamePreview from "../components/GamePreview";
 import { haptic } from "../mobile/haptics";
 import { isOnline } from "../mobile/network";
 import { useOnline, useRefetchOnReturn } from "../mobile/hooks";
@@ -46,6 +47,7 @@ function Dashboard() {
   const [stats, setStats] = useState(null);
   const [daily, setDaily] = useState(null);
   const [showHowTo, setShowHowTo] = useState(false);
+  const [howToKey, setHowToKey] = useState(null);
   const [boostFor, setBoostFor] = useState(null);
   const online = useOnline();
 
@@ -154,15 +156,31 @@ function Dashboard() {
       </div>
       <div className="game-modes">
         {GAME_MODES.map(({ key, path, label, tagline, Icon, css }) => (
-          <button key={key} className={`game-mode-btn ${css}`} onClick={() => play({ key, path, label })}>
-            <div className="game-icon">
-              <Icon size={24} />
-            </div>
-            <div className="game-mode-text">
-              <div>{label}</div>
-              <div className="game-mode-tagline">{tagline}</div>
-            </div>
-          </button>
+          // Two sibling buttons, not nested: the card plays, the "?" explains.
+          <div key={key} className={`game-card ${css}`}>
+            <button className={`game-mode-btn game-card-main ${css}`} onClick={() => play({ key, path, label })}>
+              <GamePreview mode={key} />
+              <div className="game-mode-text">
+                <div className="game-card-title">
+                  <span className="game-icon">
+                    <Icon size={18} aria-hidden="true" />
+                  </span>
+                  {label}
+                </div>
+                <div className="game-mode-tagline">{tagline}</div>
+              </div>
+            </button>
+            <button
+              className="game-card-help"
+              onClick={() => {
+                haptic("tap");
+                setHowToKey(key);
+              }}
+              aria-label={`How to play ${label}`}
+            >
+              <Help size={18} />
+            </button>
+          </div>
         ))}
       </div>
       {online && (
@@ -171,6 +189,7 @@ function Dashboard() {
         </button>
       )}
       {showHowTo && <HowToPlayModal onClose={() => setShowHowTo(false)} />}
+      {howToKey && <HowToPlayModal focusKey={howToKey} onClose={() => setHowToKey(null)} />}
       {boostFor && (
         <BoostOffer
           label={boostFor.label}

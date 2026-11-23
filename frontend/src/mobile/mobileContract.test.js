@@ -49,6 +49,8 @@ test("there is a landscape layout for phones", () => {
 test("safe areas are respected", () => {
   for (const side of ["top", "right", "bottom", "left"]) {
     expect(mobileLayer).toContain(`env(safe-area-inset-${side}`);
+    // Android edge-to-edge: Capacitor's SystemBars injects these when env() reads 0.
+    expect(mobileLayer).toContain(`var(--safe-area-inset-${side}`);
   }
   expect(html).toMatch(/viewport-fit=cover/);
   expect(html).toMatch(/interactive-widget=resizes-content/);
