@@ -1,0 +1,274 @@
+{
+  "ui": {
+    "nav.home": "Start",
+    "nav.versus": "Duell",
+    "nav.ranks": "Ranglisten",
+    "nav.profile": "Profil",
+    "stat.level": "Level",
+    "stat.score": "Punkte",
+    "stat.solved": "Gelöst",
+    "stat.badges": "Abzeichen",
+    "dash.loggedInAs": "Angemeldet als",
+    "dash.level": "Level {n}",
+    "dash.xpToNext": "{have} / {need} XP bis Level {next}",
+    "dash.maxLevel": "Höchstes Level. Respekt.",
+    "dash.pickGame": "Wähle ein Spiel",
+    "dash.howItWorks": "So funktioniert's",
+    "dash.offlineTitle": "Du bist offline.",
+    "dash.offlineBody": "Gewertete Spiele brauchen eine Verbindung. Der Übungsmodus funktioniert auch ohne.",
+    "dash.practiceLink": "Übungsmodus: Caesar, Match-3 und Wahr/Falsch ohne Wertung, auch offline",
+    "dash.howToPlay": "So spielst du {mode}",
+    "daily.title": "Tages-Chiffre",
+    "daily.waiting": "Die heutige Chiffre wartet.",
+    "daily.inProgress": "Läuft gerade – die Uhr tickt.",
+    "daily.cracked": "In {s} s geknackt. Bis morgen.",
+    "daily.missed": "Heute verpasst. Bis morgen.",
+    "daily.streak": "{n} Tage in Folge",
+    "howto.title": "So funktioniert's",
+    "howto.intro": "Jeder Modus hat sein eigenes Level. Zum Aufsteigen sammelst du die XP und schaffst 4 Runden auf diesem Level – verlorene Runden bringen ein bisschen, zählen aber nicht. Ab Level 5 musst du außerdem ein paar andere Modi ausprobiert haben. Alle Punkte werden auf unserem Server berechnet, also schummelt niemand in der Rangliste.",
+    "howto.quickRules": "Kurzregeln",
+    "howto.footer": "Ranglisten hat drei Tabellen: insgesamt, bester Rush-Lauf und die schnellste Tages-Chiffre von heute.",
+    "howto.close": "Schließen",
+    "walk.step": "Schritt {i} von {n}",
+    "walk.back": "Zurück",
+    "walk.next": "Weiter",
+    "walk.startOver": "Von vorn",
+    "game.backToDashboard": "Zurück zum Start",
+    "welcome.subtitle": "Knacke Codes. Schlag die Uhr. Teste deinen Cyber-Instinkt.",
+    "welcome.play": "Spielen",
+    "welcome.practice": "Ohne Konto üben",
+    "welcome.practiceOffline": "Kein Netz? Offline üben",
+    "welcome.footer": "Erkenne das Muster. Entschlüssle das Signal.",
+    "splash.subtitle": "Chiffren, Muster und Bytes.",
+    "splash.loading": "Wird geladen",
+    "profile.title": "Profil",
+    "profile.loading": "Profil wird geladen",
+    "profile.loadError": "Dein Profil konnte nicht geladen werden.",
+    "profile.loadErrorSignal": "Dein Profil konnte nicht geladen werden. Prüfe deine Verbindung.",
+    "profile.memberSince": "Dabei seit {date}",
+    "profile.badges": "Abzeichen",
+    "profile.noBadges": "Noch keine. Dein erstes Spiel bringt dir eins.",
+    "profile.share": "Teilen",
+    "profile.recentGames": "Letzte Spiele",
+    "profile.noGames": "Noch nichts. Spiel eine Runde.",
+    "profile.historyMeta": "Level {n} · {date}",
+    "settings.language": "Sprache",
+    "settings.languageHint": "Menüs, Anleitungen und Tutorials. Rätsel und Quizfragen bleiben vorerst auf Englisch.",
+    "ranks.title": "Ranglisten",
+    "ranks.allTime": "Insgesamt",
+    "ranks.rush": "Rush",
+    "ranks.today": "Heute",
+    "ranks.allTimeSub": "Top 10 nach Gesamtpunkten.",
+    "ranks.rushSub": "Bester einzelner 90-Sekunden-Lauf.",
+    "ranks.todaySub": "Schnellste Lösungen der Tages-Chiffre. Neustart um Mitternacht UTC.",
+    "ranks.offline": "Ranglisten sind live und brauchen eine Verbindung. Sie laden, sobald du wieder online bist.",
+    "ranks.loadError": "Die Tabelle konnte nicht geladen werden.",
+    "ranks.tryAgain": "Nochmal versuchen",
+    "ranks.loading": "Ranglisten werden geladen",
+    "ranks.empty": "Leer. Wer zuerst hier steht, darf angeben.",
+    "ranks.you": "Du",
+    "demo.Cipher": "Chiffre",
+    "demo.Shift": "Versch.",
+    "demo.Plain": "Klartext",
+    "demo.Mirror": "Spiegel",
+    "demo.Key": "Schlüssel",
+    "demo.Early": "Anfangs",
+    "demo.Later": "Später",
+    "demo.Hex": "Hex",
+    "demo.Decimal": "Dezimal",
+    "demo.Binary": "Binär",
+    "demo.Round": "Runde",
+    "demo.Before": "Vorher",
+    "demo.Hint": "Tipp",
+    "demo.Score": "Punkte",
+    "demo.Swipe": "Wischen",
+    "demo.Streak": "Serie",
+    "demo.After": "Nachher",
+    "demo.Moves": "Züge",
+    "demo.Flip": "Umdrehen",
+    "demo.Cards": "Karten"
+  },
+  "modes": {
+    "daily": {
+      "label": "Tages-Chiffre",
+      "tagline": "Eine Chiffre. Für alle. Einmal am Tag.",
+      "rules": [
+        "Dasselbe Rätsel für alle, ein neues um Mitternacht UTC. Nur ein Versuch.",
+        "Die Schnellsten führen die heutige Tabelle an. Löse an mehreren Tagen hintereinander für einen Serienbonus."
+      ]
+    },
+    "cipher": {
+      "label": "Chiffre-Rätsel",
+      "tagline": "Caesar, Atbash, Vigenère. Knack sie alle drei.",
+      "rules": [
+        "Caesar verschiebt jeden Buchstaben gleich weit. Atbash spiegelt das Alphabet. Vigenère nutzt ein Schlüsselwort, daher kann sich jeder Buchstabe anders verschieben.",
+        "Eine Antwort pro Rätsel. Schnellere Lösungen bringen mehr, und Vigenère zählt 1,5-fach.",
+        "Dreh das Chiffrierrad, um Verschiebungen zu testen. Es gibt zusätzliche Tipps, aber jeder kostet 20 % der Grundpunkte."
+      ]
+    },
+    "rush": {
+      "label": "Chiffre-Rush",
+      "tagline": "90 Sekunden. Kurze Wörter. Bau die Kombo auf.",
+      "rules": [
+        "Jedes Wort kommt mit seinem Schlüssel – ROT-irgendwas oder Atbash. Entschlüssle in 90 Sekunden so viele wie möglich.",
+        "Löse mehrere hintereinander für eine Kombo. Sie steigt anfangs schnell und pendelt sich bei 2,5x ein.",
+        "Ein Fehler oder Überspringen setzt die Kombo zurück. Die Wörter werden länger, je weiter du kommst."
+      ]
+    },
+    "binhex": {
+      "label": "Binär / Hex",
+      "tagline": "Bytes rein, Wörter raus.",
+      "rules": [
+        "Jedes Wort ist als ASCII-Bytes geschrieben – binär, hex, dezimal oder so, wie sie in URLs und Quellcode auftauchen.",
+        "Vom Byte zur Zahl, von der Zahl zum Buchstaben. 65 ist A, 90 ist Z.",
+        "Tippe auf ein Byte, um die Rechnung zu sehen. Die ASCII-Tabelle ist einen Tipp entfernt. Höhere Level lassen die Auffüllung weg und fügen Präfixe hinzu."
+      ]
+    },
+    "quiz": {
+      "label": "Sicherheits-Quiz",
+      "tagline": "Fünf Fragen. Erst prüfen, dann vertrauen.",
+      "rules": [
+        "Wähle ein Thema: Fälschungen erkennen, Menschenkenntnis, Krypto, Malware oder Vorfallreaktion.",
+        "Fünf Fragen pro Runde. 3 richtige, um sie zu schaffen. Zu jeder Antwort gibt's die Erklärung.",
+        "Hängst du fest? Ein Tipp streicht eine falsche Antwort. Drei pro Runde sind gratis; danach bringt ein kurzes Video einen weiteren."
+      ]
+    },
+    "truefalse": {
+      "label": "Wahr oder falsch",
+      "tagline": "Zehn Aussagen. Teste deinen Cyber-Instinkt.",
+      "rules": [
+        "Zehn Aussagen, halb wahr und halb falsch. Wisch nach rechts oder tippe „True“; nach links oder tippe „False“.",
+        "Serien bringen etwas extra. 7 richtige, um die Runde zu schaffen."
+      ]
+    },
+    "match3": {
+      "label": "Match-3",
+      "tagline": "Steine wischen. Ziel erreichen. Züge im Blick.",
+      "rules": [
+        "Wische einen Stein auf seinen Nachbarn (oder tippe den einen, dann den anderen), um drei oder mehr in eine Reihe zu bringen.",
+        "Kettenreaktionen vervielfachen deine Punkte. Erreiche das Ziel, bevor die Züge ausgehen. Übrige Züge sind Bonuspunkte.",
+        "Bleib ein paar Sekunden ruhig und ein Tipp leuchtet auf. Ein blockiertes Brett mischt sich selbst neu."
+      ]
+    },
+    "memory": {
+      "label": "Memory",
+      "tagline": "Umdrehen, merken, Paare finden.",
+      "rules": [
+        "Dreh zwei Karten um. Passen sie zusammen, bleiben sie offen.",
+        "Keine Uhr – aber jeder Fehlgriff kostet Punkte. Die Bretter wachsen von 8 auf 24 Karten."
+      ]
+    }
+  },
+  "steps": {
+    "caesar": {
+      "title": "Caesar: eine Verschiebung für alle Buchstaben",
+      "body": "Jeder Buchstabe wurde um gleich viele Stellen verschoben. Finde die Verschiebung und mach sie rückgängig. Dreh das Rad, bis aus einem kurzen Wort ein echtes wird.",
+      "tip": "Einbuchstabige Wörter sind im Englischen fast immer A oder I. Das verrät dir sofort die Verschiebung."
+    },
+    "atbash": {
+      "title": "Atbash: das Spiegelalphabet",
+      "body": "A tauscht mit Z, B mit Y, C mit X und so weiter. Kein Schlüssel zu suchen. Entschlüsseln ist derselbe Schritt wie Verschlüsseln.",
+      "tip": "Ergibt keine Verschiebung am Rad einen Sinn, ist es wahrscheinlich Atbash."
+    },
+    "vigenere": {
+      "title": "Vigenère: ein Schlüsselwort bestimmt die Verschiebungen",
+      "body": "Schreib das Schlüsselwort wiederholt unter die Nachricht. Jeder Schlüsselbuchstabe ist eine Verschiebung: A ist 0, B ist 1, bis Z mit 25. Mach jede rückgängig.",
+      "tip": "Derselbe Buchstabe kann jedes Mal anders entschlüsselt werden. Tipps verraten erst den ersten Buchstaben des Schlüssels, dann den ganzen."
+    },
+    "clock": {
+      "title": "Schlag die Uhr",
+      "body": "Tippe den Klartext ein und drück „Crack it“. Schnellere Lösungen bringen mehr. Kostenpflichtige Tipps kosten je 20 %; ein Tipp per kurzem Video kostet nichts und hält die Uhr an.",
+      "tip": "Falsche Versuche beenden die Runde nicht. Probier weiter, bis die Zeit abläuft."
+    },
+    "daily_intro": {
+      "title": "Eine Chiffre, für alle, einmal",
+      "body": "Alle bekommen dasselbe Rätsel, und um Mitternacht UTC kommt ein neues. Es kann Caesar, Atbash oder Vigenère sein. Der Gratis-Tipp unter dem Rätsel verrät, welches."
+    },
+    "daily_check": {
+      "title": "Prüfen vor dem Absenden",
+      "body": "Du hast nur einen Versuch. Die schnellsten richtigen Lösungen führen die heutige Tabelle an, und tägliches Lösen bringt einen Serienbonus.",
+      "tip": "Lies deine Antwort einmal gegen. Ein Tippfehler kostet den Tag."
+    },
+    "rush_key": {
+      "title": "Der Schlüssel kommt mit dem Wort",
+      "body": "Jedes Wort zeigt seinen Schlüssel: ROT-irgendwas oder Atbash. Mach ihn rückgängig und tippe das Wort.",
+      "tip": "ROT-13 hebt sich selbst auf: 13 vor oder zurück ergibt denselben Buchstaben."
+    },
+    "rush_combo": {
+      "title": "Bau die Kombo auf",
+      "body": "Löse mehrere hintereinander für eine Kombo. Sie steigt anfangs schnell und pendelt sich bei 2,5x ein. Ein Fehler oder Überspringen setzt sie zurück.",
+      "tip": "Ein langes Wort zu überspringen kann günstiger sein, als sich daran festzubeißen – aber die Kombo fängt neu an."
+    },
+    "rush_grow": {
+      "title": "Die Wörter wachsen mit",
+      "body": "Die ersten Wörter haben drei oder vier Buchstaben. Je mehr du löst, desto länger werden sie, und die Uhr zählt immer mehr.",
+      "tip": "Neunzig Sekunden vergehen schnell. Erst tippen, dann prüfen."
+    },
+    "binhex_bytes": {
+      "title": "Bytes sind Buchstaben",
+      "body": "Jedes Byte ist ein ASCII-Zeichen. Mach daraus eine Zahl und aus der Zahl einen Buchstaben: 65 ist A, 90 ist Z.",
+      "tip": "In Hex sind 0x41 bis 0x5A die Buchstaben A bis Z. Kennst du die erste Ziffer, zählt die zweite ab A (1) weiter."
+    },
+    "binhex_notations": {
+      "title": "Gleiche Bytes, andere Schreibweisen",
+      "body": "Höhere Level schreiben Bytes so, wie sie in freier Wildbahn vorkommen: aufgefülltes Binär, 0x, \\x im Quellcode und %-Kodierung in URLs. Tippe auf ein Byte, um die Rechnung zu sehen."
+    },
+    "binhex_tap": {
+      "title": "Tipp ein Byte an für die Rechnung",
+      "body": "Hängst du an einem Byte? Tipp es an, um den Rechenweg zu sehen, und öffne jederzeit die ASCII-Tabelle. Entschlüssle jedes Byte und tippe dann das Wort.",
+      "tip": "Binäre Stellenwerte von rechts: 1, 2, 4, 8, 16, 32, 64, 128. Addiere die, die eingeschaltet sind."
+    },
+    "quiz_topic": {
+      "title": "Wähle ein Thema",
+      "body": "Fälschungen erkennen, Menschenkenntnis, Krypto, Malware oder Vorfallreaktion. Jede Runde hat fünf Fragen zu diesem Thema."
+    },
+    "quiz_hint": {
+      "title": "Schließ eine aus",
+      "body": "Tippe auf „Hint“, um eine falsche Antwort durchzustreichen. Drei Tipps pro Runde sind gratis; danach bringt ein kurzes Video einen weiteren.",
+      "tip": "Ein Tipp entfernt nie die richtige Antwort, er hilft also immer."
+    },
+    "quiz_why": {
+      "title": "Versteh das Warum",
+      "body": "3 von 5 richtig, um die Runde zu schaffen. Zu jeder Antwort gibt es eine kurze Erklärung, ob richtig oder falsch."
+    },
+    "tf_read": {
+      "title": "Lies die Aussage",
+      "body": "Zehn kurze Aussagen zur Sicherheit im Netz. Etwa die Hälfte ist wahr, die andere Hälfte falsch."
+    },
+    "tf_swipe": {
+      "title": "Wischen oder tippen",
+      "body": "Wisch nach rechts oder tippe „True“, wenn es stimmt. Wisch nach links oder tippe „False“, wenn nicht."
+    },
+    "tf_streak": {
+      "title": "Halte die Serie",
+      "body": "7 von 10 richtig, um die Runde zu schaffen. Richtige Antworten in Folge bringen etwas extra.",
+      "tip": "Lies jedes Wort. Ein „immer“ oder „nie“ kann eine Aussage umdrehen."
+    },
+    "m3_swap": {
+      "title": "Tausch zwei Nachbarn",
+      "body": "Wische einen Stein auf den daneben, oder tippe erst den einen, dann den anderen. Bring drei oder mehr gleiche in eine Reihe, um sie abzuräumen."
+    },
+    "m3_chain": {
+      "title": "Ketten vorbereiten",
+      "body": "Abgeräumte Steine fallen nach und neue rutschen nach. Entsteht dabei ein weiterer Treffer, ist das eine Kette – und Ketten vervielfachen deine Punkte.",
+      "tip": "Treffer weiter unten bringen mehr vom Brett in Bewegung."
+    },
+    "m3_moves": {
+      "title": "Züge im Blick",
+      "body": "Erreiche die Zielpunktzahl, bevor die Züge ausgehen. Übrige Züge werden zu Bonuspunkten. Mach eine Pause und ein Tipp leuchtet auf."
+    },
+    "mem_flip": {
+      "title": "Dreh zwei Karten um",
+      "body": "Tippe eine Karte an, um sie umzudrehen, dann eine zweite. Passen sie zusammen, bleiben beide offen."
+    },
+    "mem_remember": {
+      "title": "Merk dir, wo was liegt",
+      "body": "Karten, die nicht passen, drehen sich wieder um. Merk dir, was du gesehen hast: Jeder Fehlgriff kostet Punkte.",
+      "tip": "Geh das Brett systematisch durch, Reihe für Reihe – so merkst du es dir leichter."
+    },
+    "mem_grow": {
+      "title": "Die Bretter wachsen",
+      "body": "Keine Uhr. Die Bretter beginnen mit 8 Karten und wachsen bis auf 24, je höher dein Level."
+    }
+  }
+}

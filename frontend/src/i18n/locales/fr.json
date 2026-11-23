@@ -1,0 +1,274 @@
+{
+  "ui": {
+    "nav.home": "Accueil",
+    "nav.versus": "Duel",
+    "nav.ranks": "Classements",
+    "nav.profile": "Profil",
+    "stat.level": "Niveau",
+    "stat.score": "Score",
+    "stat.solved": "Résolus",
+    "stat.badges": "Badges",
+    "dash.loggedInAs": "Connecté en tant que",
+    "dash.level": "Niveau {n}",
+    "dash.xpToNext": "{have} / {need} XP jusqu'au niveau {next}",
+    "dash.maxLevel": "Niveau max. Respect.",
+    "dash.pickGame": "Choisis un jeu",
+    "dash.howItWorks": "Comment ça marche",
+    "dash.offlineTitle": "Tu es hors ligne.",
+    "dash.offlineBody": "Les parties notées ont besoin d'une connexion. Le mode entraînement fonctionne sans.",
+    "dash.practiceLink": "Mode entraînement : César, Match-3 et Vrai/Faux non notés, jouables hors ligne",
+    "dash.howToPlay": "Comment jouer à {mode}",
+    "daily.title": "Chiffre du jour",
+    "daily.waiting": "Le chiffre du jour t'attend.",
+    "daily.inProgress": "En cours : le chrono tourne.",
+    "daily.cracked": "Déchiffré en {s} s. À demain.",
+    "daily.missed": "Raté aujourd'hui. À demain.",
+    "daily.streak": "Série de {n} jours",
+    "howto.title": "Comment ça marche",
+    "howto.intro": "Chaque mode a son propre niveau. Pour monter, gagne l'XP et réussis 4 manches à ce niveau : les manches perdues rapportent un peu, mais ne comptent pas. À partir du niveau 5, il faudra aussi avoir essayé quelques autres modes. Tous les scores sont calculés sur notre serveur, donc personne ne triche au classement.",
+    "howto.quickRules": "Règles rapides",
+    "howto.footer": "Classements propose trois tableaux : général, meilleure partie Rush et le Chiffre du jour le plus rapide.",
+    "howto.close": "Fermer",
+    "walk.step": "Étape {i} sur {n}",
+    "walk.back": "Retour",
+    "walk.next": "Suivant",
+    "walk.startOver": "Recommencer",
+    "game.backToDashboard": "Retour à l'accueil",
+    "welcome.subtitle": "Déchiffre des codes. Bats le chrono. Teste ton instinct cyber.",
+    "welcome.play": "Jouer",
+    "welcome.practice": "S'entraîner sans compte",
+    "welcome.practiceOffline": "Pas de réseau ? Entraîne-toi hors ligne",
+    "welcome.footer": "Repère le motif. Décode le signal.",
+    "splash.subtitle": "Chiffres, motifs et octets.",
+    "splash.loading": "Chargement",
+    "profile.title": "Profil",
+    "profile.loading": "Chargement du profil",
+    "profile.loadError": "Impossible de charger ton profil.",
+    "profile.loadErrorSignal": "Impossible de charger ton profil. Vérifie ta connexion.",
+    "profile.memberSince": "Membre depuis le {date}",
+    "profile.badges": "Badges",
+    "profile.noBadges": "Aucun pour l'instant. Ta première partie t'en rapporte un.",
+    "profile.share": "Partager",
+    "profile.recentGames": "Parties récentes",
+    "profile.noGames": "Rien pour l'instant. Lance une partie.",
+    "profile.historyMeta": "Niveau {n} · {date}",
+    "settings.language": "Langue",
+    "settings.languageHint": "Menus, guides et tutoriels. Les énigmes et les questions restent en anglais pour l'instant.",
+    "ranks.title": "Classements",
+    "ranks.allTime": "Général",
+    "ranks.rush": "Rush",
+    "ranks.today": "Aujourd'hui",
+    "ranks.allTimeSub": "Top 10 au score total.",
+    "ranks.rushSub": "Meilleure partie de 90 secondes.",
+    "ranks.todaySub": "Chiffres du jour les plus rapides. Remise à zéro à minuit UTC.",
+    "ranks.offline": "Les classements sont en direct et ont besoin d'une connexion. Ils se chargeront dès ton retour en ligne.",
+    "ranks.loadError": "Impossible de charger le tableau.",
+    "ranks.tryAgain": "Réessayer",
+    "ranks.loading": "Chargement des classements",
+    "ranks.empty": "Vide. Le premier ici aura de quoi se vanter.",
+    "ranks.you": "Toi",
+    "demo.Cipher": "Chiffré",
+    "demo.Shift": "Décal.",
+    "demo.Plain": "Clair",
+    "demo.Mirror": "Miroir",
+    "demo.Key": "Clé",
+    "demo.Early": "Au début",
+    "demo.Later": "Plus tard",
+    "demo.Hex": "Hex",
+    "demo.Decimal": "Décimal",
+    "demo.Binary": "Binaire",
+    "demo.Round": "Manche",
+    "demo.Before": "Avant",
+    "demo.Hint": "Indice",
+    "demo.Score": "Score",
+    "demo.Swipe": "Glisse",
+    "demo.Streak": "Série",
+    "demo.After": "Après",
+    "demo.Moves": "Coups",
+    "demo.Flip": "Retourne",
+    "demo.Cards": "Cartes"
+  },
+  "modes": {
+    "daily": {
+      "label": "Chiffre du jour",
+      "tagline": "Un chiffre. Pour tous. Une fois par jour.",
+      "rules": [
+        "La même énigme pour tous, une nouvelle à minuit UTC. Une seule tentative.",
+        "Les plus rapides mènent le tableau du jour. Résous-le plusieurs jours d'affilée pour un bonus de série."
+      ]
+    },
+    "cipher": {
+      "label": "Énigmes chiffrées",
+      "tagline": "César, Atbash, Vigenère. Casse-les tous.",
+      "rules": [
+        "César décale chaque lettre de la même façon. Atbash inverse l'alphabet. Vigenère utilise un mot-clé, donc chaque lettre peut être décalée différemment.",
+        "Une réponse par énigme. Plus tu es rapide, plus tu gagnes, et Vigenère rapporte 1,5x.",
+        "Fais tourner la roue pour tester les décalages. Des indices existent, mais chacun coûte 20 % du score de base."
+      ]
+    },
+    "rush": {
+      "label": "Rush chiffré",
+      "tagline": "90 secondes. Mots courts. Enchaîne le combo.",
+      "rules": [
+        "Chaque mot est donné avec sa clé : ROT-quelque chose ou Atbash. Décode-en un maximum en 90 secondes.",
+        "Enchaîne les bonnes réponses pour un combo. Il grimpe vite puis plafonne à 2,5x.",
+        "Une erreur ou un passage remet le combo à zéro. Les mots s'allongent au fil de la partie."
+      ]
+    },
+    "binhex": {
+      "label": "Binaire / Hex",
+      "tagline": "Des octets en entrée, des mots en sortie.",
+      "rules": [
+        "Chaque mot est écrit en octets ASCII : binaire, hex, décimal, ou tels qu'ils apparaissent dans les URL et le code source.",
+        "De l'octet au nombre, du nombre à la lettre. 65 c'est A, 90 c'est Z.",
+        "Touche un octet pour voir le calcul. La table ASCII est à portée de doigt. Les niveaux élevés retirent le remplissage et ajoutent des préfixes."
+      ]
+    },
+    "quiz": {
+      "label": "Quiz sécurité",
+      "tagline": "Cinq questions. Vérifie avant de faire confiance.",
+      "rules": [
+        "Choisis un thème : repérer les faux, relations humaines, crypto, malware ou réponse aux incidents.",
+        "Cinq questions par manche. 3 bonnes réponses pour la réussir. Chaque réponse est expliquée.",
+        "Bloqué ? Un indice élimine une mauvaise réponse. Trois par manche sont gratuits ; ensuite, une courte vidéo en offre un autre."
+      ]
+    },
+    "truefalse": {
+      "label": "Vrai ou faux",
+      "tagline": "Dix affirmations. Teste ton instinct cyber.",
+      "rules": [
+        "Dix affirmations, moitié vraies et moitié fausses. Glisse à droite ou touche « True » ; à gauche ou touche « False ».",
+        "Les séries rapportent un petit plus. 7 bonnes réponses pour réussir la manche."
+      ]
+    },
+    "match3": {
+      "label": "Match-3",
+      "tagline": "Glisse les pièces. Atteins l'objectif. Gère tes coups.",
+      "rules": [
+        "Fais glisser une pièce vers sa voisine (ou touche l'une puis l'autre) pour en aligner trois ou plus.",
+        "Les réactions en chaîne multiplient tes points. Atteins l'objectif avant d'être à court de coups. Les coups restants sont des points bonus.",
+        "Reste quelques secondes sans jouer et un indice s'allume. Un plateau bloqué se mélange tout seul."
+      ]
+    },
+    "memory": {
+      "label": "Mémoire",
+      "tagline": "Retourne, retiens, associe.",
+      "rules": [
+        "Retourne deux cartes. Si elles vont ensemble, elles restent visibles.",
+        "Pas de chrono, mais chaque erreur coûte des points. Les plateaux passent de 8 à 24 cartes."
+      ]
+    }
+  },
+  "steps": {
+    "caesar": {
+      "title": "César : un seul décalage pour toutes les lettres",
+      "body": "Chaque lettre a été décalée du même nombre de positions. Trouve le décalage et annule-le. Tourne la roue jusqu'à ce qu'un mot court devienne un vrai mot.",
+      "tip": "En anglais, les mots d'une lettre sont presque toujours A ou I. Ça te donne le décalage tout de suite."
+    },
+    "atbash": {
+      "title": "Atbash : l'alphabet miroir",
+      "body": "A s'échange avec Z, B avec Y, C avec X, et ainsi de suite. Pas de clé à trouver. Déchiffrer, c'est le même geste que chiffrer.",
+      "tip": "Si aucun décalage de la roue n'a de sens, c'est sûrement Atbash."
+    },
+    "vigenere": {
+      "title": "Vigenère : un mot-clé fixe les décalages",
+      "body": "Écris le mot-clé sous le message en le répétant. Chaque lettre de la clé est un décalage : A vaut 0, B vaut 1, jusqu'à Z qui vaut 25. Annule chacun d'eux.",
+      "tip": "La même lettre peut se déchiffrer différemment à chaque fois. Les indices révèlent la première lettre de la clé, puis la clé entière."
+    },
+    "clock": {
+      "title": "Bats le chrono",
+      "body": "Tape le texte en clair et touche « Crack it ». Plus tu es rapide, plus tu gagnes. Les indices payants coûtent 20 % chacun ; un indice obtenu avec une courte vidéo ne coûte rien et met le chrono en pause.",
+      "tip": "Une mauvaise réponse ne termine pas la manche. Continue jusqu'à la fin du temps."
+    },
+    "daily_intro": {
+      "title": "Un chiffre, pour tous, une fois",
+      "body": "Tous les joueurs ont la même énigme, et une nouvelle arrive à minuit UTC. Ce peut être César, Atbash ou Vigenère. L'indice gratuit sous l'énigme te dit lequel."
+    },
+    "daily_check": {
+      "title": "Vérifie avant d'envoyer",
+      "body": "Tu n'as qu'une tentative. Les bonnes réponses les plus rapides mènent le tableau du jour, et résoudre plusieurs jours d'affilée donne un bonus de série.",
+      "tip": "Relis ta réponse une fois. Une faute de frappe te coûte la journée."
+    },
+    "rush_key": {
+      "title": "La clé est donnée avec le mot",
+      "body": "Chaque mot affiche sa clé : ROT-quelque chose ou Atbash. Annule-la et tape le mot.",
+      "tip": "ROT-13 s'annule lui-même : décaler de 13 en avant ou en arrière donne la même lettre."
+    },
+    "rush_combo": {
+      "title": "Enchaîne le combo",
+      "body": "Enchaîne les bonnes réponses pour un combo. Il grimpe vite au début puis plafonne à 2,5x. Une erreur ou un passage le remet à zéro.",
+      "tip": "Passer un mot long peut coûter moins cher que de s'acharner, mais le combo repart de zéro."
+    },
+    "rush_grow": {
+      "title": "Les mots s'allongent",
+      "body": "Les premiers mots font trois ou quatre lettres. Continue et ils s'allongent, donc le chrono compte de plus en plus.",
+      "tip": "Quatre-vingt-dix secondes passent vite. Tape d'abord, vérifie ensuite."
+    },
+    "binhex_bytes": {
+      "title": "Les octets sont des lettres",
+      "body": "Chaque octet est un caractère ASCII. Transforme-le en nombre, puis le nombre en lettre : 65 c'est A, 90 c'est Z.",
+      "tip": "En hex, 0x41 à 0x5A correspondent à A à Z. Une fois le premier chiffre connu, le second compte à partir de A (1)."
+    },
+    "binhex_notations": {
+      "title": "Mêmes octets, autres notations",
+      "body": "Les niveaux élevés écrivent les octets comme dans la vraie vie : binaire complété, 0x, \\x dans le code source et encodage % dans les URL. Touche un octet pour voir le calcul."
+    },
+    "binhex_tap": {
+      "title": "Touche un octet pour voir le calcul",
+      "body": "Bloqué sur un octet ? Touche-le pour voir le détail et ouvre la table ASCII quand tu veux. Décode chaque octet, puis tape le mot.",
+      "tip": "Valeurs binaires en partant de la droite : 1, 2, 4, 8, 16, 32, 64, 128. Additionne celles qui sont allumées."
+    },
+    "quiz_topic": {
+      "title": "Choisis un thème",
+      "body": "Repérer les faux, relations humaines, crypto, malware ou réponse aux incidents. Chaque manche compte cinq questions sur ce thème."
+    },
+    "quiz_hint": {
+      "title": "Élimine une réponse",
+      "body": "Touche « Hint » pour rayer une mauvaise réponse. Trois indices par manche sont gratuits ; ensuite, une courte vidéo en offre un autre.",
+      "tip": "Un indice ne retire jamais la bonne réponse, il aide donc toujours."
+    },
+    "quiz_why": {
+      "title": "Comprends pourquoi",
+      "body": "3 bonnes réponses sur 5 pour réussir la manche. Chaque réponse est accompagnée d'une courte explication, juste ou fausse."
+    },
+    "tf_read": {
+      "title": "Lis l'affirmation",
+      "body": "Dix phrases courtes sur la sécurité en ligne. Environ la moitié sont vraies et la moitié fausses."
+    },
+    "tf_swipe": {
+      "title": "Glisse ou touche",
+      "body": "Glisse à droite ou touche « True » si c'est vrai. Glisse à gauche ou touche « False » sinon."
+    },
+    "tf_streak": {
+      "title": "Garde la série",
+      "body": "7 bonnes réponses sur 10 pour réussir la manche. Les bonnes réponses d'affilée rapportent un petit plus.",
+      "tip": "Lis chaque mot. Un « toujours » ou un « jamais » peut tout changer."
+    },
+    "m3_swap": {
+      "title": "Échange deux voisines",
+      "body": "Fais glisser une pièce vers celle d'à côté, ou touche l'une puis l'autre. Aligne trois pièces identiques ou plus pour les faire disparaître."
+    },
+    "m3_chain": {
+      "title": "Prépare des chaînes",
+      "body": "Les pièces éliminées tombent et de nouvelles arrivent. Si la chute crée une autre combinaison, c'est une chaîne, et les chaînes multiplient tes points.",
+      "tip": "Les combinaisons du bas secouent davantage le plateau."
+    },
+    "m3_moves": {
+      "title": "Gère tes coups",
+      "body": "Atteins le score objectif avant d'être à court de coups. Les coups restants deviennent des points bonus. Fais une pause et un indice s'allume."
+    },
+    "mem_flip": {
+      "title": "Retourne deux cartes",
+      "body": "Touche une carte pour la retourner, puis une autre. Si elles vont ensemble, elles restent visibles."
+    },
+    "mem_remember": {
+      "title": "Retiens où sont les choses",
+      "body": "Les cartes qui ne vont pas ensemble se retournent. Retiens ce que tu as vu : chaque erreur coûte des points.",
+      "tip": "Parcours le plateau avec méthode, rangée par rangée, pour mieux t'en souvenir."
+    },
+    "mem_grow": {
+      "title": "Les plateaux grandissent",
+      "body": "Pas de chrono. Les plateaux commencent à 8 cartes et montent jusqu'à 24 au fil de tes niveaux."
+    }
+  }
+}

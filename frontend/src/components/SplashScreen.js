@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import CipherMark from "../brand/CipherMark";
 import { useAuth } from "../AuthContext";
+import { useT } from "../i18n";
 
 const MIN_DURATION_MS = 2200;
 const EXIT_DURATION_MS = 500;
@@ -10,6 +11,7 @@ const EXIT_DURATION_MS = 500;
 // then cross-fades into whichever screen the router lands on.
 function SplashScreen({ onFinish }) {
   const { loading: authLoading } = useAuth();
+  const t = useT();
   const [minElapsed, setMinElapsed] = useState(false);
   const [exiting, setExiting] = useState(false);
 
@@ -39,7 +41,7 @@ function SplashScreen({ onFinish }) {
       <div className="splash-content">
         <div className="splash-header">
           <h1 className="splash-title">CipherRush</h1>
-          <p className="splash-subtitle">Ciphers, patterns and bytes.</p>
+          <p className="splash-subtitle">{t("splash.subtitle")}</p>
         </div>
 
         <div className="splash-center">
@@ -55,7 +57,7 @@ function SplashScreen({ onFinish }) {
             </div>
             <div className="splash-loading-label">
               <span className="splash-spinner" aria-hidden="true" />
-              Loading
+              {t("splash.loading")}
             </div>
           </div>
         </div>

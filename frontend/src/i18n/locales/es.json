@@ -1,0 +1,274 @@
+{
+  "ui": {
+    "nav.home": "Inicio",
+    "nav.versus": "Duelo",
+    "nav.ranks": "Rankings",
+    "nav.profile": "Perfil",
+    "stat.level": "Nivel",
+    "stat.score": "Puntos",
+    "stat.solved": "Resueltos",
+    "stat.badges": "Insignias",
+    "dash.loggedInAs": "Sesión iniciada como",
+    "dash.level": "Nivel {n}",
+    "dash.xpToNext": "{have} / {need} XP para el nivel {next}",
+    "dash.maxLevel": "Nivel máximo. Respeto.",
+    "dash.pickGame": "Elige un juego",
+    "dash.howItWorks": "Cómo funciona",
+    "dash.offlineTitle": "Estás sin conexión.",
+    "dash.offlineBody": "Los juegos con puntuación necesitan conexión. El modo práctica funciona sin ella.",
+    "dash.practiceLink": "Modo práctica: César, Match-3 y Verdadero/Falso sin puntuación y sin conexión",
+    "dash.howToPlay": "Cómo jugar a {mode}",
+    "daily.title": "Cifrado diario",
+    "daily.waiting": "El cifrado de hoy te espera.",
+    "daily.inProgress": "En curso: el reloj está corriendo.",
+    "daily.cracked": "Descifrado en {s} s. Vuelve mañana.",
+    "daily.missed": "Hoy no ha podido ser. Vuelve mañana.",
+    "daily.streak": "Racha de {n} días",
+    "howto.title": "Cómo funciona",
+    "howto.intro": "Cada modo tiene su propio nivel. Para subir, gana la XP y supera 4 rondas en ese nivel: las rondas perdidas dan algo de puntos, pero no cuentan. Desde el nivel 5 también tendrás que haber probado un par de modos más. Todas las puntuaciones se calculan en nuestro servidor, así que nadie hace trampas en el ranking.",
+    "howto.quickRules": "Reglas rápidas",
+    "howto.footer": "Rankings tiene tres tablas: histórica, mejor partida de Rush y el Diario más rápido de hoy.",
+    "howto.close": "Cerrar",
+    "walk.step": "Paso {i} de {n}",
+    "walk.back": "Atrás",
+    "walk.next": "Siguiente",
+    "walk.startOver": "Empezar de nuevo",
+    "game.backToDashboard": "Volver al inicio",
+    "welcome.subtitle": "Descifra códigos. Gana al reloj. Pon a prueba tu instinto digital.",
+    "welcome.play": "Jugar",
+    "welcome.practice": "Practicar sin cuenta",
+    "welcome.practiceOffline": "¿Sin señal? Practica sin conexión",
+    "welcome.footer": "Encuentra el patrón. Descifra la señal.",
+    "splash.subtitle": "Cifrados, patrones y bytes.",
+    "splash.loading": "Cargando",
+    "profile.title": "Perfil",
+    "profile.loading": "Cargando perfil",
+    "profile.loadError": "No se pudo cargar tu perfil.",
+    "profile.loadErrorSignal": "No se pudo cargar tu perfil. Revisa tu conexión.",
+    "profile.memberSince": "Miembro desde {date}",
+    "profile.badges": "Insignias",
+    "profile.noBadges": "Aún ninguna. Tu primera partida te da una.",
+    "profile.share": "Compartir",
+    "profile.recentGames": "Partidas recientes",
+    "profile.noGames": "Nada todavía. Juega algo.",
+    "profile.historyMeta": "Nivel {n} · {date}",
+    "settings.language": "Idioma",
+    "settings.languageHint": "Menús, guías y tutoriales. Los acertijos y las preguntas siguen en inglés por ahora.",
+    "ranks.title": "Rankings",
+    "ranks.allTime": "Histórico",
+    "ranks.rush": "Rush",
+    "ranks.today": "Hoy",
+    "ranks.allTimeSub": "Top 10 por puntuación total.",
+    "ranks.rushSub": "Mejor partida de 90 segundos.",
+    "ranks.todaySub": "Cifrados diarios más rápidos. Se reinicia a medianoche UTC.",
+    "ranks.offline": "Los rankings son en directo y necesitan conexión. Se cargarán cuando vuelvas a estar en línea.",
+    "ranks.loadError": "No se pudo cargar la tabla.",
+    "ranks.tryAgain": "Reintentar",
+    "ranks.loading": "Cargando rankings",
+    "ranks.empty": "Vacío. El primero en aparecer se lleva la gloria.",
+    "ranks.you": "Tú",
+    "demo.Cipher": "Cifrado",
+    "demo.Shift": "Despl.",
+    "demo.Plain": "Claro",
+    "demo.Mirror": "Espejo",
+    "demo.Key": "Clave",
+    "demo.Early": "Al inicio",
+    "demo.Later": "Después",
+    "demo.Hex": "Hex",
+    "demo.Decimal": "Decimal",
+    "demo.Binary": "Binario",
+    "demo.Round": "Ronda",
+    "demo.Before": "Antes",
+    "demo.Hint": "Pista",
+    "demo.Score": "Puntos",
+    "demo.Swipe": "Desliza",
+    "demo.Streak": "Racha",
+    "demo.After": "Después",
+    "demo.Moves": "Movim.",
+    "demo.Flip": "Voltea",
+    "demo.Cards": "Cartas"
+  },
+  "modes": {
+    "daily": {
+      "label": "Cifrado diario",
+      "tagline": "Un cifrado. Para todos. Una vez al día.",
+      "rules": [
+        "El mismo acertijo para todos, uno nuevo a medianoche UTC. Un solo intento.",
+        "Los más rápidos encabezan la tabla de hoy. Resuélvelo días seguidos para sumar una bonificación de racha."
+      ]
+    },
+    "cipher": {
+      "label": "Acertijos de cifrado",
+      "tagline": "César, Atbash, Vigenère. Descífralos todos.",
+      "rules": [
+        "César desplaza cada letra lo mismo. Atbash invierte el alfabeto. Vigenère usa una palabra clave, así que cada letra puede desplazarse distinto.",
+        "Una respuesta por acertijo. Cuanto más rápido, más puntos, y Vigenère paga 1,5x.",
+        "Gira la rueda de cifrado para probar desplazamientos. Hay pistas extra, pero cada una cuesta un 20 % de la puntuación base."
+      ]
+    },
+    "rush": {
+      "label": "Cifrado Rush",
+      "tagline": "90 segundos. Palabras cortas. Encadena el combo.",
+      "rules": [
+        "Cada palabra trae su clave: ROT-algo o Atbash. Descifra todas las que puedas en 90 segundos.",
+        "Acierta seguidas para crear un combo. Sube rápido al principio y se estabiliza en 2,5x.",
+        "Un fallo o un salto reinicia el combo. Las palabras se alargan cuanto más avanzas."
+      ]
+    },
+    "binhex": {
+      "label": "Binario / Hex",
+      "tagline": "Entran bytes, salen palabras.",
+      "rules": [
+        "Cada palabra está escrita en bytes ASCII: binario, hex, decimal o como aparecen en URLs y código fuente.",
+        "Del byte al número, del número a la letra. 65 es A, 90 es Z.",
+        "Toca cualquier byte para ver el cálculo. La tabla ASCII está a un toque. Los niveles altos quitan el relleno y añaden prefijos."
+      ]
+    },
+    "quiz": {
+      "label": "Quiz de seguridad",
+      "tagline": "Cinco preguntas. Verifica antes de confiar.",
+      "rules": [
+        "Elige un tema: detectar engaños, habilidades sociales, criptografía, malware o respuesta a incidentes.",
+        "Cinco preguntas por ronda. Acierta 3 para superarla. Cada respuesta incluye el porqué.",
+        "¿Atascado? Una pista descarta una respuesta incorrecta. Tres por ronda son gratis; después, un vídeo corto te da otra."
+      ]
+    },
+    "truefalse": {
+      "label": "Verdadero o falso",
+      "tagline": "Diez afirmaciones. Pon a prueba tu instinto digital.",
+      "rules": [
+        "Diez afirmaciones, la mitad verdaderas y la mitad falsas. Desliza a la derecha o toca «True»; a la izquierda o toca «False».",
+        "Las rachas dan un poco más. Acierta 7 para superar la ronda."
+      ]
+    },
+    "match3": {
+      "label": "Match-3",
+      "tagline": "Desliza fichas. Alcanza el objetivo. Cuida los movimientos.",
+      "rules": [
+        "Desliza una ficha hacia su vecina (o toca una y luego la otra) para alinear tres o más.",
+        "Las reacciones en cadena multiplican tus puntos. Alcanza el objetivo antes de quedarte sin movimientos. Los que sobren son puntos extra.",
+        "Si te quedas quieto unos segundos, se ilumina una pista. Un tablero sin jugadas se baraja solo."
+      ]
+    },
+    "memory": {
+      "label": "Memoria",
+      "tagline": "Voltea, recuerda, empareja.",
+      "rules": [
+        "Voltea dos cartas. Si coinciden, se quedan boca arriba.",
+        "Sin reloj, pero cada fallo resta puntos. Los tableros crecen de 8 a 24 cartas."
+      ]
+    }
+  },
+  "steps": {
+    "caesar": {
+      "title": "César: un desplazamiento para todas las letras",
+      "body": "Todas las letras se movieron el mismo número de posiciones. Encuentra el desplazamiento y deshazlo. Gira la rueda hasta que una palabra corta tenga sentido.",
+      "tip": "Las palabras de una letra suelen ser A o I en inglés. Eso te da el desplazamiento al instante."
+    },
+    "atbash": {
+      "title": "Atbash: el alfabeto espejo",
+      "body": "La A se cambia por la Z, la B por la Y, la C por la X, y así sucesivamente. No hay clave que buscar. Descifrar es lo mismo que cifrar.",
+      "tip": "Si ningún desplazamiento de la rueda tiene sentido, probablemente es Atbash."
+    },
+    "vigenere": {
+      "title": "Vigenère: una palabra clave marca los desplazamientos",
+      "body": "Escribe la palabra clave bajo el mensaje, repitiéndola. Cada letra de la clave es un desplazamiento: A es 0, B es 1, hasta Z que es 25. Deshaz cada uno.",
+      "tip": "La misma letra puede descifrarse distinto cada vez. Las pistas revelan la primera letra de la clave y luego la clave entera."
+    },
+    "clock": {
+      "title": "Gana al reloj",
+      "body": "Escribe el texto en claro y toca «Crack it». Cuanto más rápido, más puntos. Las pistas con coste restan un 20 % cada una; una pista pagada con un vídeo corto no cuesta nada y pausa el reloj.",
+      "tip": "Los intentos fallidos no terminan la ronda. Sigue probando hasta que se acabe el tiempo."
+    },
+    "daily_intro": {
+      "title": "Un cifrado, para todos, una vez",
+      "body": "Todos los jugadores tienen el mismo acertijo, y llega uno nuevo a medianoche UTC. Puede ser César, Atbash o Vigenère. La pista gratuita bajo el acertijo te dice cuál."
+    },
+    "daily_check": {
+      "title": "Revisa antes de enviar",
+      "body": "Tienes un solo intento. Las soluciones correctas más rápidas encabezan la tabla de hoy, y resolverlo días seguidos suma una bonificación de racha.",
+      "tip": "Relee tu respuesta una vez. Una errata te cuesta el día."
+    },
+    "rush_key": {
+      "title": "La clave viene con la palabra",
+      "body": "Cada palabra muestra su clave: ROT-algo o Atbash. Deshazla y escribe la palabra.",
+      "tip": "ROT-13 se deshace a sí mismo: desplazar 13 hacia delante o hacia atrás da la misma letra."
+    },
+    "rush_combo": {
+      "title": "Encadena el combo",
+      "body": "Acierta seguidas para crear un combo. Sube rápido al principio y se estabiliza en 2,5x. Un fallo o un salto lo reinicia.",
+      "tip": "Saltar una palabra larga puede salir más barato que pelearla, pero el combo vuelve a empezar."
+    },
+    "rush_grow": {
+      "title": "Las palabras crecen",
+      "body": "Las primeras palabras tienen tres o cuatro letras. Sigue acertando y se alargan, así que el reloj importa cada vez más.",
+      "tip": "Noventa segundos pasan rápido. Primero escribe, luego revisa."
+    },
+    "binhex_bytes": {
+      "title": "Los bytes son letras",
+      "body": "Cada byte es un carácter ASCII. Conviértelo en número y el número en letra: 65 es A, 90 es Z.",
+      "tip": "En hex, de 0x41 a 0x5A son de la A a la Z. Sabiendo el primer dígito, el segundo cuenta desde la A (1)."
+    },
+    "binhex_notations": {
+      "title": "Mismos bytes, otras notaciones",
+      "body": "Los niveles altos escriben los bytes como aparecen en la vida real: binario con relleno, 0x, \\x en código fuente y codificación % en URLs. Toca cualquier byte para ver el cálculo."
+    },
+    "binhex_tap": {
+      "title": "Toca un byte para ver el cálculo",
+      "body": "¿Atascado en un byte? Tócalo para ver el desarrollo y abre la tabla ASCII cuando quieras. Descifra cada byte y escribe la palabra.",
+      "tip": "Valores binarios desde la derecha: 1, 2, 4, 8, 16, 32, 64, 128. Suma los que están encendidos."
+    },
+    "quiz_topic": {
+      "title": "Elige un tema",
+      "body": "Detectar engaños, habilidades sociales, criptografía, malware o respuesta a incidentes. Cada ronda son cinco preguntas de ese tema."
+    },
+    "quiz_hint": {
+      "title": "Descarta una",
+      "body": "Toca «Hint» para tachar una respuesta incorrecta. Tres pistas por ronda son gratis; después, un vídeo corto te da otra.",
+      "tip": "Una pista nunca quita la respuesta correcta, así que siempre ayuda."
+    },
+    "quiz_why": {
+      "title": "Aprende el porqué",
+      "body": "Acierta 3 de 5 para superar la ronda. Cada respuesta incluye una breve explicación, aciertes o no."
+    },
+    "tf_read": {
+      "title": "Lee la afirmación",
+      "body": "Diez frases cortas sobre cómo estar seguro en internet. Más o menos la mitad son verdaderas y la mitad falsas."
+    },
+    "tf_swipe": {
+      "title": "Desliza o toca",
+      "body": "Desliza a la derecha o toca «True» si es cierto. Desliza a la izquierda o toca «False» si no lo es."
+    },
+    "tf_streak": {
+      "title": "Mantén la racha",
+      "body": "Acierta 7 de 10 para superar la ronda. Los aciertos seguidos dan un poco más.",
+      "tip": "Lee cada palabra. Un \"siempre\" o un \"nunca\" puede cambiarlo todo."
+    },
+    "m3_swap": {
+      "title": "Intercambia dos vecinas",
+      "body": "Desliza una ficha hacia la de al lado, o toca una y luego la otra. Alinea tres o más iguales para eliminarlas."
+    },
+    "m3_chain": {
+      "title": "Prepara cadenas",
+      "body": "Las fichas eliminadas caen y entran otras nuevas. Si la caída forma otra combinación, es una cadena, y las cadenas multiplican tus puntos.",
+      "tip": "Las combinaciones de abajo remueven más el tablero."
+    },
+    "m3_moves": {
+      "title": "Cuida los movimientos",
+      "body": "Alcanza la puntuación objetivo antes de quedarte sin movimientos. Los que sobren se convierten en puntos extra. Si te detienes, se ilumina una pista."
+    },
+    "mem_flip": {
+      "title": "Voltea dos cartas",
+      "body": "Toca una carta para voltearla y luego otra. Si coinciden, las dos se quedan boca arriba."
+    },
+    "mem_remember": {
+      "title": "Recuerda dónde está cada cosa",
+      "body": "Las cartas que no coinciden se vuelven a girar. Recuerda lo que viste: cada fallo resta puntos.",
+      "tip": "Recorre el tablero con un orden, fila a fila, para recordarlo mejor."
+    },
+    "mem_grow": {
+      "title": "Los tableros crecen",
+      "body": "No hay reloj. Los tableros empiezan con 8 cartas y crecen hasta 24 a medida que subes de nivel."
+    }
+  }
+}

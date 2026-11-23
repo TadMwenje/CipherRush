@@ -6,6 +6,7 @@ import HowToPlayModal from "../components/HowToPlayModal";
 import { LegalLinks } from "../components/LegalLinks";
 import { useAuth } from "../AuthContext";
 import { useOnline } from "../mobile/hooks";
+import { useT } from "../i18n";
 
 function Welcome() {
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -13,6 +14,7 @@ function Welcome() {
   const { user, login, loading } = useAuth();
   const navigate = useNavigate();
   const online = useOnline();
+  const t = useT();
 
   const handleLogin = (userData) => {
     login(userData);
@@ -32,7 +34,7 @@ function Welcome() {
       <div className="welcome-content">
         <div className="welcome-header">
           <h1 className="game-title">CipherRush</h1>
-          <p className="game-subtitle">Crack codes. Beat the clock. Test your cyber instincts.</p>
+          <p className="game-subtitle">{t("welcome.subtitle")}</p>
         </div>
 
         <div className="lock-icon brand-hero">
@@ -41,17 +43,17 @@ function Welcome() {
 
         <div className="welcome-buttons">
           <button className="btn-primary" onClick={() => setShowAuthModal(true)}>
-            Play
+            {t("welcome.play")}
           </button>
           <button className="btn-secondary" onClick={() => setShowHowTo(true)}>
-            How it works
+            {t("dash.howItWorks")}
           </button>
           <button className="practice-link" onClick={() => navigate("/practice")}>
-            {online ? "Practice without an account" : "No signal? Practice offline"}
+            {online ? t("welcome.practice") : t("welcome.practiceOffline")}
           </button>
         </div>
 
-        <p className="welcome-footer">Spot the pattern. Decode the signal.</p>
+        <p className="welcome-footer">{t("welcome.footer")}</p>
         <LegalLinks className="welcome-legal" />
       </div>
 

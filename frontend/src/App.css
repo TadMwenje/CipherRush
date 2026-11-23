@@ -4715,3 +4715,36 @@ html.app-paused *::after {
     height: 50px;
   }
 }
+
+/* Language picker (Profile) */
+.language-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+.language-btn {
+  min-height: var(--tap, 44px);
+  padding: 0.5rem 0.75rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.04);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.language-btn.active {
+  border-color: #4ecdc4;
+  background: rgba(78, 205, 196, 0.14);
+  font-weight: 600;
+}
+.language-hint {
+  color: #a0a0a0;
+  font-size: 0.8rem;
+  margin-top: 0.6rem;
+}
+@media (min-width: 520px) {
+  .language-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}

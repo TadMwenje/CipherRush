@@ -1,0 +1,274 @@
+{
+  "ui": {
+    "nav.home": "Start",
+    "nav.versus": "Duel",
+    "nav.ranks": "Ranglijst",
+    "nav.profile": "Profiel",
+    "stat.level": "Level",
+    "stat.score": "Score",
+    "stat.solved": "Opgelost",
+    "stat.badges": "Badges",
+    "dash.loggedInAs": "Ingelogd als",
+    "dash.level": "Level {n}",
+    "dash.xpToNext": "{have} / {need} XP tot level {next}",
+    "dash.maxLevel": "Hoogste level. Respect.",
+    "dash.pickGame": "Kies een spel",
+    "dash.howItWorks": "Zo werkt het",
+    "dash.offlineTitle": "Je bent offline.",
+    "dash.offlineBody": "Spellen met score hebben een verbinding nodig. De oefenmodus werkt ook zonder.",
+    "dash.practiceLink": "Oefenmodus: Caesar, Match-3 en Waar/Niet waar zonder score, ook offline",
+    "dash.howToPlay": "Zo speel je {mode}",
+    "daily.title": "Dagelijkse code",
+    "daily.waiting": "De code van vandaag wacht op je.",
+    "daily.inProgress": "Bezig: de klok loopt.",
+    "daily.cracked": "Gekraakt in {s} s. Tot morgen.",
+    "daily.missed": "Vandaag gemist. Tot morgen.",
+    "daily.streak": "{n} dagen op rij",
+    "howto.title": "Zo werkt het",
+    "howto.intro": "Elke modus heeft zijn eigen level. Om te stijgen verdien je de XP en haal je 4 rondes op dat level: verloren rondes leveren een beetje op, maar tellen niet mee. Vanaf level 5 moet je ook een paar andere modi geprobeerd hebben. Alle scores worden op onze server berekend, dus niemand speelt vals op de ranglijst.",
+    "howto.quickRules": "Snelle regels",
+    "howto.footer": "De ranglijst heeft drie borden: aller tijden, beste Rush-run en de snelste dagelijkse code van vandaag.",
+    "howto.close": "Sluiten",
+    "walk.step": "Stap {i} van {n}",
+    "walk.back": "Terug",
+    "walk.next": "Volgende",
+    "walk.startOver": "Opnieuw",
+    "game.backToDashboard": "Terug naar start",
+    "welcome.subtitle": "Kraak codes. Versla de klok. Test je cyberinstinct.",
+    "welcome.play": "Spelen",
+    "welcome.practice": "Oefenen zonder account",
+    "welcome.practiceOffline": "Geen bereik? Oefen offline",
+    "welcome.footer": "Zie het patroon. Ontcijfer het signaal.",
+    "splash.subtitle": "Codes, patronen en bytes.",
+    "splash.loading": "Laden",
+    "profile.title": "Profiel",
+    "profile.loading": "Profiel laden",
+    "profile.loadError": "Je profiel kon niet worden geladen.",
+    "profile.loadErrorSignal": "Je profiel kon niet worden geladen. Controleer je verbinding.",
+    "profile.memberSince": "Lid sinds {date}",
+    "profile.badges": "Badges",
+    "profile.noBadges": "Nog geen. Je eerste spel levert er een op.",
+    "profile.share": "Delen",
+    "profile.recentGames": "Recente spellen",
+    "profile.noGames": "Nog niets. Ga iets spelen.",
+    "profile.historyMeta": "Level {n} · {date}",
+    "settings.language": "Taal",
+    "settings.languageHint": "Menu's, uitleg en tutorials. Puzzels en quizvragen blijven voorlopig in het Engels.",
+    "ranks.title": "Ranglijst",
+    "ranks.allTime": "Aller tijden",
+    "ranks.rush": "Rush",
+    "ranks.today": "Vandaag",
+    "ranks.allTimeSub": "Top 10 op totale score.",
+    "ranks.rushSub": "Beste losse run van 90 seconden.",
+    "ranks.todaySub": "Snelst opgeloste dagelijkse codes. Begint opnieuw om middernacht UTC.",
+    "ranks.offline": "De ranglijst is live en heeft een verbinding nodig. Hij laadt zodra je weer online bent.",
+    "ranks.loadError": "Het bord kon niet worden geladen.",
+    "ranks.tryAgain": "Opnieuw proberen",
+    "ranks.loading": "Ranglijst laden",
+    "ranks.empty": "Leeg. Wie hier als eerste staat, mag opscheppen.",
+    "ranks.you": "Jij",
+    "demo.Cipher": "Code",
+    "demo.Shift": "Versch.",
+    "demo.Plain": "Tekst",
+    "demo.Mirror": "Spiegel",
+    "demo.Key": "Sleutel",
+    "demo.Early": "Begin",
+    "demo.Later": "Later",
+    "demo.Hex": "Hex",
+    "demo.Decimal": "Decimaal",
+    "demo.Binary": "Binair",
+    "demo.Round": "Ronde",
+    "demo.Before": "Voor",
+    "demo.Hint": "Hint",
+    "demo.Score": "Score",
+    "demo.Swipe": "Veeg",
+    "demo.Streak": "Reeks",
+    "demo.After": "Na",
+    "demo.Moves": "Zetten",
+    "demo.Flip": "Draai",
+    "demo.Cards": "Kaarten"
+  },
+  "modes": {
+    "daily": {
+      "label": "Dagelijkse code",
+      "tagline": "Eén code. Iedereen. Eén keer per dag.",
+      "rules": [
+        "Dezelfde puzzel voor iedereen, een nieuwe om middernacht UTC. Eén poging.",
+        "De snelsten staan bovenaan het bord van vandaag. Los dagen achter elkaar op voor een reeksbonus."
+      ]
+    },
+    "cipher": {
+      "label": "Codepuzzels",
+      "tagline": "Caesar, Atbash, Vigenère. Kraak ze alle drie.",
+      "rules": [
+        "Caesar verschuift elke letter even ver. Atbash spiegelt het alfabet. Vigenère gebruikt een sleutelwoord, dus elke letter kan anders verschuiven.",
+        "Eén antwoord per puzzel. Sneller oplossen levert meer op, en Vigenère telt 1,5x.",
+        "Draai aan het codewiel om verschuivingen te testen. Er zijn extra hints, maar elke hint kost 20% van de basisscore."
+      ]
+    },
+    "rush": {
+      "label": "Code Rush",
+      "tagline": "90 seconden. Korte woorden. Bouw de combo op.",
+      "rules": [
+        "Elk woord komt met zijn sleutel: ROT-iets of Atbash. Ontcijfer er zoveel mogelijk in 90 seconden.",
+        "Los achter elkaar op voor een combo. Die stijgt eerst snel en vlakt af bij 2,5x.",
+        "Een fout of overslaan zet de combo terug. De woorden worden langer naarmate je verder komt."
+      ]
+    },
+    "binhex": {
+      "label": "Binair / Hex",
+      "tagline": "Bytes erin, woorden eruit.",
+      "rules": [
+        "Elk woord is geschreven als ASCII-bytes: binair, hex, decimaal, of zoals ze in URL's en broncode staan.",
+        "Van byte naar getal, van getal naar letter. 65 is A, 90 is Z.",
+        "Tik op een byte om de berekening te zien. De ASCII-tabel is één tik verderop. Hogere levels laten de opvulling weg en voegen voorvoegsels toe."
+      ]
+    },
+    "quiz": {
+      "label": "Beveiligingsquiz",
+      "tagline": "Vijf vragen. Eerst controleren, dan vertrouwen.",
+      "rules": [
+        "Kies een onderwerp: nep herkennen, mensenkennis, crypto, malware of incidentrespons.",
+        "Vijf vragen per ronde. Heb er 3 goed om hem te halen. Bij elk antwoord krijg je het waarom.",
+        "Vast? Een hint streept één fout antwoord weg. Drie per ronde zijn gratis; daarna levert een korte video er nog een op."
+      ]
+    },
+    "truefalse": {
+      "label": "Waar of niet waar",
+      "tagline": "Tien beweringen. Test je cyberinstinct.",
+      "rules": [
+        "Tien beweringen, de helft waar en de helft niet. Veeg naar rechts of tik op „True”; naar links of tik op „False”.",
+        "Reeksen leveren iets extra op. Heb er 7 goed om de ronde te halen."
+      ]
+    },
+    "match3": {
+      "label": "Match-3",
+      "tagline": "Veeg tegels. Haal het doel. Let op je zetten.",
+      "rules": [
+        "Veeg een tegel naar zijn buur (of tik op de ene en dan de andere) om er drie of meer op een rij te zetten.",
+        "Kettingreacties vermenigvuldigen je punten. Haal het doel voordat je zetten op zijn. Overgebleven zetten zijn bonuspunten.",
+        "Doe een paar seconden niets en er licht een hint op. Een vastgelopen bord schudt zichzelf."
+      ]
+    },
+    "memory": {
+      "label": "Memory",
+      "tagline": "Omdraaien, onthouden, paren vinden.",
+      "rules": [
+        "Draai twee kaarten om. Passen ze bij elkaar, dan blijven ze open liggen.",
+        "Geen klok, maar elke misser kost punten. Borden groeien van 8 naar 24 kaarten."
+      ]
+    }
+  },
+  "steps": {
+    "caesar": {
+      "title": "Caesar: één verschuiving voor elke letter",
+      "body": "Elke letter is evenveel plaatsen opgeschoven. Vind de verschuiving en draai die terug. Draai aan het wiel tot een kort woord een echt woord wordt.",
+      "tip": "In het Engels zijn woorden van één letter bijna altijd A of I. Dan heb je meteen de verschuiving."
+    },
+    "atbash": {
+      "title": "Atbash: het spiegelalfabet",
+      "body": "A ruilt met Z, B met Y, C met X, enzovoort. Geen sleutel te zoeken. Ontcijferen is dezelfde stap als versleutelen.",
+      "tip": "Als geen enkele verschuiving op het wiel klopt, is het waarschijnlijk Atbash."
+    },
+    "vigenere": {
+      "title": "Vigenère: een sleutelwoord bepaalt de verschuivingen",
+      "body": "Schrijf het sleutelwoord herhaald onder het bericht. Elke sleutelletter is een verschuiving: A is 0, B is 1, tot Z met 25. Draai ze een voor een terug.",
+      "tip": "Dezelfde letter kan elke keer anders uitkomen. Hints geven eerst de eerste letter van de sleutel, daarna de hele sleutel."
+    },
+    "clock": {
+      "title": "Versla de klok",
+      "body": "Typ de platte tekst en tik op „Crack it”. Sneller oplossen levert meer op. Hints met puntkosten kosten elk 20%; een hint via een korte video kost niets en zet de klok stil.",
+      "tip": "Foute gokken beëindigen de ronde niet. Blijf proberen tot de tijd op is."
+    },
+    "daily_intro": {
+      "title": "Eén code, iedereen, één keer",
+      "body": "Iedereen krijgt dezelfde puzzel, en om middernacht UTC komt er een nieuwe. Het kan Caesar, Atbash of Vigenère zijn. De gratis hint onder de puzzel vertelt welke."
+    },
+    "daily_check": {
+      "title": "Controleer voor je verstuurt",
+      "body": "Je hebt één poging. De snelste goede oplossingen staan bovenaan het bord van vandaag, en dagen achter elkaar oplossen levert een reeksbonus op.",
+      "tip": "Lees je antwoord één keer na. Een typfout kost je de dag."
+    },
+    "rush_key": {
+      "title": "De sleutel zit bij het woord",
+      "body": "Elk woord toont zijn sleutel: ROT-iets of Atbash. Draai die terug en typ het woord.",
+      "tip": "ROT-13 heft zichzelf op: 13 vooruit of achteruit geeft dezelfde letter."
+    },
+    "rush_combo": {
+      "title": "Bouw de combo op",
+      "body": "Los achter elkaar op voor een combo. Die stijgt eerst snel en vlakt af bij 2,5x. Een fout of overslaan zet hem terug.",
+      "tip": "Een lang woord overslaan kan goedkoper zijn dan ermee worstelen, maar de combo begint opnieuw."
+    },
+    "rush_grow": {
+      "title": "Woorden groeien mee",
+      "body": "De eerste woorden hebben drie of vier letters. Blijf oplossen en ze worden langer, dus de klok telt steeds zwaarder.",
+      "tip": "Negentig seconden gaan snel. Eerst typen, dan controleren."
+    },
+    "binhex_bytes": {
+      "title": "Bytes zijn letters",
+      "body": "Elke byte is één ASCII-teken. Maak er een getal van en van het getal een letter: 65 is A, 90 is Z.",
+      "tip": "In hex zijn 0x41 tot 0x5A de letters A tot Z. Ken je het eerste cijfer, dan telt het tweede verder vanaf A (1)."
+    },
+    "binhex_notations": {
+      "title": "Dezelfde bytes, andere notaties",
+      "body": "Hogere levels schrijven bytes zoals je ze in het echt tegenkomt: opgevuld binair, 0x, \\x in broncode en %-codering in URL's. Tik op een byte om de berekening te zien."
+    },
+    "binhex_tap": {
+      "title": "Tik op een byte voor de berekening",
+      "body": "Vast bij één byte? Tik erop om de uitwerking te zien, en open de ASCII-tabel wanneer je wilt. Ontcijfer elke byte en typ dan het woord.",
+      "tip": "Binaire waarden van rechts: 1, 2, 4, 8, 16, 32, 64, 128. Tel de ingeschakelde bij elkaar op."
+    },
+    "quiz_topic": {
+      "title": "Kies een onderwerp",
+      "body": "Nep herkennen, mensenkennis, crypto, malware of incidentrespons. Elke ronde heeft vijf vragen over dat onderwerp."
+    },
+    "quiz_hint": {
+      "title": "Streep er een weg",
+      "body": "Tik op „Hint” om een fout antwoord door te strepen. Drie hints per ronde zijn gratis; daarna levert een korte video er nog een op.",
+      "tip": "Een hint haalt nooit het goede antwoord weg, dus hij helpt altijd."
+    },
+    "quiz_why": {
+      "title": "Leer het waarom",
+      "body": "Heb er 3 van de 5 goed om de ronde te halen. Bij elk antwoord krijg je een korte uitleg, goed of fout."
+    },
+    "tf_read": {
+      "title": "Lees de bewering",
+      "body": "Tien korte uitspraken over veilig online zijn. Ongeveer de helft is waar en de helft niet."
+    },
+    "tf_swipe": {
+      "title": "Veeg of tik",
+      "body": "Veeg naar rechts of tik op „True” als het klopt. Veeg naar links of tik op „False” als het niet klopt."
+    },
+    "tf_streak": {
+      "title": "Houd de reeks vast",
+      "body": "Heb er 7 van de 10 goed om de ronde te halen. Goede antwoorden achter elkaar leveren iets extra op.",
+      "tip": "Lees elk woord. Eén „altijd” of „nooit” kan een bewering omdraaien."
+    },
+    "m3_swap": {
+      "title": "Wissel twee buren",
+      "body": "Veeg een tegel naar die ernaast, of tik op de ene en dan de andere. Zet drie of meer dezelfde op een rij om ze weg te spelen."
+    },
+    "m3_chain": {
+      "title": "Zet kettingen op",
+      "body": "Weggespeelde tegels vallen naar beneden en er komen nieuwe bij. Maakt de val een nieuwe match, dan is dat een ketting, en kettingen vermenigvuldigen je punten.",
+      "tip": "Matches onderaan schudden meer van het bord door elkaar."
+    },
+    "m3_moves": {
+      "title": "Let op je zetten",
+      "body": "Haal de doelscore voordat je zetten op zijn. Overgebleven zetten worden bonuspunten. Neem even pauze en er licht een hint op."
+    },
+    "mem_flip": {
+      "title": "Draai twee kaarten om",
+      "body": "Tik op een kaart om hem om te draaien, en dan op een andere. Passen ze, dan blijven ze allebei open liggen."
+    },
+    "mem_remember": {
+      "title": "Onthoud waar alles ligt",
+      "body": "Kaarten die niet passen draaien terug. Onthoud wat je zag: elke misser kost punten.",
+      "tip": "Werk het bord in een vaste volgorde af, rij voor rij, zodat je het makkelijker onthoudt."
+    },
+    "mem_grow": {
+      "title": "Borden groeien",
+      "body": "Er is geen klok. Borden beginnen met 8 kaarten en groeien tot 24 naarmate je level stijgt."
+    }
+  }
+}

@@ -3,12 +3,15 @@ import { Close, Trophy } from "../glyphs";
 import { GAME_MODES, DAILY_MODE } from "../constants/gameModes";
 import { WALKTHROUGHS } from "../constants/walkthroughs";
 import Walkthrough from "./Walkthrough";
+import { modeText, useLanguage, useT } from "../i18n";
 
 // Rules for every mode. Opened from the welcome screen, the dashboard, and
 // each game's "?" button (scrolled to that game via focusKey). From a game,
 // modes with a walkthrough show it first, then the quick rules.
 function HowToPlayModal({ onClose, focusKey }) {
   const sectionRefs = useRef({});
+  const t = useT();
+  const lang = useLanguage();
   // A walkthrough opens at its first step, so don't scroll past it to the rules.
   const steps = focusKey && WALKTHROUGHS[focusKey];
 
@@ -33,46 +36,44 @@ function HowToPlayModal({ onClose, focusKey }) {
         aria-labelledby="howto-title"
         onClick={(e) => e.stopPropagation()}
       >
-        <button className="howto-close" onClick={onClose} aria-label="Close">
+        <button className="howto-close" onClick={onClose} aria-label={t("howto.close")}>
           <Close size={20} />
         </button>
         <h2 id="howto-title" className="howto-title">
-          {focusKey ? modes[0]?.label : "How it works"}
+          {focusKey ? modes[0] && modeText(modes[0], lang).label : t("howto.title")}
         </h2>
-        {!focusKey && (
-          <p className="howto-intro">
-            Each mode has its own level. To go up, earn the XP and clear 4 rounds at that level - losing
-            rounds still pay a little, they just don't count. From level 5 you'll also need to have tried a
-            couple of other modes. Every score is worked out on our server, so nobody's faking the board.
-          </p>
-        )}
+        {!focusKey && <p className="howto-intro">{t("howto.intro")}</p>}
         {steps && <Walkthrough steps={steps} />}
         <div className="howto-sections">
-          {modes.map(({ key, label, Icon, css, rules }) => (
-            <section key={key} className={`howto-section ${css}`} ref={(el) => (sectionRefs.current[key] = el)}>
-              <h3>
-                {steps ? (
-                  "Quick rules"
-                ) : (
-                  <>
-                    <span className="game-icon">
-                      <Icon size={18} aria-hidden="true" />
-                    </span>
-                    {label}
-                  </>
-                )}
-              </h3>
-              <ul>
-                {rules.map((rule) => (
-                  <li key={rule}>{rule}</li>
-                ))}
-              </ul>
-            </section>
-          ))}
+          {modes.map((mode) => {
+            const { key, Icon, css } = mode;
+            const { label, rules } = modeText(mode, lang);
+            return (
+              <section key={key} className={`howto-section ${css}`} ref={(el) => (sectionRefs.current[key] = el)}>
+                <h3>
+                  {steps ? (
+                    t("howto.quickRules")
+                  ) : (
+                    <>
+                      <span className="game-icon">
+                        <Icon size={18} aria-hidden="true" />
+                      </span>
+                      {label}
+                    </>
+                  )}
+                </h3>
+                <ul>
+                  {rules.map((rule) => (
+                    <li key={rule}>{rule}</li>
+                  ))}
+                </ul>
+              </section>
+            );
+          })}
         </div>
         {!focusKey && (
           <p className="howto-footer">
-            <Trophy size={14} /> Ranks has three boards: all-time, best Rush run, and today's fastest Daily.
+            <Trophy size={14} /> {t("howto.footer")}
           </p>
         )}
       </div>
