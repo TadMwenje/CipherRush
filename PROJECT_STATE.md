@@ -349,6 +349,15 @@ Android 1.0.1 (versionCode 6) and iOS 1.0.1 (build 4). Commits on `v1.0.1` are l
     - Age rating: Location Sharing No and Dating No were saved under App Information. The rating is still 4+, and the 15 Jan 2027 notice is gone.
   - **EU DSA trader status: not submitted.** The Apple developer account's legal entity is the individual **Tadiwa Mwenje** (Harare, Zimbabwe), not AximoIX. The AximoIX website records give a US address (Decatur, GA) and a +1 phone number. Apple displays the declared address, phone and email publicly on the EU product page and verifies the phone and email with codes. The owner must decide whether to declare as a trader and which contact details to publish. The 27 EU countries stay blocked ("Trader Status Not Provided") until then.
 
+- **2026-11-23 compliance and AdMob (in progress):**
+  - **Play release 6 (1.0.1):** review passed and **published on Closed testing - Alpha** on 23 Nov. The production access application is still under review and was not touched.
+  - **Apple DSA (individual trader): not finished.** "I'm a trader" was chosen, with the owner's personal contact details (kept out of git). The email code expired, and Apple then locked further attempts after repeated requests. Retry on 24 Nov: Business, then Complete Compliance Requirements, then the email code, then the phone code. The 27 EU countries stay "Trader Status Not Provided" until then.
+  - **Play trader status: not finished.** "This is a trader account" was chosen. The legal name and address come from the Google payments profile; the phone number is entered, but no SMS code has been requested yet. After that, App content has "App-level trader status and Terms of Service" to complete, with ToS `https://aximoix.com/terms/#cipherrush`. Due 1 Feb 2027.
+  - **AdMob:**
+    - The iOS app is **linked to the App Store listing** (found by store URL; searching by ID found nothing). app-ads.txt verification failed because the listing has no Marketing URL, so AdMob can't find `aximoix.com/app-ads.txt`. That file itself is correct. Fix: set the Marketing URL to `https://aximoix.com` on a version, then use AdMob's "Check for updates".
+    - Android can't be linked until the app is in production: Play search doesn't list closed-testing apps.
+    - Ad unit IDs are unchanged; both apps still show "Limited ad serving".
+
 ### 3.2 Open
 
 | ID | Issue | Severity | Notes |
