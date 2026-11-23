@@ -3029,10 +3029,10 @@ body {
 
 .walkthrough-btn {
   min-height: var(--tap, 48px);
-  min-width: 5.5rem;
-  flex: 0 0 auto;
+  min-width: 4.5rem;
+  flex: 0 1 auto;
   white-space: nowrap;
-  padding: 0.5rem 0.9rem;
+  padding: 0.5rem 0.75rem;
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.15);
   background: rgba(255, 255, 255, 0.05);
@@ -3055,8 +3055,7 @@ body {
 
 .walkthrough-dots {
   display: flex;
-  flex: 0 1 auto;
-  min-width: 0;
+  flex: 0 0 auto;
   gap: 0.35rem;
 }
 
@@ -3075,6 +3074,7 @@ body {
 }
 
 .walkthrough-dots span {
+  flex: 0 0 6px;
   width: 6px;
   height: 6px;
   border-radius: 50%;
@@ -3756,13 +3756,18 @@ textarea {
 .connection-banner {
   position: fixed;
   top: calc(var(--safe-top) + 6px);
-  left: 50%;
-  transform: translateX(-50%);
+  /* Centred with auto margins: left: 50% + translate would cap the pill at
+     half the screen and wrap longer languages onto three lines. */
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  width: fit-content;
   z-index: 2000;
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: 0.5rem;
   max-width: calc(100vw - 32px);
+  line-height: 1.3;
   padding: 0.55rem 0.9rem;
   border-radius: 999px;
   font-size: 0.82rem;
@@ -4834,4 +4839,11 @@ html.app-paused *::after {
 
 .language-settings .language-grid {
   margin-top: 4px;
+}
+
+.account-row .clear-data-btn {
+  width: 100%;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  padding: 0.6rem 1rem;
 }

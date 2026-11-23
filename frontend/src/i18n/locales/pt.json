@@ -387,7 +387,11 @@
     "boundary.title": "Este ecrã deu erro",
     "boundary.body": "Algo falhou ao carregar. O teu progresso está seguro no servidor.",
     "boundary.retry": "Tentar outra vez",
-    "net.unreachable": "Não foi possível ligar ao servidor. Verifica o teu sinal."
+    "net.unreachable": "Não foi possível ligar ao servidor. Verifica o teu sinal.",
+    "var.caesar": "César",
+    "ci.free.caesar": "O mesmo deslocamento em todas as letras, entre 1 e 25.",
+    "ci.free.atbash": "Alfabeto espelhado. A troca com Z, B com Y, e assim por diante. Decifrar é o mesmo passo.",
+    "ci.free.vigenere": "A chave tem {n} letras. As letras 1, {a}, {b}... (só letras) usam o mesmo deslocamento."
   },
   "modes": {
     "daily": {

@@ -53,7 +53,13 @@ function DeleteAccountDialog({ onClose, onDeleted }) {
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="auth-modal danger-dialog" role="dialog" aria-modal="true" aria-labelledby="delete-title" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="auth-modal danger-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="delete-title"
+        onClick={(e) => e.stopPropagation()}
+      >
         <h2 id="delete-title">{t("acc.delTitle")}</h2>
         <p>
           {t("acc.delBody")} {t("acc.delApple")}
@@ -192,7 +198,10 @@ function LinkPassword({ currentHandle, onLinked }) {
     setBusy(true);
     setMessage("");
     try {
-      const { data } = await api.post("/me/link-credentials", { username: form.handle.trim(), password: form.password });
+      const { data } = await api.post("/me/link-credentials", {
+        username: form.handle.trim(),
+        password: form.password,
+      });
       haptic("success");
       onLinked(data.user, data.verification_sent);
     } catch (err) {
@@ -336,7 +345,10 @@ function AccountSettings({ account, setAccount }) {
   const [cleared, setCleared] = useState(false);
 
   const methods = account
-    ? [...(account.has_password ? [t("acc.methodPassword")] : []), ...account.providers.map((p) => PROVIDER_LABEL[p] || p)]
+    ? [
+        ...(account.has_password ? [t("acc.methodPassword")] : []),
+        ...account.providers.map((p) => PROVIDER_LABEL[p] || p),
+      ]
     : [];
 
   return (
@@ -373,7 +385,7 @@ function AccountSettings({ account, setAccount }) {
           <AdPrivacyButton />
           <button
             type="button"
-            className="btn-secondary"
+            className="btn-secondary clear-data-btn"
             onClick={() => {
               clearCache();
               updateUser({}); // keep this phone's sign-in, so the app still opens offline

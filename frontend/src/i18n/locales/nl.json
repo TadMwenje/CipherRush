@@ -387,7 +387,11 @@
     "boundary.title": "Dit scherm liep vast",
     "boundary.body": "Er ging iets mis bij het laden. Je voortgang staat veilig op de server.",
     "boundary.retry": "Opnieuw",
-    "net.unreachable": "Kan de server niet bereiken. Check je verbinding."
+    "net.unreachable": "Kan de server niet bereiken. Check je verbinding.",
+    "var.caesar": "Caesar",
+    "ci.free.caesar": "Elke letter schuift even ver op, ergens tussen 1 en 25.",
+    "ci.free.atbash": "Spiegelalfabet. A ruilt met Z, B met Y, enzovoort. Ontcijferen gaat precies zo.",
+    "ci.free.vigenere": "De sleutel heeft {n} letters. Letter 1, {a}, {b}... (alleen letters) schuiven even ver op."
   },
   "modes": {
     "daily": {

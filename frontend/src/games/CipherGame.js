@@ -16,15 +16,12 @@ import { earnReward } from "../ads/rewards";
 import { afterBreak } from "../ads/pacing";
 import { rich, useLanguage, useT } from "../i18n";
 import useModeLabel from "../hooks/useModeLabel";
+import { freeHint as freeHintText, variantLabel } from "./cipherText";
 
 const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 const WARNING_SECONDS = 20;
 
-const VARIANTS = [
-  { key: "caesar", label: "Caesar" },
-  { key: "atbash", label: "Atbash" },
-  { key: "vigenere", label: "Vigenère", note: "1.5x" },
-];
+const VARIANTS = [{ key: "caesar" }, { key: "atbash" }, { key: "vigenere", note: "1.5x" }];
 
 // Caesar wheel: drag the strip sideways (or use the buttons) to line up a shift.
 export function CaesarWheel() {
@@ -142,9 +139,7 @@ export function KeyLengthView({ ciphertext, keyLength }) {
           );
         })}
       </div>
-      <div className="cipher-tool-legend">
-        {t("ci.keyLegend")}
-      </div>
+      <div className="cipher-tool-legend">{t("ci.keyLegend")}</div>
     </div>
   );
 }
@@ -361,7 +356,7 @@ function CipherGame() {
             onClick={() => pickVariant(v.key)}
             disabled={loading || busy}
           >
-            {v.label}
+            {variantLabel(v.key, t)}
             {v.note && <span className="segmented-note">{v.note}</span>}
           </button>
         ))}
@@ -383,7 +378,7 @@ function CipherGame() {
                 <Bulb size={20} />
               </div>
               <div className="hint-text">
-                <div>{round.free_hint}</div>
+                <div>{freeHintText(round, t)}</div>
                 {hints.map((h) => (
                   <div key={h} className="hint-paid">
                     {h}
@@ -404,15 +399,30 @@ function CipherGame() {
                   if (answer.trim()) submit();
                 }}
               >
-                <AnswerInput value={answer} onChange={setAnswer} disabled={!active || busy} focusOnMount={primedRef.current} />
+                <AnswerInput
+                  value={answer}
+                  onChange={setAnswer}
+                  disabled={!active || busy}
+                  focusOnMount={primedRef.current}
+                />
                 {adsAvailable() && hintsLeft > 0 && (
-                  <button type="button" className="free-hint-btn" onClick={freeHint} disabled={!active || busy || watching}>
+                  <button
+                    type="button"
+                    className="free-hint-btn"
+                    onClick={freeHint}
+                    disabled={!active || busy || watching}
+                  >
                     <Bulb size={16} />
                     {watching ? t("ci.videoPaused") : t("ci.videoHint")}
                   </button>
                 )}
                 <div className="answer-actions">
-                  <button type="button" className="hint-btn" onClick={requestHint} disabled={!active || busy || watching || hintsLeft <= 0}>
+                  <button
+                    type="button"
+                    className="hint-btn"
+                    onClick={requestHint}
+                    disabled={!active || busy || watching || hintsLeft <= 0}
+                  >
                     <Bulb size={16} />
                     {hintsLeft > 0 ? t("ci.hintCost", { n: round.hint_penalty_pct }) : t("ci.noHints")}
                   </button>

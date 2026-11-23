@@ -387,7 +387,11 @@
     "boundary.title": "Ten ekran się zaciął",
     "boundary.body": "Coś się zepsuło przy wczytywaniu. Postępy są bezpieczne na serwerze.",
     "boundary.retry": "Spróbuj ponownie",
-    "net.unreachable": "Brak połączenia z serwerem. Sprawdź zasięg."
+    "net.unreachable": "Brak połączenia z serwerem. Sprawdź zasięg.",
+    "var.caesar": "Cezar",
+    "ci.free.caesar": "Każda litera przesunięta o tyle samo, od 1 do 25.",
+    "ci.free.atbash": "Alfabet lustrzany. A zamienia się z Z, B z Y i tak dalej. Odszyfrowanie to ten sam ruch.",
+    "ci.free.vigenere": "Klucz ma {n} liter. Litery 1, {a}, {b}... (tylko litery) mają to samo przesunięcie."
   },
   "modes": {
     "daily": {

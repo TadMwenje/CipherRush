@@ -387,7 +387,11 @@
     "boundary.title": "Esta pantalla ha fallado",
     "boundary.body": "Algo falló al cargarla. Tu progreso está a salvo en el servidor.",
     "boundary.retry": "Reintentar",
-    "net.unreachable": "No hay conexión con el servidor. Revisa tu señal."
+    "net.unreachable": "No hay conexión con el servidor. Revisa tu señal.",
+    "var.caesar": "César",
+    "ci.free.caesar": "El mismo desplazamiento en cada letra, entre 1 y 25.",
+    "ci.free.atbash": "Alfabeto espejo. La A se cambia por la Z, la B por la Y, y así. Descifrar es el mismo paso.",
+    "ci.free.vigenere": "La clave tiene {n} letras. Las letras 1, {a}, {b}... (solo letras) usan el mismo desplazamiento."
   },
   "modes": {
     "daily": {

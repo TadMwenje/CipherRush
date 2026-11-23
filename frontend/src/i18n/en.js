@@ -109,6 +109,10 @@ const EN = {
   "net.offline": "Offline. Showing your saved stats.",
   "net.offlineRound": "Offline. Your round will sync when you're back.",
   "net.reconnecting": "Reconnecting",
+  "var.caesar": "Caesar",
+  "ci.free.caesar": "Same shift on every letter, somewhere between 1 and 25.",
+  "ci.free.atbash": "Mirror alphabet. A swaps with Z, B with Y, and so on. Decoding is the same move.",
+  "ci.free.vigenere": "The key is {n} letters. Letters 1, {a}, {b}... (letters only) all use the same shift.",
   "net.unreachable": "Can't reach the server. Check your signal.",
 
   "lvl.xp": "{have} / {need} XP",

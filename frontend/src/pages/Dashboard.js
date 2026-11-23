@@ -15,12 +15,7 @@ import BoostOffer from "../components/BoostOffer";
 import { initAds } from "../ads/admob";
 import { shouldOfferBoost } from "../ads/pacing";
 import { modeText, useLanguage, useT } from "../i18n";
-
-const VARIANT_LABEL = {
-  caesar: "Caesar",
-  atbash: "Atbash",
-  vigenere: "Vigenère",
-};
+import { variantLabel } from "../games/cipherText";
 
 function DailyCard({ daily, onOpen }) {
   const t = useT();
@@ -33,7 +28,7 @@ function DailyCard({ daily, onOpen }) {
       <div className="daily-card-icon">{daily?.solved ? <CheckOct size={26} /> : <Icon size={26} />}</div>
       <div className="daily-card-body">
         <div className="daily-card-title">
-          {t("daily.title")} {daily && <span className="daily-card-variant">{VARIANT_LABEL[daily.variant]}</span>}
+          {t("daily.title")} {daily && <span className="daily-card-variant">{variantLabel(daily.variant, t)}</span>}
         </div>
         <div className="daily-card-status">{status}</div>
       </div>

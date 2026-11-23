@@ -16,18 +16,18 @@
     "dash.howItWorks": "Comment ça marche",
     "dash.offlineTitle": "Tu es hors ligne.",
     "dash.offlineBody": "Les parties notées ont besoin d'une connexion. Le mode entraînement fonctionne sans.",
-    "dash.practiceLink": "Mode entraînement : César, Match-3 et Vrai/Faux non notés, jouables hors ligne",
+    "dash.practiceLink": "Mode entraînement : César, Match-3 et Vrai/Faux non notés, jouables hors ligne",
     "dash.howToPlay": "Comment jouer à {mode}",
     "daily.title": "Chiffre du jour",
     "daily.waiting": "Le chiffre du jour t'attend.",
-    "daily.inProgress": "En cours : le chrono tourne.",
+    "daily.inProgress": "En cours : le chrono tourne.",
     "daily.cracked": "Déchiffré en {s} s. À demain.",
     "daily.missed": "Raté aujourd'hui. À demain.",
     "daily.streak": "Série de {n} jours",
     "howto.title": "Comment ça marche",
-    "howto.intro": "Chaque mode a son propre niveau. Pour monter, gagne l'XP et réussis 4 manches à ce niveau : les manches perdues rapportent un peu, mais ne comptent pas. À partir du niveau 5, il faudra aussi avoir essayé quelques autres modes. Tous les scores sont calculés sur notre serveur, donc personne ne triche au classement.",
+    "howto.intro": "Chaque mode a son propre niveau. Pour monter, gagne l'XP et réussis 4 manches à ce niveau : les manches perdues rapportent un peu, mais ne comptent pas. À partir du niveau 5, il faudra aussi avoir essayé quelques autres modes. Tous les scores sont calculés sur notre serveur, donc personne ne triche au classement.",
     "howto.quickRules": "Règles rapides",
-    "howto.footer": "Classements propose trois tableaux : général, meilleure partie Rush et le Chiffre du jour le plus rapide.",
+    "howto.footer": "Classements propose trois tableaux : général, meilleure partie Rush et le Chiffre du jour le plus rapide.",
     "howto.close": "Fermer",
     "walk.step": "Étape {i} sur {n}",
     "walk.back": "Retour",
@@ -37,7 +37,7 @@
     "welcome.subtitle": "Déchiffre des codes. Bats le chrono. Ne mords pas à l'hameçon.",
     "welcome.play": "Jouer",
     "welcome.practice": "S'entraîner sans compte",
-    "welcome.practiceOffline": "Pas de réseau ? Entraîne-toi hors ligne",
+    "welcome.practiceOffline": "Pas de réseau ? Entraîne-toi hors ligne",
     "welcome.footer": "Repère le motif. Décode le signal.",
     "splash.subtitle": "Chiffres, motifs et octets.",
     "splash.loading": "Chargement",
@@ -93,8 +93,8 @@
     "lvl.xp": "{have} / {need} XP",
     "lvl.max": "Niveau max",
     "lvl.rounds": "{done}/{need} manches réussies à ce niveau",
-    "lvl.roundsLeft": "L'XP est là. Manches restantes pour monter : {n}",
-    "lvl.locked": "Le niveau {next} se débloque quand tu auras essayé d'autres modes : {modes}.",
+    "lvl.roundsLeft": "L'XP est là. Manches restantes pour monter : {n}",
+    "lvl.locked": "Le niveau {next} se débloque quand tu auras essayé d'autres modes : {modes}.",
     "lvl.otherModes": "{have}/{need} autres modes essayés",
     "g.score": "Score",
     "g.moves": "Coups",
@@ -116,7 +116,7 @@
     "g.outOfTime": "Temps écoulé.",
     "g.notIt": "Pas ça.",
     "g.itSaid": "C'était {word}.",
-    "g.keyNote": "clé : {k}",
+    "g.keyNote": "clé : {k}",
     "g.nextCipher": "Chiffre suivant",
     "g.crackIt": "Déchiffrer",
     "g.speed": "Vitesse +{n}",
@@ -139,7 +139,7 @@
     "tf.bestStreak": "Meilleure série {n}",
     "mem.loading": "On mélange les cartes",
     "mem.noMatch": "Pas de paire",
-    "mem.cardUp": "Carte : {s}",
+    "mem.cardUp": "Carte : {s}",
     "mem.cardDown": "Carte {n}, face cachée",
     "mem.perfect": "Mémoire parfaite.",
     "mem.summary": "Coups {moves} · ratés {misses}",
@@ -154,13 +154,13 @@
     "quiz.loading": "Chargement des questions",
     "quiz.of": "{i} sur {n}",
     "quiz.ruledOut": "{option} (écartée)",
-    "quiz.freeHint": "Indice : en écarter une ({n} gratuits)",
-    "quiz.videoHint": "Un autre indice : regarde une courte vidéo",
+    "quiz.freeHint": "Indice : en écarter une ({n} gratuits)",
+    "quiz.videoHint": "Un autre indice : regarde une courte vidéo",
     "quiz.noHints": "Plus d'indice gratuit pour cette manche",
     "quiz.lockIn": "Valider les réponses",
     "quiz.toClear": "il en faut 3 pour réussir",
-    "quiz.youSaid": "Tu as dit :",
-    "quiz.answer": "Réponse :",
+    "quiz.youSaid": "Tu as dit :",
+    "quiz.answer": "Réponse :",
     "bh.pad": "Seulement {n} bits. Complète avec des zéros devant.",
     "bh.prefix": "Ignore le préfixe. L'hexa, c'est {hex}.",
     "bh.decimal": "{n} se lit directement dans la table ASCII",
@@ -183,7 +183,7 @@
     "rush.go": "90 secondes. Go.",
     "rush.intro": "Chaque mot affiche sa clé. Enchaîne-les et le combo grimpe.",
     "rush.start": "Go",
-    "rush.next": "suivant : {n} pts",
+    "rush.next": "suivant : {n} pts",
     "rush.placeholder": "Mot déchiffré",
     "rush.skip": "Passer",
     "rush.crack": "Valider",
@@ -196,7 +196,7 @@
     "m3.newBoard": "Nouveau plateau",
     "m3.loading": "Chargement du plateau",
     "m3.outLabel": "Plus de coups",
-    "m3.offer": "Il manque {n}. Une courte vidéo pour {m} coups de plus ?",
+    "m3.offer": "Il manque {n}. Une courte vidéo pour {m} coups de plus ?",
     "m3.watch": "Regarder pour +{m} coups",
     "m3.end": "Finir la manche",
     "m3.spare": "{n} coups d'avance, +{b}.",
@@ -217,7 +217,7 @@
     "ci.loading": "Chargement du chiffre",
     "ci.ciphertext": "Texte chiffré",
     "ci.videoPaused": "Chargement de la vidéo. Le chrono est en pause.",
-    "ci.videoHint": "Indice gratuit : regarde une courte vidéo",
+    "ci.videoHint": "Indice gratuit : regarde une courte vidéo",
     "ci.hintCost": "Indice −{n}%",
     "ci.noHints": "Plus d'indices",
     "dg.soon": "d'une seconde à l'autre",
@@ -229,13 +229,13 @@
     "dg.nextIn": "Prochain chiffre dans {t}.",
     "dg.oneShot": "Un essai. Le même chiffre pour tout le monde.",
     "dg.today": "Aujourd'hui, c'est {v}. Trois minutes, une réponse.",
-    "dg.solvers": "Déjà déchiffré par : {n}.",
+    "dg.solvers": "Déjà déchiffré par : {n}.",
     "dg.start": "Lancer le chrono",
     "dg.lockIn": "Valider",
     "pr.title": "Entraînement",
     "pr.tf": "Vrai/Faux",
     "pr.caesarHint": "Chaque lettre s'est décalée du même nombre de places. Essaie un décalage qui donne un vrai petit mot.",
-    "pr.banner": "Mode entraînement : rien n'est noté. Score et XP viennent seulement des parties normales.",
+    "pr.banner": "Mode entraînement : rien n'est noté. Score et XP viennent seulement des parties normales.",
     "pr.bannerOffline": "Mode entraînement hors ligne. Score et XP en pause jusqu'à ton retour.",
     "pr.modeLabel": "Mode entraînement",
     "pr.showMe": "Montre-moi",
@@ -256,12 +256,12 @@
     "vs.soon": "Bientôt",
     "ranks.meta": "Niveau {n} · {games} parties",
     "ranks.metaOne": "Niveau {n} · 1 partie",
-    "toast.double": "Points doublés : cette manche compte double.",
+    "toast.double": "Points doublés : cette manche compte double.",
     "toast.account": "Niveau du compte {n}.",
-    "toast.mode": "{mode} : niveau {n} débloqué.",
+    "toast.mode": "{mode} : niveau {n} débloqué.",
     "toast.badge": "Badge débloqué",
     "rem.blocked": "Les notifications de CipherRush sont coupées dans les Réglages du téléphone. Active-les d'abord là-bas.",
-    "rem.title": "On te prévient quand le nouveau Chiffre du jour sort ?",
+    "rem.title": "On te prévient quand le nouveau Chiffre du jour sort ?",
     "rem.copy": "Une alerte à chaque nouveau chiffre et un petit rappel de temps en temps. Jamais la nuit. Modifiable dans Profil.",
     "rem.turnOn": "Activer",
     "rem.notNow": "Pas maintenant",
@@ -288,10 +288,10 @@
     "acc.adPrivacy": "Confidentialité des pubs",
     "acc.savedEmail": "Enregistré. Le code t'attend dans tes e-mails.",
     "acc.savedHandle": "Enregistré. Tu peux te connecter avec ton pseudo.",
-    "acc.delTitle": "Supprimer ton compte ?",
+    "acc.delTitle": "Supprimer ton compte ?",
     "acc.delBody": "Ton compte, tes scores, niveaux, badges et places au classement seront supprimés pour de bon. C'est irréversible.",
     "acc.delApple": "Si tu t'es connecté avec Apple, on retire aussi l'accès de CipherRush à ton identifiant Apple.",
-    "acc.delDetails": "Détails :",
+    "acc.delDetails": "Détails :",
     "acc.delWhat": "ce qui est supprimé",
     "acc.delType": "Tape DELETE pour confirmer",
     "acc.delKeep": "Le garder",
@@ -349,9 +349,9 @@
     "auth.loggingIn": "Connexion",
     "auth.creating": "Création du compte",
     "auth.create": "Créer un compte",
-    "auth.forgot": "Mot de passe oublié ?",
-    "auth.newHere": "Nouveau ici ?",
-    "auth.gotAccount": "Déjà un compte ?",
+    "auth.forgot": "Mot de passe oublié ?",
+    "auth.newHere": "Nouveau ici ?",
+    "auth.gotAccount": "Déjà un compte ?",
     "auth.makeOne": "Crées-en un",
     "social.googleFail": "La connexion Google n'a pas marché.",
     "social.googleLoad": "Impossible de charger la connexion Google.",
@@ -370,7 +370,7 @@
     "verify.resend": "Envoyer un nouveau code",
     "boost.limit": "Tu as utilisé tes trois manches doublées du jour. À demain.",
     "boost.tag": "Points doublés",
-    "boost.title": "Doubler ta prochaine manche de {mode} ?",
+    "boost.title": "Doubler ta prochaine manche de {mode} ?",
     "boost.body": "Regarde une courte pub et ta prochaine manche compte double. Jusqu'à trois par jour.",
     "boost.loading": "Chargement de la pub",
     "boost.watch": "Voir la pub",
@@ -387,7 +387,11 @@
     "boundary.title": "Cet écran a eu un souci",
     "boundary.body": "Un truc a planté au chargement. Ta progression est à l'abri sur le serveur.",
     "boundary.retry": "Réessayer",
-    "net.unreachable": "Impossible de joindre le serveur. Vérifie ton réseau."
+    "net.unreachable": "Impossible de joindre le serveur. Vérifie ton réseau.",
+    "var.caesar": "César",
+    "ci.free.caesar": "Même décalage sur chaque lettre, entre 1 et 25.",
+    "ci.free.atbash": "Alphabet miroir. A s'échange avec Z, B avec Y, et ainsi de suite. Décoder, c'est le même geste.",
+    "ci.free.vigenere": "La clé fait {n} lettres. Les lettres 1, {a}, {b}... (lettres seulement) ont le même décalage."
   },
   "modes": {
     "daily": {
@@ -411,7 +415,7 @@
       "label": "Rush chiffré",
       "tagline": "90 secondes. Mots courts. Enchaîne le combo.",
       "rules": [
-        "Chaque mot est donné avec sa clé : ROT-quelque chose ou Atbash. Décode-en un maximum en 90 secondes.",
+        "Chaque mot est donné avec sa clé : ROT-quelque chose ou Atbash. Décode-en un maximum en 90 secondes.",
         "Enchaîne les bonnes réponses pour un combo. Il grimpe vite puis plafonne à 2,5x.",
         "Une erreur ou un passage remet le combo à zéro. Les mots s'allongent au fil de la partie."
       ]
@@ -420,7 +424,7 @@
       "label": "Binaire / Hex",
       "tagline": "Des octets en entrée, des mots en sortie.",
       "rules": [
-        "Chaque mot est écrit en octets ASCII : binaire, hex, décimal, ou tels qu'ils apparaissent dans les URL et le code source.",
+        "Chaque mot est écrit en octets ASCII : binaire, hex, décimal, ou tels qu'ils apparaissent dans les URL et le code source.",
         "De l'octet au nombre, du nombre à la lettre. 65 c'est A, 90 c'est Z.",
         "Touche un octet pour voir le calcul. La table ASCII est à portée de doigt. Les niveaux élevés retirent le remplissage et ajoutent des préfixes."
       ]
@@ -429,16 +433,16 @@
       "label": "Quiz sécurité",
       "tagline": "Cinq questions. Vérifie avant de faire confiance.",
       "rules": [
-        "Choisis un thème : repérer les faux, relations humaines, crypto, malware ou réponse aux incidents.",
+        "Choisis un thème : repérer les faux, relations humaines, crypto, malware ou réponse aux incidents.",
         "Cinq questions par manche. 3 bonnes réponses pour la réussir. Chaque réponse est expliquée.",
-        "Bloqué ? Un indice élimine une mauvaise réponse. Trois par manche sont gratuits ; ensuite, une courte vidéo en offre un autre."
+        "Bloqué ? Un indice élimine une mauvaise réponse. Trois par manche sont gratuits ; ensuite, une courte vidéo en offre un autre."
       ]
     },
     "truefalse": {
       "label": "Vrai ou faux",
       "tagline": "Dix affirmations. Démasque le bluff.",
       "rules": [
-        "Dix affirmations, moitié vraies et moitié fausses. Glisse à droite ou touche « Vrai » ; à gauche ou touche « Faux ».",
+        "Dix affirmations, moitié vraies et moitié fausses. Glisse à droite ou touche « Vrai » ; à gauche ou touche « Faux ».",
         "Les séries rapportent un petit plus. 7 bonnes réponses pour réussir la manche."
       ]
     },
@@ -462,23 +466,23 @@
   },
   "steps": {
     "caesar": {
-      "title": "César : un seul décalage pour toutes les lettres",
+      "title": "César : un seul décalage pour toutes les lettres",
       "body": "Chaque lettre a été décalée du même nombre de positions. Trouve le décalage et annule-le. Tourne la roue jusqu'à ce qu'un mot court devienne un vrai mot.",
       "tip": "En anglais, les mots d'une lettre sont presque toujours A ou I. Ça te donne le décalage tout de suite."
     },
     "atbash": {
-      "title": "Atbash : l'alphabet miroir",
+      "title": "Atbash : l'alphabet miroir",
       "body": "A s'échange avec Z, B avec Y, C avec X, et ainsi de suite. Pas de clé à trouver. Déchiffrer, c'est le même geste que chiffrer.",
       "tip": "Si aucun décalage de la roue n'a de sens, c'est sûrement Atbash."
     },
     "vigenere": {
-      "title": "Vigenère : un mot-clé fixe les décalages",
-      "body": "Écris le mot-clé sous le message en le répétant. Chaque lettre de la clé est un décalage : A vaut 0, B vaut 1, jusqu'à Z qui vaut 25. Annule chacun d'eux.",
+      "title": "Vigenère : un mot-clé fixe les décalages",
+      "body": "Écris le mot-clé sous le message en le répétant. Chaque lettre de la clé est un décalage : A vaut 0, B vaut 1, jusqu'à Z qui vaut 25. Annule chacun d'eux.",
       "tip": "La même lettre peut se déchiffrer différemment à chaque fois. Les indices révèlent la première lettre de la clé, puis la clé entière."
     },
     "clock": {
       "title": "Bats le chrono",
-      "body": "Tape le texte en clair et touche « Déchiffrer ». Plus tu vas vite, plus tu gagnes. Chaque indice coûte 20 %, mais l'indice vidéo est gratuit et met le chrono en pause.",
+      "body": "Tape le texte en clair et touche « Déchiffrer ». Plus tu vas vite, plus tu gagnes. Chaque indice coûte 20 %, mais l'indice vidéo est gratuit et met le chrono en pause.",
       "tip": "Une mauvaise réponse ne termine pas la manche. Continue jusqu'à la fin du temps."
     },
     "daily_intro": {
@@ -492,8 +496,8 @@
     },
     "rush_key": {
       "title": "La clé est donnée avec le mot",
-      "body": "Chaque mot affiche sa clé : ROT-quelque chose ou Atbash. Annule-la et tape le mot.",
-      "tip": "ROT-13 s'annule lui-même : décaler de 13 en avant ou en arrière donne la même lettre."
+      "body": "Chaque mot affiche sa clé : ROT-quelque chose ou Atbash. Annule-la et tape le mot.",
+      "tip": "ROT-13 s'annule lui-même : décaler de 13 en avant ou en arrière donne la même lettre."
     },
     "rush_combo": {
       "title": "Enchaîne le combo",
@@ -507,17 +511,17 @@
     },
     "binhex_bytes": {
       "title": "Les octets sont des lettres",
-      "body": "Chaque octet est un caractère ASCII. Transforme-le en nombre, puis le nombre en lettre : 65 c'est A, 90 c'est Z.",
+      "body": "Chaque octet est un caractère ASCII. Transforme-le en nombre, puis le nombre en lettre : 65 c'est A, 90 c'est Z.",
       "tip": "En hex, 0x41 à 0x5A correspondent à A à Z. Une fois le premier chiffre connu, le second compte à partir de A (1)."
     },
     "binhex_notations": {
       "title": "Mêmes octets, autres notations",
-      "body": "Les niveaux élevés écrivent les octets comme dans la vraie vie : binaire complété, 0x, \\x dans le code source et encodage % dans les URL. Touche un octet pour voir le calcul."
+      "body": "Les niveaux élevés écrivent les octets comme dans la vraie vie : binaire complété, 0x, \\x dans le code source et encodage % dans les URL. Touche un octet pour voir le calcul."
     },
     "binhex_tap": {
       "title": "Touche un octet pour voir le calcul",
-      "body": "Bloqué sur un octet ? Touche-le pour voir le détail et ouvre la table ASCII quand tu veux. Décode chaque octet, puis tape le mot.",
-      "tip": "Valeurs binaires en partant de la droite : 1, 2, 4, 8, 16, 32, 64, 128. Additionne celles qui sont allumées."
+      "body": "Bloqué sur un octet ? Touche-le pour voir le détail et ouvre la table ASCII quand tu veux. Décode chaque octet, puis tape le mot.",
+      "tip": "Valeurs binaires en partant de la droite : 1, 2, 4, 8, 16, 32, 64, 128. Additionne celles qui sont allumées."
     },
     "quiz_topic": {
       "title": "Choisis un thème",
@@ -525,7 +529,7 @@
     },
     "quiz_hint": {
       "title": "Élimine une réponse",
-      "body": "Touche « Indice » pour rayer une mauvaise réponse. Trois indices par manche sont gratuits ; ensuite, une courte vidéo en offre un autre.",
+      "body": "Touche « Indice » pour rayer une mauvaise réponse. Trois indices par manche sont gratuits ; ensuite, une courte vidéo en offre un autre.",
       "tip": "Un indice ne retire jamais la bonne réponse, il aide donc toujours."
     },
     "quiz_why": {
@@ -538,12 +542,12 @@
     },
     "tf_swipe": {
       "title": "Glisse ou touche",
-      "body": "Glisse à droite ou touche « Vrai » si c'est vrai. Glisse à gauche ou touche « Faux » sinon."
+      "body": "Glisse à droite ou touche « Vrai » si c'est vrai. Glisse à gauche ou touche « Faux » sinon."
     },
     "tf_streak": {
       "title": "Garde la série",
       "body": "7 bonnes réponses sur 10 pour réussir la manche. Les bonnes réponses d'affilée rapportent un petit plus.",
-      "tip": "Lis chaque mot. Un « toujours » ou un « jamais » peut tout changer."
+      "tip": "Lis chaque mot. Un « toujours » ou un « jamais » peut tout changer."
     },
     "m3_swap": {
       "title": "Échange deux voisines",
@@ -564,7 +568,7 @@
     },
     "mem_remember": {
       "title": "Retiens où sont les choses",
-      "body": "Les cartes qui ne vont pas ensemble se retournent. Retiens ce que tu as vu : chaque erreur coûte des points.",
+      "body": "Les cartes qui ne vont pas ensemble se retournent. Retiens ce que tu as vu : chaque erreur coûte des points.",
       "tip": "Parcours le plateau avec méthode, rangée par rangée, pour mieux t'en souvenir."
     },
     "mem_grow": {

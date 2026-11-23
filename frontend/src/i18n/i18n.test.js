@@ -99,3 +99,15 @@ test("the sound switch is remembered and silences the game", () => {
   sound.setSoundEnabled(true);
   expect(localStorage.getItem("cr_sound")).toBe("on");
 });
+
+test("cipher names and free hints follow the language", () => {
+  const { freeHint, variantLabel } = require("../games/cipherText");
+  const fr = (key, vars) => t(key, vars, "fr");
+  expect(variantLabel("caesar", fr)).toBe("César");
+  expect(variantLabel("vigenere", fr)).toBe("Vigenère");
+  expect(freeHint({ variant: "caesar" }, fr)).toBe("Même décalage sur chaque lettre, entre 1 et 25.");
+  expect(freeHint({ variant: "vigenere", key_length: 4 }, (k, v) => t(k, v, "en"))).toBe(
+    "The key is 4 letters. Letters 1, 5, 9... (letters only) all use the same shift."
+  );
+  expect(freeHint({ variant: "other", free_hint: "server text" }, fr)).toBe("server text");
+});

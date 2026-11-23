@@ -24,6 +24,8 @@ rules on the server side too; the app checks handles itself first.
   everywhere, and dates read "23 Nov 2026".
 - **Handle field:** full width with Save underneath, so a 20-character handle
   shows in full.
+- **Cipher names and hints:** "César", "Cezar" and so on, and the free hint
+  under each cipher, follow the app language.
 
 ### Changed
 - **Profile, in four cards:** who you are (handle, level, score, member

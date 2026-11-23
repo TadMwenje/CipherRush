@@ -10,10 +10,9 @@ import { primeKeyboard } from "../mobile/keyboard";
 import GameHeader from "../components/GameHeader";
 import useGameRewards from "../hooks/useGameRewards";
 import { CaesarWheel, AtbashMirror, KeyLengthView, useCountdown, AnswerInput, ItSaid } from "./CipherGame";
+import { freeHint, variantLabel } from "./cipherText";
 import { formatNumber, useLanguage, useT } from "../i18n";
 import useModeLabel from "../hooks/useModeLabel";
-
-const VARIANT_LABEL = { caesar: "Caesar", atbash: "Atbash", vigenere: "Vigenère" };
 
 // Server time, not the phone's clock - changing the device date can't fake a new day.
 function untilReset(iso, t) {
@@ -28,7 +27,10 @@ function TodayBoard() {
   const t = useT();
   const [rows, setRows] = useState(null);
   useEffect(() => {
-    api.get("/leaderboard/daily").then((res) => setRows(res.data.leaderboard)).catch(() => setRows([]));
+    api
+      .get("/leaderboard/daily")
+      .then((res) => setRows(res.data.leaderboard))
+      .catch(() => setRows([]));
   }, []);
   if (!rows) return null;
   return (
@@ -149,7 +151,7 @@ function DailyGame() {
         {status && (
           <>
             <span>
-              <Calendar size={16} /> {status.day} · {VARIANT_LABEL[status.variant]}
+              <Calendar size={16} /> {status.day} · {variantLabel(status.variant, t)}
             </span>
             <span className={status.streak > 0 ? "daily-streak hot" : "daily-streak"}>
               <Flame size={16} /> {t("daily.streak", { n: status.streak })}
@@ -176,7 +178,7 @@ function DailyGame() {
                 </div>
                 <h2>{t("dg.oneShot")}</h2>
                 <p>
-                  {t("dg.today", { v: VARIANT_LABEL[status.variant] })}
+                  {t("dg.today", { v: variantLabel(status.variant, t) })}
                   {status.solvers_today > 0 && ` ${t("dg.solvers", { n: formatNumber(status.solvers_today, lang) })}`}
                 </p>
                 <button className="btn-primary" onClick={start} disabled={busy}>
@@ -195,11 +197,13 @@ function DailyGame() {
               <div className="hint-icon">
                 <Bulb size={20} />
               </div>
-              <div className="hint-text">{round.free_hint}</div>
+              <div className="hint-text">{freeHint(round, t)}</div>
             </div>
             {round.variant === "caesar" && <CaesarWheel />}
             {round.variant === "atbash" && <AtbashMirror />}
-            {round.variant === "vigenere" && <KeyLengthView ciphertext={round.ciphertext} keyLength={round.key_length} />}
+            {round.variant === "vigenere" && (
+              <KeyLengthView ciphertext={round.ciphertext} keyLength={round.key_length} />
+            )}
 
             {!result && (
               <form

@@ -6,7 +6,7 @@ Single source of truth for what CipherRush is, how it's built, what has been don
 | --- | --- |
 | **Last updated** | 2026-11-23 |
 | **Branch** | `v1.0.2` (local only, not pushed; branched from `v1.0.1`). `v1.0.1` is pushed and is what Render deploys via `ios-device-testing` |
-| **Test status** | 276 backend tests · 266 frontend tests · strict production build clean (2026-11-23, branch `v1.0.2`) |
+| **Test status** | 276 backend tests · 267 frontend tests · strict production build clean (2026-11-23, branch `v1.0.2`) |
 | **Native builds** | iOS 1.0 (3) Ready for Distribution; iOS 1.0.1 (4) Waiting for Review (2026-11-23) · Android 1.0.0 (5) live on Closed testing - Alpha; 1.0.1 (6) live on Alpha; 1.0.2 (7) / iOS 1.0.2 (5) prepared locally, not built or uploaded; production access application under review |
 | **Publisher** | AximoIX. Bundle/package ID `com.aximoix.cipherrush`. Legal terms: [aximoix.com/terms](https://aximoix.com/terms/#cipherrush) and [aximoix.com/privacy](https://aximoix.com/privacy/#cipherrush) |
 
@@ -370,7 +370,8 @@ Android 1.0.2 (versionCode 7) and iOS 1.0.2 (build 5). Fixes from the phone QA o
 - **Profile:** four cards in order: identity (handle form full width, stats); Preferences (`components/Preferences.js`: language, sound, vibration, reminders); Account and data; danger zone (log out, delete). Sound (`cr_sound`) and haptics (`cr_haptics`) choices are saved on the device. "Clear saved data" empties the offline cache but keeps the session. There is no data-export endpoint yet; account deletion and the privacy policy cover data requests for now.
 - **Moderation:** new `transpose` list (one adjacent swap of high-severity names; swaps of 6+ letters match anywhere, shorter ones only as a whole handle or part); `_ . -` separators; terror and extremist names. Both blocklist JSON copies are identical. A dictionary scan (`/usr/share/dict/words`) found one newly blocked word (gestapo, intended) and no regressions. The refusal message is unchanged.
 - **QA screenshots** from 1.0.0 and 1.0.1 are in `mobile/store/qa-screenshots/` (gitignored). Shots showing the account email were left out.
-- **Next:** review on a device (a local debug build is enough), then push `v1.0.2`, deploy the server, and build and upload Android 7 and iOS 5.
+- **Device check (Samsung, debug build of 1.0.2 (7), live server, 23 Nov):** Profile order, full-width handle, en-GB dates, French games/ranks/tutorial and the offline banner all checked. Fixed during the check: the banner was capped at half the screen width (`left: 50%` + translate) and wrapped over the title; it is now centred with auto margins and reserves its measured height. Tutorial dots no longer get squeezed; French uses non-breaking spaces inside « » and before : ; ! ?; "Caesar" and the free cipher hints are translated (`games/cipherText.js`). The Play build was uninstalled for this check, so the phone now runs the debug build. Screenshots without the email are in `mobile/store/qa-screenshots/v102/`.
+- **Next:** push `v1.0.2`, deploy the server, and build and upload Android 7 and iOS 5. Reinstall the Play build on the test phone afterwards if needed.
 
 ### 3.2 Open
 

@@ -13,7 +13,7 @@ import Match3Board, { useMatch3Animator } from "./Match3Board";
 import { checkCipher, cipherRound, newSeed, seededRng, trueFalseRound } from "../practice/engine";
 import * as match3 from "../practice/match3";
 
-// Tabs: Caesar is a proper name; the others use their translated labels.
+// Tabs: Caesar, Match-3, True/False, all in the app's language.
 const MODES = ["caesar", "match3", "truefalse"];
 
 // Practice rounds count toward interstitial pacing like scored ones.
@@ -146,9 +146,7 @@ function TrueFalsePractice({ rng }) {
   if (done) {
     return (
       <div className="match3-result won">
-        <h2 className="match3-result-heading">
-          {t("tf.outOf", { n: correctCount, total: deck.length })}
-        </h2>
+        <h2 className="match3-result-heading">{t("tf.outOf", { n: correctCount, total: deck.length })}</h2>
         <p className="match3-result-copy">{t("pr.unscored")}</p>
         <div className="match3-result-actions">
           <button className="restart-btn" onClick={breakThen(again)}>
@@ -264,7 +262,10 @@ function Match3Practice({ rng }) {
         </div>
       </div>
       <div className="progress-bar match3-target-bar">
-        <div className="progress-fill" style={{ width: `${Math.min(100, Math.round((score / match3.TARGET) * 100))}%` }} />
+        <div
+          className="progress-fill"
+          style={{ width: `${Math.min(100, Math.round((score / match3.TARGET) * 100))}%` }}
+        />
       </div>
       {cascade && (
         <div className="cascade-banner">
@@ -295,9 +296,7 @@ function Match3Practice({ rng }) {
               {outcome === "won" ? t("g.boardCleared") : t("g.outOfMoves")}
             </h2>
             <p className="match3-result-copy">
-              {outcome === "won"
-                ? t("pr.spare", { n: movesLeft })
-                : t("pr.short", { n: match3.TARGET - score })}
+              {outcome === "won" ? t("pr.spare", { n: movesLeft }) : t("pr.short", { n: match3.TARGET - score })}
             </p>
             <div className="match3-result-actions">
               <button className="restart-btn" onClick={breakThen(deal)}>
@@ -316,7 +315,8 @@ function PracticeGame() {
   const t = useT();
   const lang = useLanguage();
   const online = useOnline();
-  const tabLabel = (key) => (key === "caesar" ? "Caesar" : key === "truefalse" ? t("pr.tf") : modeText(getGameMode(key), lang).label);
+  const tabLabel = (key) =>
+    key === "caesar" ? t("var.caesar") : key === "truefalse" ? t("pr.tf") : modeText(getGameMode(key), lang).label;
   const [mode, setMode] = useState("caesar");
   // One seeded generator per visit; every round after that comes from it.
   const rng = useMemo(() => seededRng(newSeed()), []);
