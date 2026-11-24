@@ -124,8 +124,10 @@ subscribeAudioSettings(() => {
  * refuse a resume() that doesn't come from a touch (after the app was in the
  * background, a call, or an ad). So:
  *  - the first tap or key press anywhere creates and unlocks the context;
- *  - after that, a tap wakes it again whenever music should be playing but
- *    the context is paused. On menus with nothing to play it stays asleep.
+ *  - after that, every tap resumes a paused context right inside the gesture
+ *    (the one place iOS always allows it), so the tap that opens a game or
+ *    unmutes is the one that wakes the audio. With nothing to play it goes
+ *    back to sleep a few seconds later (idleSoon).
  */
 const GESTURES = ["pointerdown", "touchend", "keydown"];
 let unlockInstalled = false;
@@ -141,8 +143,9 @@ export function installAudioUnlock() {
       if (!timer) idleSoon();
       return;
     }
-    if (timer && holds.size === 0 && ctx && ctx.state !== "running" && ctx.state !== "closed") {
+    if (holds.size === 0 && ctx && ctx.state !== "running" && ctx.state !== "closed") {
       ctx.resume().catch(() => {});
+      if (!timer) idleSoon();
     }
   };
   GESTURES.forEach((e) => document.addEventListener(e, onGesture, true));

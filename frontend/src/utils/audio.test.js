@@ -259,7 +259,7 @@ describe("idle", () => {
 });
 
 describe("iOS wake-up", () => {
-  test("after a pause, a tap wakes the audio only while music should play", async () => {
+  test("after a pause, the next tap wakes the audio inside the gesture", async () => {
     const { installAudioUnlock } = require("./soundEngine");
     installAudioUnlock();
     document.dispatchEvent(new Event("pointerdown")); // first tap: unlock
@@ -269,11 +269,20 @@ describe("iOS wake-up", () => {
     document.dispatchEvent(new Event("pointerdown"));
     expect(ctx.resume).toHaveBeenCalled();
 
+    // Idle on a menu: the tap that opens a game wakes it.
     stopMusic();
     ctx.resume.mockClear();
     ctx.state = "suspended";
     document.dispatchEvent(new Event("pointerdown"));
-    expect(ctx.resume).not.toHaveBeenCalled(); // menus stay asleep
+    expect(ctx.resume).toHaveBeenCalledTimes(1);
+
+    // Paused for an ad or the background: taps don't override that.
+    ctx.resume.mockClear();
+    ctx.state = "suspended";
+    pauseAudio("ad");
+    document.dispatchEvent(new Event("pointerdown"));
+    expect(ctx.resume).not.toHaveBeenCalled();
+    resumeAudio("ad");
   });
 });
 
