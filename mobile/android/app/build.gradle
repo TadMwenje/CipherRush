@@ -61,6 +61,11 @@ dependencies {
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
     implementation project(':capacitor-cordova-android-plugins')
+    // Unity Ads bidding through AdMob mediation. Adapter 4.20.1.0 is built
+    // against play-services-ads 25.4.0 (what the AdMob plugin resolves) and
+    // verified with Unity Ads SDK 4.20.1, which the adapter doesn't pull in.
+    implementation 'com.google.ads.mediation:unity:4.20.1.0'
+    implementation 'com.unity3d.ads:unity-ads:4.20.1'
 }
 
 apply from: 'capacitor.build.gradle'
