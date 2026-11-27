@@ -397,6 +397,21 @@ Android 1.0.2 (versionCode 7) and iOS 1.0.2 (build 5). Fixes from the phone QA o
   - **Store notes rule:** release notes and What's New never mention ads, the server/API or security internals.
   - **Next:** once Play approves and the listing is public: link the Play store in AdMob (Android) and add `https://play.google.com/store/apps/details?id=com.aximoix.cipherrush` to the Unity Android app (800450707). Retry AdMob iOS verification.
 - ~~Next: push `v1.0.2`, deploy the server, and build and upload Android 7 and iOS 5.~~ Done 27 Nov (above). Reinstall the Play build on the test phone afterwards if needed.
+- **27 Nov, later: store status and ad-serving audit.**
+  - **Play:** 1.0.2 (7) approved and **published to Production** (35 countries). The public listing is live at `https://play.google.com/store/apps/details?id=com.aximoix.cipherrush`.
+  - **iOS:** 1.0.2 (5) **Waiting for Review**. Apple DSA still **In Review** (27 EU countries locked).
+  - **AdMob Android:** Google Play store linked (found by the full listing URL; a package-name search didn't find it yet). Verification fails because **the Play listing has no developer website**: AdMob finds app-ads.txt through Store settings > Contact details > Website. Needs `https://aximoix.com` there.
+  - **AdMob iOS:** still "couldn't verify". The live listing's `sellerUrl` is `https://aximoix.com`, and the deployed file starts with the exact DIRECT line (no BOM, LF line endings). Waiting on Google's crawler.
+  - **AdMob Privacy & messaging: no European regulations (GDPR) message exists.** Google requires a certified consent message for any ads (personalised or not) to EEA/UK/CH users, which is 30 of the 35 Play countries, and Unity bidding needs it too. The app already runs the UMP consent flow (`ads/admob.js`), so publishing a message needs no app update. Owner decision pending.
+  - **AdMob:** Policy centre "No current issues"; payments profile set, no holds (identity verification only at the payout threshold). All 4 Unity bidding groups enabled. No ATT prompt: ads are non-personalised (`npa: true`), so IDFA isn't used.
+  - **Unity:** Android app (800450707) Store ID set to `com.aximoix.cipherrush`.
+- **v1.0.3 hardening (branch `v1.0.3`, local, not deployed):**
+  - **Server:** `/docs`, `/redoc` and `/openapi.json` were public in production; now off when `ENVIRONMENT=production`. HSTS (`max-age=31536000; includeSubDomains`) added in production. A catch-all exception handler logs the traceback and returns a generic message. Already in place and confirmed: nosniff, `X-Frame-Options: DENY`, Referrer-Policy, Permissions-Policy, CORS allowlist from `CORS_ORIGINS` (GET/POST only), CSRF header check, and rate limits on every auth, account, email, ad-reward and game route (logout excepted).
+  - **App:** server/gateway failures (5xx) show "Server unavailable right now. Try again soon." in all 8 languages instead of status codes or error pages. Raw axios messages are no longer used as a fallback (Boost, Quiz, Cipher, Match-3). The round-start error is translated. Sign-in errors go through `errorMessage` (a 422 list could no longer reach the screen). The privacy line (`legal.data`, 8 languages) no longer names the API host. The API URL lives only in `REACT_APP_BACKEND_URL`.
+  - **Build:** `GENERATE_SOURCEMAP=false` in `frontend/.env.production`; before this, the `.js.map` (full source) shipped inside both apps. Terser drops `console.log/info/debug` (warn/error stay for crash logs). Declared `@babel/plugin-proposal-private-property-in-object` so the CRA build notice is gone.
+  - **Native:** Android `allowBackup="false"` so the session cookie isn't restored onto another device. HTTPS-only confirmed: iOS ATS has no arbitrary loads (local networking only), Android cleartext is off by default, and `androidScheme` is https. Sessions are HttpOnly cookies (never readable from JS), cleared with token revocation on logout and account deletion.
+  - Tests: backend 279, frontend 286. Production web build compiles cleanly.
+  - **To ship 1.0.3:** merge into `ios-device-testing` and deploy on Render (server changes are independent of the apps). Then build Android 8 / iOS 6 with `npm run sync:release` and send them to the stores.
 
 ### 3.2 Open
 
