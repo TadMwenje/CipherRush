@@ -436,6 +436,23 @@ Android 1.0.2 (versionCode 7) and iOS 1.0.2 (build 5). Fixes from the phone QA o
   - **Sample-unit rewarded ad works end to end on iPad Pro 11 (4th gen):** the reward token was created (`/api/ads/rewards` 200), the ad presented full screen and was dismissed after about 12 s, and the listeners were cleaned up. Game audio is paused through `pauseAudio("ad")`. Sample units never trigger Google's server-side reward callback, so a real reward grant can only be checked once real units serve.
   - **Real ad units return "Account not approved yet" (code 1).** A local-only probe build loaded one real rewarded unit without showing it. AdMob home says setup is at 2/4: "Your account isn't approved yet"; verification is usually 24 h, rarely up to two weeks. The open task is "Verify your app" (app-ads.txt) "to prompt a review". Until then no real or test ads come from our units, and Google doesn't print the device's test ID. The probe change was reverted and never committed.
   - **Test-device plan:** once the account is approved, repeat the probe. Then put the logged ID into a non-release build with `REACT_APP_ADMOB_TEST_DEVICES`, or add the device in AdMob > Settings > Test devices. The UMP debug ID in the log is for the consent form only, not ads. Unity printed no test ID; Unity test devices need the advertising ID, which needs ATT permission on iOS, so do the Unity device test on Android. Device IDs stay out of the repo.
+- **27 Nov, 1.0.4 hotfix (branch `v1.0.4`, also on `ios-device-testing`):**
+  - **Crash fixed:** the dashboard crashed ("This screen hit a snag") whenever the double-points offer opened, which happens on every 4th scored game start. The game card passed a mode without `rules` to `modeText()`. This was in Android 1.0.3 (live) and iOS builds 5 and 6. A regression test opens the offer from the dashboard (`pages/Dashboard.test.js`).
+  - **New rewarded placements, all server-verified (SSV) with no new ad units:**
+    - Bin-Hex: a video hint reveals the word's first letter, once per word, at half points.
+    - Memory: one 2 s peek per round; a peeked board gets no no-miss badges.
+    - Rush: +15 s once per run on time-out.
+    - Reward kinds: `hint` covers cipher, quiz, binhex and memory; `continue` covers match3 and rush.
+  - **Rewarded-ad error messages** are translated into all 8 languages.
+  - **Tests:** backend 285, frontend 290.
+  - **Idle-timer interstitials were declined:** AdMob only allows interstitials at natural breaks. Interstitials stay on next round, play again and back.
+  - **Render:** `cipherrush-api` deployed `22a8a31` and is live. /docs returns 404 and HSTS is on.
+  - **Android 1.0.4 (9):** sent for review as a 100% production rollout, in all targeted countries, with player-facing notes only. The only warnings were the usual missing deobfuscation file and native symbols.
+  - **iOS 1.0.4 (7):** uploaded and Ready to Submit, with 76 SKAdNetwork IDs and Unity included. 1.0.2 (5) is still Waiting for Review.
+    - **Build 6 (1.0.3) will never be submitted** because it has the crash.
+    - When 1.0.2 clears: create version 1.0.4, attach build 7, confirm the Marketing URL and What's New, then submit.
+  - **Apple DSA:** still In Review (last updated 24 Nov).
+  - **AdMob:** the account is still not approved (setup 2/4). Both apps still show "couldn't verify" after Check for updates, and the app-ads.txt report says "No ad requests with app-ads.txt yet". The live file matches the publisher ID.
 
 ### 3.2 Open
 
