@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Circuit, Sparkle, Confetti } from "../glyphs";
+import { Circuit, Eye, Sparkle, Confetti } from "../glyphs";
 import api, { errorMessage } from "../api";
 import { playFlip, playPop, playInvalid, playVictory } from "../sound";
 import { haptic } from "../mobile/haptics";
@@ -8,7 +8,9 @@ import { useElementSize } from "../mobile/hooks";
 import GameSymbolIcon from "../icons/GameSymbolIcon";
 import GameLevelBar from "../components/GameLevelBar";
 import GameHeader from "../components/GameHeader";
+import { adsAvailable } from "../ads/admob";
 import { afterBreak } from "../ads/pacing";
+import { earnReward } from "../ads/rewards";
 import useGameRewards from "../hooks/useGameRewards";
 import useRound from "../hooks/useRound";
 import { useT } from "../i18n";
@@ -30,6 +32,10 @@ function MemoryGame() {
   const [moves, setMoves] = useState(0);
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState(null);
+  // One video peek a round: every card face up for a couple of seconds.
+  const [peeked, setPeeked] = useState(false);
+  const [peeking, setPeeking] = useState(false);
+  const [watching, setWatching] = useState(false);
   const stageRef = useRef(null);
   const stage = useElementSize(stageRef);
 
@@ -43,10 +49,32 @@ function MemoryGame() {
     setWrongPair([]);
     setMoves(round.moves || 0);
     setResult(null);
+    setPeeked(!!round.peeked);
+    setPeeking(false);
   }, [round]);
 
+  const peek = async () => {
+    if (peeked || watching || busy || result) return;
+    setWatching(true);
+    setError("");
+    try {
+      const rewardId = await earnReward("hint", round.round_id);
+      const { data } = await api.post(`/games/memory/rounds/${round.round_id}/peek`, { reward_id: rewardId });
+      setPeeked(true);
+      setFaces((f) => ({ ...f, ...Object.fromEntries(Object.entries(data.faces).map(([k, v]) => [Number(k), v])) }));
+      setPeeking(true);
+      haptic("select");
+      await pause(data.show_ms || 2000);
+      setPeeking(false);
+    } catch (err) {
+      setError(errorMessage(err));
+    } finally {
+      setWatching(false);
+    }
+  };
+
   const flip = async (index) => {
-    if (busy || result || faceUp.includes(index) || matched.has(index)) return;
+    if (busy || peeking || result || faceUp.includes(index) || matched.has(index)) return;
     setBusy(true);
     playFlip();
     haptic("tap");
@@ -128,7 +156,7 @@ function MemoryGame() {
           >
             {Array.from({ length: round.card_count }, (_, index) => {
               const isMatched = matched.has(index);
-              const isFaceUp = isMatched || faceUp.includes(index);
+              const isFaceUp = isMatched || peeking || faceUp.includes(index);
               const symbol = faces[index];
               return (
                 <button
@@ -150,6 +178,12 @@ function MemoryGame() {
               );
             })}
           </div>
+        )}
+
+        {round && !result && !peeked && adsAvailable() && (
+          <button type="button" className="free-hint-btn memory-peek-btn" onClick={peek} disabled={busy || watching}>
+            <Eye size={16} /> {watching ? t("g.loadingVideo") : t("mem.peek")}
+          </button>
         )}
 
         {result && (

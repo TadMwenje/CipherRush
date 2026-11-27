@@ -48,6 +48,10 @@ PENDING_MINUTES = 15
 EARNED_VALID_MINUTES = {"hint": 30, "continue": 30, "boost": 60}
 BOOSTS_PER_DAY = 3
 MATCH3_CONTINUE_MOVES = 5
+# A Speed Rush run that times out can buy this much more clock, once.
+RUSH_CONTINUE_SECONDS = 15
+# Which modes each round-bound reward can be spent in.
+GAMES_FOR_KIND = {"hint": ["cipher", "quiz", "binhex", "memory"], "continue": ["match3", "rush"]}
 # Time spent watching a hint video is given back to the cipher clock, up to this.
 MAX_AD_SECONDS = 90
 # Modes a boost can apply to: not Rush (best single run is its own leaderboard)
@@ -143,7 +147,7 @@ async def request_reward(request: Request, body: RewardRequest, user=Depends(get
     pool = await get_pool()
     async with pool.acquire() as conn:
         if body.kind in ("hint", "continue"):
-            game_types = ["cipher", "quiz"] if body.kind == "hint" else ["match3"]
+            game_types = GAMES_FOR_KIND[body.kind]
             live = round_id and await conn.fetchval(
                 """SELECT 1 FROM game_rounds WHERE id = $1 AND user_id = $2 AND game_type = ANY($3::text[])
                    AND completed_at IS NULL AND expires_at > now()""",

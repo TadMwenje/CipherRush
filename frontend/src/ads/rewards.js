@@ -5,6 +5,7 @@
  * hand the reward id to the game endpoint that spends it (backend/ads.py).
  */
 import api from "../api";
+import { t } from "../i18n";
 import { showAd } from "./admob";
 import { noteAdShown } from "./pacing";
 
@@ -12,7 +13,13 @@ const POLL_MS = 1000;
 const POLL_FOR_MS = 20000;
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-export class RewardError extends Error {}
+/** A failure with a message written for the player (already translated). */
+export class RewardError extends Error {
+  constructor(message) {
+    super(message);
+    this.playerMessage = message;
+  }
+}
 
 /**
  * kind: "hint" | "continue" | "boost". Resolves with the earned reward id,
@@ -25,10 +32,10 @@ export async function earnReward(kind, roundId = null, { pollMs = POLL_MS, pollF
   try {
     outcome = await showAd(format, { ssv: { userId: data.user_id, customData: data.reward_id } });
   } catch {
-    throw new RewardError("No video available right now. Try again in a bit.");
+    throw new RewardError(t("reward.noVideo"));
   }
   noteAdShown(); // no interstitial straight after a video they chose to watch
-  if (!outcome.rewarded) throw new RewardError("The video was closed early, so there's no reward this time.");
+  if (!outcome.rewarded) throw new RewardError(t("reward.closedEarly"));
 
   // Google's callback usually lands within a second or two.
   const deadline = Date.now() + pollForMs;
@@ -38,5 +45,5 @@ export async function earnReward(kind, roundId = null, { pollMs = POLL_MS, pollF
     if (s.status === "used") break;
     await sleep(pollMs);
   }
-  throw new RewardError("Couldn't confirm the reward with the server. Try again.");
+  throw new RewardError(t("reward.unconfirmed"));
 }

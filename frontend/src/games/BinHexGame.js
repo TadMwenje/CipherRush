@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { Check, Close, Sparkle, Confetti, Table } from "../glyphs";
+import { Bulb, Check, Close, Sparkle, Confetti, Table } from "../glyphs";
 import api, { errorMessage } from "../api";
 import { playCorrect, playWrong, playVictory } from "../sound";
 import { haptic } from "../mobile/haptics";
 import { primeKeyboard } from "../mobile/keyboard";
 import GameLevelBar from "../components/GameLevelBar";
 import GameHeader from "../components/GameHeader";
+import { adsAvailable } from "../ads/admob";
 import { afterBreak } from "../ads/pacing";
+import { earnReward } from "../ads/rewards";
 import useGameRewards from "../hooks/useGameRewards";
 import useRound from "../hooks/useRound";
 import { AnswerInput } from "./CipherGame";
@@ -94,9 +96,13 @@ function BinHexGame() {
   const [feedback, setFeedback] = useState(null);
   const [result, setResult] = useState(null);
   const [busy, setBusy] = useState(false);
+  // Video hints: the first letter of a word, one per word (server-verified, half points).
+  const [hints, setHints] = useState({});
+  const [watching, setWatching] = useState(false);
 
   useEffect(() => {
     if (!round) return;
+    setHints(round.hints || {});
     setIndex(round.answered ?? 0);
     setFeedback(null);
     setResult(null);
@@ -129,6 +135,22 @@ function BinHexGame() {
       setError(errorMessage(err));
     } finally {
       setBusy(false);
+    }
+  };
+
+  const videoHint = async () => {
+    if (!item || watching || feedback) return;
+    setWatching(true);
+    setError("");
+    try {
+      const rewardId = await earnReward("hint", round.round_id);
+      const { data } = await api.post(`/games/binhex/rounds/${round.round_id}/hint`, { index, reward_id: rewardId });
+      setHints((h) => ({ ...h, [String(data.index)]: data.letter }));
+      haptic("select");
+    } catch (err) {
+      setError(errorMessage(err));
+    } finally {
+      setWatching(false);
     }
   };
 
@@ -189,6 +211,17 @@ function BinHexGame() {
               <Table size={16} /> {showTable ? t("bh.hideTable") : t("bh.showTable")}
             </button>
             {showTable && <AsciiTable />}
+
+            {!feedback && hints[String(index)] && (
+              <p className="binhex-hint" role="status">
+                <Bulb size={16} /> {t("bh.hintLetter", { letter: hints[String(index)] })}
+              </p>
+            )}
+            {!feedback && !hints[String(index)] && adsAvailable() && (
+              <button type="button" className="free-hint-btn" onClick={videoHint} disabled={busy || watching}>
+                <Bulb size={16} /> {watching ? t("g.loadingVideo") : t("bh.videoHint")}
+              </button>
+            )}
 
             {!feedback ? (
               <form className="answer-section" onSubmit={submit}>

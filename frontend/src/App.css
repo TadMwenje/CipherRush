@@ -4959,3 +4959,22 @@ html.app-paused *::after {
 .game-header-side {
   gap: 0.25rem;
 }
+
+/* Rewarded-video extras (1.0.4): Bin-Hex first-letter hint, Memory peek. */
+.binhex-hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 4px 0 8px;
+  color: #86efac;
+  font-weight: 600;
+}
+.binhex-card .free-hint-btn,
+.memory-peek-btn {
+  align-self: center;
+  margin: 8px auto 4px;
+}
+.memory-peek-btn {
+  display: flex;
+}

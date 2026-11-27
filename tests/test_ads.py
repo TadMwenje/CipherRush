@@ -293,3 +293,92 @@ def test_time_spent_on_a_hint_video_goes_back_on_the_clock(client, player):
     res = player.post(f"/api/games/cipher/rounds/{rid}/hint", json={"reward_id": reward_id}).json()
     assert 30 <= res["time_added"] <= 32
     assert round_state(rid)["time_limit"] == limit + res["time_added"]
+
+
+# --- 1.0.4 placements: Bin-Hex hint, Memory peek, Rush continue ------------------------
+
+def test_binhex_video_hint_reveals_the_first_letter_once_for_half_points(client, player):
+    rid = player.post("/api/games/binhex/rounds").json()["round_id"]
+    word = round_state(rid)["items"][0]["word"]
+    pending = reward(player, "hint", rid)
+    assert player.post(f"/api/games/binhex/rounds/{rid}/hint", json={"index": 0, "reward_id": pending}).status_code == 402
+
+    reward_id = earned(player, client, "hint", rid)
+    res = player.post(f"/api/games/binhex/rounds/{rid}/hint", json={"index": 0, "reward_id": reward_id})
+    assert res.status_code == 200 and res.json()["letter"] == word[0]
+    again = earned(player, client, "hint", rid)
+    assert player.post(f"/api/games/binhex/rounds/{rid}/hint", json={"index": 0, "reward_id": again}).status_code == 400
+    assert player.get("/api/games/binhex/rounds/active").json()["round"]["hints"] == {"0": word[0]}
+
+    assert player.post(f"/api/games/binhex/rounds/{rid}/answer", json={"index": 0, "answer": word}).json()["correct"]
+
+
+def test_binhex_hint_points_are_exactly_halved(client, player, monkeypatch):
+    import economy as eco
+    monkeypatch.setattr(eco, "BINHEX_TIER_MULT", {1: 1, 2: 1, 3: 1})
+    rid = player.post("/api/games/binhex/rounds").json()["round_id"]
+    items = round_state(rid)["items"]
+    reward_id = earned(player, client, "hint", rid)
+    player.post(f"/api/games/binhex/rounds/{rid}/hint", json={"index": 0, "reward_id": reward_id})
+    hinted = player.post(f"/api/games/binhex/rounds/{rid}/answer", json={"index": 0, "answer": items[0]["word"]}).json()
+    clean = player.post(f"/api/games/binhex/rounds/{rid}/answer", json={"index": 1, "answer": items[1]["word"]}).json()
+    assert hinted["points"] == clean["points"] // 2
+
+
+def test_memory_peek_shows_unmatched_cards_once_and_costs_the_perfect_badge(client, player):
+    rid = player.post("/api/games/memory/rounds").json()["round_id"]
+    deck = round_state(rid)["deck"]
+    pending = reward(player, "hint", rid)
+    assert player.post(f"/api/games/memory/rounds/{rid}/peek", json={"reward_id": pending}).status_code == 402
+
+    reward_id = earned(player, client, "hint", rid)
+    res = player.post(f"/api/games/memory/rounds/{rid}/peek", json={"reward_id": reward_id})
+    assert res.status_code == 200
+    assert res.json()["faces"] == {str(i): s for i, s in enumerate(deck)}
+    again = earned(player, client, "hint", rid)
+    assert player.post(f"/api/games/memory/rounds/{rid}/peek", json={"reward_id": again}).status_code == 400
+
+    # Clear the board with no misses: no "perfect" after a peek.
+    positions = {}
+    for i, s in enumerate(deck):
+        positions.setdefault(s, []).append(i)
+    last = None
+    for a, b in positions.values():
+        player.post(f"/api/games/memory/rounds/{rid}/flip", json={"index": a})
+        last = player.post(f"/api/games/memory/rounds/{rid}/flip", json={"index": b}).json()
+    assert last["finished"] and last["result"]["misses"] == 0 and last["result"]["perfect"] is False
+
+
+def test_rush_continue_buys_fifteen_seconds_once_after_time_runs_out(client, player):
+    import economy as eco
+    rid = player.post("/api/games/rush/rounds").json()["round_id"]
+    reward_id = earned(player, client, "continue", rid)
+    # Not while the clock is still running.
+    assert player.post(f"/api/games/rush/rounds/{rid}/continue", json={"reward_id": reward_id}).status_code == 400
+
+    backdate_round(rid, eco.RUSH_DURATION + 20)  # timed out 20 s ago (deciding + watching)
+    res = player.post(f"/api/games/rush/rounds/{rid}/continue", json={"reward_id": reward_id})
+    assert res.status_code == 200 and res.json()["time_left"] == ads.RUSH_CONTINUE_SECONDS
+    view = player.get("/api/games/rush/rounds/active").json()["round"]
+    assert view["continued"] is True and 13 <= view["time_left"] <= 15
+    word = round_state(rid)["puzzle"]["word"]
+    assert player.post(f"/api/games/rush/rounds/{rid}/answer", json={"answer": word}).json()["correct"] is True
+
+    backdate_round(rid, 20)
+    again = earned(player, client, "continue", rid)
+    assert player.post(f"/api/games/rush/rounds/{rid}/continue", json={"reward_id": again}).status_code == 400
+
+
+def test_rush_continue_needs_a_verified_reward(player):
+    import economy as eco
+    rid = player.post("/api/games/rush/rounds").json()["round_id"]
+    backdate_round(rid, eco.RUSH_DURATION + 5)
+    pending = reward(player, "continue", rid)
+    assert player.post(f"/api/games/rush/rounds/{rid}/continue", json={"reward_id": pending}).status_code == 402
+
+
+def test_new_placements_only_take_their_own_kind(client, player):
+    rush = player.post("/api/games/rush/rounds").json()["round_id"]
+    assert player.post("/api/ads/rewards", json={"kind": "hint", "round_id": rush}).status_code == 404
+    memory = player.post("/api/games/memory/rounds").json()["round_id"]
+    assert player.post("/api/ads/rewards", json={"kind": "continue", "round_id": memory}).status_code == 404

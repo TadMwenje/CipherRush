@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bolt, Skip, Trophy, Flame } from "../glyphs";
+import { Bolt, Skip, Trophy, Flame, Hourglass } from "../glyphs";
 import api, { errorMessage } from "../api";
 import { playCorrect, playWrong, playVictory } from "../sound";
 import { haptic } from "../mobile/haptics";
@@ -9,7 +9,9 @@ import { onAppResume } from "../mobile/lifecycle";
 import { primeKeyboard, claimFocus } from "../mobile/keyboard";
 import GameLevelBar from "../components/GameLevelBar";
 import GameHeader from "../components/GameHeader";
+import { adsAvailable } from "../ads/admob";
 import { afterBreak } from "../ads/pacing";
+import { earnReward } from "../ads/rewards";
 import useGameRewards from "../hooks/useGameRewards";
 import { AnswerInput } from "./CipherGame";
 import { t as translate, useT } from "../i18n";
@@ -42,6 +44,11 @@ function RushGame() {
   const deadlineRef = useRef(null);
   const serverDeadlineRef = useRef(null);
   const finishingRef = useRef(false);
+  // Out of time: once per run, offer +15 s for a video before ending it.
+  const [offer, setOffer] = useState(null);
+  const offerRef = useRef(false);
+  const continuedRef = useRef(false);
+  const [watching, setWatching] = useState(false);
   const formRef = useRef(null);
 
   const focusInput = () => claimFocus(formRef.current?.querySelector("input"));
@@ -52,6 +59,9 @@ function RushGame() {
     setResult(null);
     setAnswer("");
     finishingRef.current = false;
+    offerRef.current = false;
+    continuedRef.current = !!data.continued;
+    setOffer(null);
     deadlineRef.current = monoNow() + (data.time_left ?? data.duration) * 1000;
     serverDeadlineRef.current = serverNow() + (data.time_left ?? data.duration) * 1000;
     setTimeLeft(data.time_left ?? data.duration);
@@ -105,9 +115,17 @@ function RushGame() {
   useEffect(() => {
     if (!round || result) return undefined;
     const tick = () => {
+      if (offerRef.current) return; // the clock waits while they choose
       const remaining = Math.ceil((deadlineRef.current - monoNow()) / 1000);
       setTimeLeft(Math.max(0, remaining));
-      if (remaining <= 0) finish();
+      if (remaining > 0) return;
+      if (!continuedRef.current && adsAvailable()) {
+        offerRef.current = true;
+        setOffer({ message: "" });
+        haptic("error");
+      } else {
+        finish();
+      }
     };
     const id = setInterval(tick, 200);
     // Back from the background: the run kept going on the server, so re-anchor
@@ -121,6 +139,35 @@ function RushGame() {
       offResume();
     };
   }, [round, result, finish]);
+
+  const watchForTime = async () => {
+    if (!round || watching) return;
+    setWatching(true);
+    try {
+      const rewardId = await earnReward("continue", round.round_id);
+      const { data } = await api.post(`/games/rush/rounds/${round.round_id}/continue`, { reward_id: rewardId });
+      continuedRef.current = true;
+      deadlineRef.current = monoNow() + data.time_left * 1000;
+      serverDeadlineRef.current = serverNow() + data.time_left * 1000;
+      setTimeLeft(data.time_left);
+      setView(data);
+      setOffer(null);
+      offerRef.current = false;
+      haptic("success");
+      setTimeout(focusInput, 0);
+    } catch (err) {
+      setOffer({ message: errorMessage(err) });
+    } finally {
+      setWatching(false);
+    }
+  };
+
+  const endRun = () => {
+    continuedRef.current = true; // no second offer
+    offerRef.current = false;
+    setOffer(null);
+    finish();
+  };
 
   const showFlash = (kind) => {
     setFlash(kind);
@@ -222,7 +269,25 @@ function RushGame() {
           </div>
         )}
 
-        {playing && (
+        {playing && offer && (
+          <div className="match3-result lost" role="dialog" aria-label={t("rush.outTitle")}>
+            <h2 className="match3-result-heading">
+              <Hourglass size={24} /> {t("rush.outTitle")}
+            </h2>
+            <p className="match3-result-copy">{t("rush.continueBody")}</p>
+            {offer.message && <p className="error">{offer.message}</p>}
+            <div className="match3-result-actions">
+              <button className="restart-btn" onClick={watchForTime} disabled={watching}>
+                {watching ? t("g.loadingVideo") : t("rush.continue")}
+              </button>
+              <button className="hint-btn" onClick={endRun} disabled={watching}>
+                {t("rush.end")}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {playing && !offer && (
           <div className={`rush-board${flash ? ` flash-${flash}` : ""}`}>
             <div className="rush-key">{keyLabel(view.puzzle)}</div>
             <div className="encrypted-text rush-cipher">{view.puzzle.ciphertext}</div>

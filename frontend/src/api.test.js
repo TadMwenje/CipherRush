@@ -3,7 +3,7 @@
  * so without this a request cut off by backgrounding hung for minutes.
  */
 import { AxiosError } from "axios";
-import api, { withDeadline } from "./api";
+import api, { errorMessage, withDeadline } from "./api";
 
 const never = () => new Promise(() => {});
 
@@ -106,4 +106,9 @@ test("identical GETs in flight share one request", async () => {
   // Once settled, the next call goes to the network again.
   await api.get("/dedupe-check", { adapter });
   expect(adapter).toHaveBeenCalledTimes(2);
+});
+
+test("errors that carry a player message (rewarded ads) show it as is", () => {
+  const err = Object.assign(new Error("x"), { playerMessage: "No video available right now. Try again in a bit." });
+  expect(errorMessage(err)).toBe("No video available right now. Try again in a bit.");
 });

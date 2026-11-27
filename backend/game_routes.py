@@ -447,6 +447,11 @@ class BinHexAnswer(StrictModel):
     answer: str = Field(default="", max_length=20)
 
 
+class BinHexHint(StrictModel):
+    index: int = Field(ge=0, le=20)
+    reward_id: str = Field(max_length=64)
+
+
 def _binhex_tiers(level: int) -> List[int]:
     return [1] if level == 1 else [1, 2] if level <= 3 else [1, 2, 3]
 
@@ -496,6 +501,8 @@ async def binhex_answer(request: Request, round_id: str, body: BinHexAnswer, use
         if ok:
             tier = BINHEX_FORMATS[fmt][1]
             points = int(round(eco.BINHEX_PER_CORRECT * eco.BINHEX_TIER_MULT[tier] * eco.level_factor(row["level"])))
+            if str(expected) in state.get("hints", {}):
+                points //= 2  # a video hint gave the first letter away
             state["points"] += points
         breakdown = [{"letter": ch, "decimal": ord(ch), "code": encode_byte(ch, fmt)} for ch in word]
         await save_state(conn, row["id"], state)
@@ -515,8 +522,31 @@ async def binhex_answer(request: Request, round_id: str, body: BinHexAnswer, use
     return await _locked(request, round_id, user, "binhex", handler)
 
 
+@router.post("/binhex/rounds/{round_id}/hint")
+@limiter.limit(ACTION_LIMIT)
+async def binhex_hint(request: Request, round_id: str, body: BinHexHint, user=Depends(get_current_user)):
+    """A watched video reveals the current word's first letter (one per word, half points)."""
+    async def handler(conn, row):
+        if is_expired(row):
+            raise HTTPException(status_code=410, detail="This round timed out.")
+        state = row["state"]
+        expected = len(state["answers"])
+        if body.index != expected:
+            raise HTTPException(status_code=400, detail=f"Decode word {expected + 1} next.")
+        hints = state.setdefault("hints", {})
+        if str(expected) in hints:
+            raise HTTPException(status_code=400, detail="That word's hint is already showing.")
+        await ads.spend_reward(conn, user["id"], body.reward_id, "hint", row["id"])
+        hints[str(expected)] = state["items"][expected]["word"][0]
+        await save_state(conn, row["id"], state)
+        return {"index": expected, "letter": hints[str(expected)]}
+
+    return await _locked(request, round_id, user, "binhex", handler)
+
+
 def _binhex_view(row):
-    return {"answered": len(row["state"]["answers"])}
+    state = row["state"]
+    return {"answered": len(state["answers"]), "hints": state.get("hints", {})}
 
 
 # =============================================================================
@@ -653,6 +683,10 @@ class MemoryFlip(StrictModel):
     index: int = Field(ge=0, le=47)
 
 
+class RewardSpend(StrictModel):
+    reward_id: str = Field(max_length=64)
+
+
 @router.post("/memory/rounds")
 @limiter.limit(START_LIMIT)
 async def start_memory(request: Request, user=Depends(get_current_user)):
@@ -704,11 +738,32 @@ async def memory_flip(request: Request, round_id: str, body: MemoryFlip, user=De
         lf = eco.level_factor(row["level"])
         full = eco.MEMORY_PER_PAIR * pairs * lf
         score = int(round(max(full * eco.MEMORY_FLOOR, full - misses * eco.MEMORY_MISS_PENALTY * lf)))
-        extra = (["memory_master"] if misses == 0 else []) + (["memory_maestro"] if misses <= 2 else [])
+        # A peek at the board rules out the no-miss badges.
+        clean = not state.get("peeked")
+        extra = (["memory_master"] if clean and misses == 0 else []) + (["memory_maestro"] if clean and misses <= 2 else [])
         result = await complete_round(conn, user["id"], row, score, extra, passed=misses <= pairs)
         response.update({"finished": True, "result": {
-            "perfect": misses == 0, "misses": misses, "moves": state["moves"], **result}})
+            "perfect": clean and misses == 0, "misses": misses, "moves": state["moves"], **result}})
         return response
+
+    return await _locked(request, round_id, user, "memory", handler)
+
+
+@router.post("/memory/rounds/{round_id}/peek")
+@limiter.limit(ACTION_LIMIT)
+async def memory_peek(request: Request, round_id: str, body: RewardSpend, user=Depends(get_current_user)):
+    """A watched video shows the unmatched cards for a moment, once per round."""
+    async def handler(conn, row):
+        if is_expired(row):
+            raise HTTPException(status_code=410, detail="This board timed out.")
+        state = row["state"]
+        if state.get("peeked"):
+            raise HTTPException(status_code=400, detail="You've had this board's peek.")
+        await ads.spend_reward(conn, user["id"], body.reward_id, "hint", row["id"])
+        state["peeked"] = True
+        await save_state(conn, row["id"], state)
+        deck, matched = state["deck"], set(state["matched"])
+        return {"faces": {str(i): s for i, s in enumerate(deck) if i not in matched}, "show_ms": 2000}
 
     return await _locked(request, round_id, user, "memory", handler)
 
@@ -719,7 +774,8 @@ def _memory_view(row):
     revealed = {str(i): deck[i] for i in state["matched"]}
     if state["pending"] is not None:
         revealed[str(state["pending"])] = deck[state["pending"]]
-    return {"matched": state["matched"], "pending": state["pending"], "revealed": revealed, "moves": state["moves"]}
+    return {"matched": state["matched"], "pending": state["pending"], "revealed": revealed, "moves": state["moves"],
+            "peeked": bool(state.get("peeked"))}
 
 
 # =============================================================================
@@ -774,8 +830,13 @@ async def _finish_rush(conn, user, row, state):
                                          "pass_threshold": threshold, **result}}
 
 
+def _rush_length(state) -> float:
+    """The run's clock: the standard length plus any time bought with a video."""
+    return eco.RUSH_DURATION + state.get("bonus_seconds", 0)
+
+
 def _rush_time_up(row) -> bool:
-    return elapsed_seconds(row) > eco.RUSH_DURATION + 2
+    return elapsed_seconds(row) > _rush_length(row["state"]) + 2
 
 
 @router.post("/rush/rounds")
@@ -844,9 +905,36 @@ async def rush_finish(request: Request, round_id: str, user=Depends(get_current_
     return await _locked(request, round_id, user, "rush", handler)
 
 
+@router.post("/rush/rounds/{round_id}/continue")
+@limiter.limit(ACTION_LIMIT)
+async def rush_continue(request: Request, round_id: str, body: RewardSpend, user=Depends(get_current_user)):
+    """Out of time: a watched video puts RUSH_CONTINUE_SECONDS back on the clock, once per run."""
+    async def handler(conn, row):
+        state = row["state"]
+        if state.get("continued"):
+            raise HTTPException(status_code=400, detail="This run has had its extra time.")
+        elapsed = elapsed_seconds(row)
+        if elapsed < _rush_length(state) - 3:
+            raise HTTPException(status_code=400, detail="There's still time on the clock.")
+        await ads.spend_reward(conn, user["id"], body.reward_id, "continue", row["id"])
+        # The clock stood still while they decided and watched: restart it at 15s.
+        added = elapsed - _rush_length(state) + ads.RUSH_CONTINUE_SECONDS
+        state["bonus_seconds"] = state.get("bonus_seconds", 0) + added
+        state["continued"] = True
+        await save_state(conn, row["id"], state)
+        await conn.execute(
+            "UPDATE game_rounds SET expires_at = expires_at + make_interval(secs => $2) WHERE id = $1",
+            row["id"], float(added),
+        )
+        return {"time_left": ads.RUSH_CONTINUE_SECONDS, "finished": False, **_rush_dynamic(state, row["level"])}
+
+    return await _locked(request, round_id, user, "rush", handler)
+
+
 def _rush_view(row):
-    return {"time_left": max(0, int(eco.RUSH_DURATION - elapsed_seconds(row))),
-            **_rush_dynamic(row["state"], row["level"])}
+    state = row["state"]
+    return {"time_left": max(0, int(_rush_length(state) - elapsed_seconds(row))),
+            "continued": bool(state.get("continued")), **_rush_dynamic(state, row["level"])}
 
 
 # =============================================================================

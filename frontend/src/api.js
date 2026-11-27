@@ -188,6 +188,8 @@ onAppResume(({ awayMs }) => {
 });
 
 export function errorMessage(err, fallback = t("auth.failed")) {
+  // Errors that already carry a translated line for the player (ads/rewards.js).
+  if (typeof err?.playerMessage === "string") return err.playerMessage;
   // Only a request that got no answer is a signal problem; anything else that
   // failed before reaching us (a native sign-in plugin, say) gets the fallback.
   if (!err?.response) return axios.isAxiosError(err) ? t("net.unreachable") : fallback;
