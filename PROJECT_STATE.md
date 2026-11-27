@@ -432,6 +432,10 @@ Android 1.0.2 (versionCode 7) and iOS 1.0.2 (build 5). Fixes from the phone QA o
     - Apple DSA is still In Review (24 Nov).
     - AdMob still "couldn't verify" on both apps after another "Check for updates".
     - All 4 Unity bidding groups are enabled with no warnings.
+- **27 Nov, iPad ad test (debug build, Google sample units):**
+  - **Sample-unit rewarded ad works end to end on iPad Pro 11 (4th gen):** the reward token was created (`/api/ads/rewards` 200), the ad presented full screen and was dismissed after about 12 s, and the listeners were cleaned up. Game audio is paused through `pauseAudio("ad")`. Sample units never trigger Google's server-side reward callback, so a real reward grant can only be checked once real units serve.
+  - **Real ad units return "Account not approved yet" (code 1).** A local-only probe build loaded one real rewarded unit without showing it. AdMob home says setup is at 2/4: "Your account isn't approved yet"; verification is usually 24 h, rarely up to two weeks. The open task is "Verify your app" (app-ads.txt) "to prompt a review". Until then no real or test ads come from our units, and Google doesn't print the device's test ID. The probe change was reverted and never committed.
+  - **Test-device plan:** once the account is approved, repeat the probe. Then put the logged ID into a non-release build with `REACT_APP_ADMOB_TEST_DEVICES`, or add the device in AdMob > Settings > Test devices. The UMP debug ID in the log is for the consent form only, not ads. Unity printed no test ID; Unity test devices need the advertising ID, which needs ATT permission on iOS, so do the Unity device test on Android. Device IDs stay out of the repo.
 
 ### 3.2 Open
 
