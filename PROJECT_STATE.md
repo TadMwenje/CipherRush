@@ -425,6 +425,13 @@ Android 1.0.2 (versionCode 7) and iOS 1.0.2 (build 5). Fixes from the phone QA o
   - **AdMob mediation:** Unity Ads bidding "Direct relationship, Active partnership". All 4 mappings green (`BP_Interstitial/Rewarded_Android`, `BP_Interstitial/Rewarded_iOS`), groups Ready.
   - **Test devices:** none registered in AdMob or Unity. AdMob test mode doesn't cover Unity-served ads, so Unity needs its own test device. The app can also mark devices in code: a non-release build with `REACT_APP_ADMOB_TEST_DEVICES` uses the real units with test ads (`ads/config.js`).
   - **Unity:** Android Store ID `com.aximoix.cipherrush` saved; Organization settings app-ads.txt "up-to-date. No action needed".
+- **27 Nov, later check:**
+  - **Android 1.0.3 (8) is live:** Production "Available on Google Play", released 27 Nov 12:37, 35 countries, 7 installs. Nothing left in review.
+  - **Unchanged:**
+    - iOS 1.0.2 (5) is still Waiting for Review; build 6 stays staged.
+    - Apple DSA is still In Review (24 Nov).
+    - AdMob still "couldn't verify" on both apps after another "Check for updates".
+    - All 4 Unity bidding groups are enabled with no warnings.
 
 ### 3.2 Open
 
