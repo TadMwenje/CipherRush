@@ -2,7 +2,7 @@
 
 Native app changes (Android and iOS). Server and web changes are in git history.
 
-## Android 1.0.2 (7) and iOS 1.0.2 (5), not yet released
+## Android 1.0.2 (7) and iOS 1.0.2 (5), submitted 27 Nov 2026 (Play production, App Review)
 
 Fixes from the 1.0.1 phone check. Works with the server that is live now.
 Deploy the matching server (branch `v1.0.2`) to get the stricter handle
