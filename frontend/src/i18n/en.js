@@ -114,6 +114,8 @@ const EN = {
   "ci.free.atbash": "Mirror alphabet. A swaps with Z, B with Y, and so on. Decoding is the same move.",
   "ci.free.vigenere": "The key is {n} letters. Letters 1, {a}, {b}... (letters only) all use the same shift.",
   "net.unreachable": "Can't reach the server. Check your signal.",
+  "net.serverDown": "Server unavailable right now. Try again soon.",
+  "net.roundFail": "Couldn't start a round. Try again.",
 
   "lvl.xp": "{have} / {need} XP",
   "lvl.max": "Max level",
@@ -372,7 +374,7 @@ const EN = {
   "legal.privacy": "Privacy",
   "legal.privacyPolicy": "Privacy Policy",
   "legal.consent": "By continuing you agree to the {terms} and {privacy}. CipherRush is run by AximoIX.",
-  "legal.data": "Your handle, email and game results go over an encrypted connection to CipherRush's server (api.aximoix.com) to run your account and the leaderboards. Your IP address is used for security and rate limits. We only email you to confirm your address or reset your password.",
+  "legal.data": "Your handle, email and game results go over an encrypted connection to CipherRush's server to run your account and the leaderboards. Your IP address is used for security and rate limits. We only email you to confirm your address or reset your password.",
   "legal.ads": "The app shows ads from Google AdMob. They're never personalised, but Google receives your device's advertising ID and IP address to serve them and to stop fraud.",
   "legal.noAds": "No ads, no trackers.",
 

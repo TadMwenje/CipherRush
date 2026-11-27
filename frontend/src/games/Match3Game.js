@@ -73,7 +73,7 @@ function Match3Game() {
       setOutOfMoves(null);
       haptic("success");
     } catch (err) {
-      setOutOfMoves((o) => ({ ...o, message: errorMessage(err, err.message) }));
+      setOutOfMoves((o) => ({ ...o, message: errorMessage(err) }));
     } finally {
       setWatching(false);
     }

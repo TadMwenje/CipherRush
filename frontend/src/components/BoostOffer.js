@@ -24,7 +24,7 @@ function BoostOffer({ label, onDone }) {
       setNote(
         err.response?.status === 429
           ? t("boost.limit")
-          : errorMessage(err, err.message),
+          : errorMessage(err),
       );
     }
   };

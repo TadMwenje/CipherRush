@@ -133,8 +133,7 @@ function AuthModal({ isOpen, onClose, onLogin }) {
       onLogin(response.data.user);
       onClose();
     } catch (err) {
-      const data = err.response?.data;
-      setError(data?.detail || data?.error || t("auth.failed"));
+      setError(errorMessage(err, t("auth.failed")));
     } finally {
       setLoading(false);
     }

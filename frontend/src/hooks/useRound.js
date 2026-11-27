@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import api, { errorMessage } from "../api";
 import { monoNow } from "../mobile/clock";
+import { t } from "../i18n";
 
 /**
  * Load-or-resume for a game round. On mount it asks the server for an
@@ -24,7 +25,7 @@ export default function useRound(gameKey, initialBody) {
         const res = await api.post(`/games/${gameKey}/rounds`, body);
         setRound({ ...res.data, receivedAt: monoNow() });
       } catch (err) {
-        setError(errorMessage(err, "Couldn't start a round. Try again."));
+        setError(errorMessage(err, t("net.roundFail")));
       } finally {
         setLoading(false);
       }

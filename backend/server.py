@@ -50,7 +50,18 @@ from security import SecurityHeadersMiddleware, hash_password, verify_password  
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
-app = FastAPI()
+def is_production(env=os.environ) -> bool:
+    return env.get("ENVIRONMENT", "").lower() == "production"
+
+
+def docs_settings(env=os.environ) -> dict:
+    """No Swagger UI, ReDoc or OpenAPI schema in production: the route map stays private."""
+    if is_production(env):
+        return {"docs_url": None, "redoc_url": None, "openapi_url": None}
+    return {}
+
+
+app = FastAPI(**docs_settings())
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
@@ -349,7 +360,7 @@ app.add_middleware(
     allow_methods=["GET", "POST"],
     allow_headers=["Content-Type", CSRF_HEADER, REQUEST_ID_HEADER],
 )
-app.add_middleware(SecurityHeadersMiddleware)
+app.add_middleware(SecurityHeadersMiddleware, hsts=is_production())
 app.add_middleware(SlowAPIMiddleware)
 # Outermost, so every JSON response over 1 KB goes out gzipped: leaderboards,
 # profiles and quiz rounds shrink to a fraction on slow mobile data.
@@ -362,6 +373,16 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     first_error = exc.errors()[0] if exc.errors() else None
     message = first_error["msg"].replace("Value error, ", "") if first_error else "Invalid input"
     return JSONResponse(status_code=400, content={"detail": message})
+
+
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(request: Request, exc: Exception):
+    """Anything unexpected: log the full traceback here, send the player a plain message.
+
+    Tracebacks, SQL and driver errors never leave the server.
+    """
+    logger.exception("Unhandled error on %s %s", request.method, request.url.path)
+    return JSONResponse(status_code=500, content={"detail": "Something went wrong on our side. Try again."})
 
 
 def production_config_problems(env=os.environ) -> list:

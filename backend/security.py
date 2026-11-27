@@ -23,11 +23,26 @@ def verify_password(password: str, password_hash: str) -> bool:
         return False
 
 
+# One year, the value browsers' HSTS preload lists expect.
+HSTS_VALUE = "max-age=31536000; includeSubDomains"
+
+
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
-    """Adds standard defensive HTTP headers to every response."""
+    """Adds standard defensive HTTP headers to every response.
+
+    `hsts` is on in production only: the API is served over HTTPS there, while
+    local development runs on plain http://localhost, where browsers would
+    otherwise remember to refuse it.
+    """
+
+    def __init__(self, app, hsts: bool = False):
+        super().__init__(app)
+        self.hsts = hsts
 
     async def dispatch(self, request, call_next):
         response = await call_next(request)
+        if self.hsts:
+            response.headers["Strict-Transport-Security"] = HSTS_VALUE
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"

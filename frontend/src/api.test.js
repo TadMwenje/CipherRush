@@ -74,6 +74,26 @@ describe("errorMessage", () => {
   test("the server's own message wins", () => {
     expect(errorMessage({ response: { data: { detail: "That handle's taken." } } })).toBe("That handle's taken.");
   });
+
+  test("server and gateway failures show a plain line, never codes or error pages", () => {
+    for (const response of [
+      { status: 500, data: { detail: "Something went wrong on our side. Try again." } },
+      { status: 502, data: "<html><title>502 Bad Gateway</title></html>" },
+      { status: 503, data: "" },
+    ]) {
+      const shown = errorMessage({ response, message: "Request failed with status code " + response.status });
+      expect(shown).toBe("Server unavailable right now. Try again soon.");
+    }
+  });
+
+  test("validation lists and over-long details fall back to a short message", () => {
+    expect(errorMessage({ response: { status: 422, data: { detail: [{ loc: ["body"], msg: "x" }] } } })).toBe(
+      "That didn't go through. Try again."
+    );
+    expect(errorMessage({ response: { status: 400, data: { detail: "x".repeat(500) } } })).toBe(
+      "That didn't go through. Try again."
+    );
+  });
 });
 
 test("identical GETs in flight share one request", async () => {

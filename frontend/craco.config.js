@@ -27,6 +27,20 @@ module.exports = {
         };
       }
       
+      // Production: drop console.log / info / debug calls from the bundle.
+      // console.warn and console.error stay, for crash reports in device logs.
+      if (webpackConfig.mode === 'production') {
+        for (const minimizer of webpackConfig.optimization?.minimizer || []) {
+          const opts = minimizer.options?.minimizer?.options;
+          if (minimizer.constructor.name === 'TerserPlugin' && opts) {
+            opts.compress = {
+              ...(opts.compress || {}),
+              pure_funcs: ['console.log', 'console.info', 'console.debug'],
+            };
+          }
+        }
+      }
+
       return webpackConfig;
     },
   },

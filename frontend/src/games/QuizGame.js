@@ -93,7 +93,7 @@ function QuizGame() {
       playHint();
       haptic("select");
     } catch (err) {
-      setError(errorMessage(err, err.message));
+      setError(errorMessage(err));
     } finally {
       setWatching(false);
     }

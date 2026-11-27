@@ -191,8 +191,11 @@ export function errorMessage(err, fallback = t("auth.failed")) {
   // Only a request that got no answer is a signal problem; anything else that
   // failed before reaching us (a native sign-in plugin, say) gets the fallback.
   if (!err?.response) return axios.isAxiosError(err) ? t("net.unreachable") : fallback;
+  // A server or gateway failure: never show status codes, HTML error pages or
+  // anything technical, just a short line in the player's language.
+  if (err.response.status >= 500) return t("net.serverDown");
   const detail = err.response.data?.detail;
-  return typeof detail === "string" ? detail : fallback;
+  return typeof detail === "string" && detail.length <= 200 ? detail : fallback;
 }
 
 export default api;
