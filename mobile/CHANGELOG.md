@@ -2,6 +2,19 @@
 
 Native app changes (Android and iOS). Server and web changes are in git history.
 
+## Android 1.0.3 (8) and iOS 1.0.3 (6)
+
+Hardening and clearer messages. Needs the server from `v1.0.3` (deployed 27 Nov).
+
+### Changed
+- When the server has a problem, players see "Server unavailable right now.
+  Try again soon." in their language, never status codes or error pages.
+- Error messages in Boost, Quiz, Cipher and Match-3, and "Couldn't start a
+  round", are translated in all eight languages.
+- The privacy summary no longer names the server's address.
+- Release builds ship without source maps or debug logging.
+- Android: app backups are off, so a sign-in isn't restored onto another phone.
+
 ## Android 1.0.2 (7) and iOS 1.0.2 (5), submitted 27 Nov 2026 (Play production, App Review)
 
 Fixes from the 1.0.1 phone check. Works with the server that is live now.

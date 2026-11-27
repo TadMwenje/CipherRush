@@ -412,6 +412,12 @@ Android 1.0.2 (versionCode 7) and iOS 1.0.2 (build 5). Fixes from the phone QA o
   - **Native:** Android `allowBackup="false"` so the session cookie isn't restored onto another device. HTTPS-only confirmed: iOS ATS has no arbitrary loads (local networking only), Android cleartext is off by default, and `androidScheme` is https. Sessions are HttpOnly cookies (never readable from JS), cleared with token revocation on logout and account deletion.
   - Tests: backend 279, frontend 286. Production web build compiles cleanly.
   - **To ship 1.0.3:** merge into `ios-device-testing` and deploy on Render (server changes are independent of the apps). Then build Android 8 / iOS 6 with `npm run sync:release` and send them to the stores.
+- **27 Nov, 1.0.3 rollout (owner-approved):**
+  - **AdMob GDPR:** European regulations message "CipherRush consent (EEA, UK, CH)" **Published** for both apps. Google's consent template in English + es, fr, de, pt-PT, it, nl, pl; "Do not consent" button on in every country; privacy URL `https://aximoix.com/privacy/#cipherrush`. Ad partners: Google's common list (199, includes **Unity Ads**, vendor 1549), plus "Automatically add ad sources as ad partners" and all GDPR-certified mediation partners. Players can reopen the form from Profile > Account (`showPrivacyOptions`).
+  - **Play listing website:** `https://aximoix.com` saved and published (Store settings > Contact details). "Check for updates" run on both AdMob apps; both still "couldn't verify" right after (the Play change can take an hour to show, then Google re-crawls).
+  - **Render:** `v1.0.3` fast-forwarded into `ios-device-testing` and deployed (`c701d06`, succeeded). Live: `/docs`, `/redoc`, `/openapi.json` return 404; `Strict-Transport-Security: max-age=31536000; includeSubDomains`; nosniff and DENY present; API and leaderboard 200.
+  - **Builds:** Android 1.0.3 (versionCode 8) and iOS 1.0.3 (build 6) built with `npm run sync:release`; no `.map` files in either app bundle. iOS build 6 uploaded and processed (**Ready to Submit**); it isn't attached because 1.0.2 is still **Waiting for Review**. Attach build 6 to a new 1.0.3 version once 1.0.2 clears. The Android .aab is 10.8 MB, over the browser tool's 10.4 MB upload limit, so the owner drags it into the draft Production release (release notes are already entered).
+  - **Apple DSA:** still In Review (last updated 24 Nov).
 
 ### 3.2 Open
 
