@@ -418,6 +418,13 @@ Android 1.0.2 (versionCode 7) and iOS 1.0.2 (build 5). Fixes from the phone QA o
   - **Render:** `v1.0.3` fast-forwarded into `ios-device-testing` and deployed (`c701d06`, succeeded). Live: `/docs`, `/redoc`, `/openapi.json` return 404; `Strict-Transport-Security: max-age=31536000; includeSubDomains`; nosniff and DENY present; API and leaderboard 200.
   - **Builds:** Android 1.0.3 (versionCode 8) and iOS 1.0.3 (build 6) built with `npm run sync:release`; no `.map` files in either app bundle. iOS build 6 uploaded and processed (**Ready to Submit**); it isn't attached because 1.0.2 is still **Waiting for Review**. Attach build 6 to a new 1.0.3 version once 1.0.2 clears. The Android .aab is 10.8 MB, over the browser tool's 10.4 MB upload limit, so the owner drags it into the draft Production release (release notes are already entered).
   - **Apple DSA:** still In Review (last updated 24 Nov).
+- **27 Nov, status audit after Android 1.0.3 upload:**
+  - **Play:** 8 (1.0.3) is "Changes in review", full rollout; 7 (1.0.2) is live. The public listing now links `https://aximoix.com/`.
+  - **iOS:** 1.0.2 (5) still **Waiting for Review** (submitted 27 Nov 10:53). Build 6 stays staged until it clears. DSA still In Review (last updated 24 Nov).
+  - **AdMob:** "Check for updates" rerun on both apps; both still "couldn't verify", "Limited ad serving, Requires review". The file itself was confirmed from outside this network: `https://aximoix.com/app-ads.txt` is served over HTTPS (http redirects), starts with the DIRECT line, and DNS goes straight to GitHub Pages (no proxy). So this is waiting on Google's crawler.
+  - **AdMob mediation:** Unity Ads bidding "Direct relationship, Active partnership". All 4 mappings green (`BP_Interstitial/Rewarded_Android`, `BP_Interstitial/Rewarded_iOS`), groups Ready.
+  - **Test devices:** none registered in AdMob or Unity. AdMob test mode doesn't cover Unity-served ads, so Unity needs its own test device. The app can also mark devices in code: a non-release build with `REACT_APP_ADMOB_TEST_DEVICES` uses the real units with test ads (`ads/config.js`).
+  - **Unity:** Android Store ID `com.aximoix.cipherrush` saved; Organization settings app-ads.txt "up-to-date. No action needed".
 
 ### 3.2 Open
 
