@@ -201,7 +201,7 @@ function Dashboard() {
       {howToKey && <HowToPlayModal focusKey={howToKey} onClose={() => setHowToKey(null)} />}
       {boostFor && (
         <BoostOffer
-          label={modeText(boostFor, lang).label}
+          label={boostFor.label}
           onDone={() => {
             setBoostFor(null);
             navigate(boostFor.path);

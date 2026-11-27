@@ -92,7 +92,8 @@ export function modeText(mode, lang = current) {
   return {
     label: tr?.label || mode.label,
     tagline: tr?.tagline || mode.tagline,
-    rules: tr?.rules?.length === mode.rules.length ? tr.rules : mode.rules,
+    // Callers sometimes pass a slimmed-down mode ({ key, path, label }): never assume rules.
+    rules: mode.rules && tr?.rules?.length === mode.rules.length ? tr.rules : mode.rules || [],
   };
 }
 

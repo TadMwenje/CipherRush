@@ -106,3 +106,11 @@ test("cipher names and free hints follow the language", () => {
   );
   expect(freeHint({ variant: "other", free_hint: "server text" }, fr)).toBe("server text");
 });
+
+test("modeText copes with a mode that has no rules (dashboard passes a slim copy)", () => {
+  for (const lang of ["en", "fr"]) {
+    const slim = { key: GAME_MODES[0].key, path: "/x", label: "Cipher" };
+    expect(() => modeText(slim, lang)).not.toThrow();
+    expect(modeText(slim, lang).rules).toEqual([]);
+  }
+});
