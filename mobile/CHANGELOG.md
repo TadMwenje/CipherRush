@@ -2,6 +2,23 @@
 
 Native app changes (Android and iOS). Server and web changes are in git history.
 
+## Android 1.0.4 (9) and iOS 1.0.4 (7)
+
+Hotfix plus new rewards. Needs the server from `v1.0.4`. iOS 1.0.3 (6) is
+never submitted: it has the crash below.
+
+### Fixed
+- The dashboard no longer crashes ("This screen hit a snag") when the
+  double-points offer opens, which happened on every 4th scored game start.
+
+### Added
+- Binary/Hex: a video hint shows the current word's first letter (once per
+  word, half points for that word).
+- Memory Lock: one video peek per round shows the unmatched cards for 2 s
+  (a peeked board can't earn the no-miss badges).
+- Speed Rush: when time runs out, once per run, a video restarts the clock at 15 s.
+- Rewarded-video failure messages are translated in all eight languages.
+
 ## Android 1.0.3 (8) and iOS 1.0.3 (6)
 
 Hardening and clearer messages. Needs the server from `v1.0.3` (deployed 27 Nov).

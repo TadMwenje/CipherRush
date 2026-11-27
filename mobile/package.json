@@ -1,6 +1,6 @@
 {
   "name": "cipherrush-mobile",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "private": true,
   "description": "Native iOS and Android shells for CipherRush (Capacitor). Wraps the React app in ../frontend.",
   "scripts": {
